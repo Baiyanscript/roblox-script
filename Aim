@@ -1,0 +1,142 @@
+--[[
+    带 Rayfield UI 的瞄准辅助（Aim Assist）
+    放置于 LocalScript（如 StarterPlayerScripts 或工具中）
+    需要全局加载 Rayfield 库
+]]
+
+local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source.lua"))()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- 配置参数
+local AIM_ASSIST_ENABLED = true      -- 是否启用
+local MAX_DISTANCE = 200             -- 最大追踪距离（单位：游戏单位）
+local FOV_RADIUS = 150               -- 激活区域半径（屏幕像素，准星进入此范围时吸附）
+local STRENGTH = 0.5                 -- 辅助强度 (0 ~ 1)
+
+-- 获取敌方玩家（可根据队伍判断修改）
+local function GetEnemies()
+    local enemies = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local team = player.Team
+            if team ~= LocalPlayer.Team or team == nil then
+                table.insert(enemies, player.Character)
+            end
+        end
+    end
+    return enemies
+end
+
+-- 找到屏幕 FOV 内最近的敌人
+local function GetClosestEnemy()
+    local mouse = LocalPlayer:GetMouse()
+    local viewportPoint = Vector2.new(mouse.X, mouse.Y)
+    local closestEnemy = nil
+    local closestDistance = FOV_RADIUS
+
+    for _, enemyChar in ipairs(GetEnemies()) do
+        local rootPart = enemyChar:FindFirstChild("HumanoidRootPart") or enemyChar:FindFirstChild("Head")
+        if rootPart then
+            local screenPos, onScreen = Camera:WorldToScreenPoint(rootPart.Position)
+            if onScreen then
+                local distance = (Vector2.new(screenPos.X, screenPos.Y) - viewportPoint).Magnitude
+                if distance < closestDistance then
+                    closestDistance = distance
+                    closestEnemy = rootPart
+                end
+            end
+        end
+    end
+    return closestEnemy, closestDistance
+end
+
+-- 瞄准辅助核心逻辑（移动鼠标）
+local function ApplyAimAssist()
+    if not AIM_ASSIST_ENABLED or STRENGTH <= 0 then return end
+    if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then return end  -- 仅当右键瞄准时生效
+
+    local targetPart = GetClosestEnemy()
+    if not targetPart then return end
+
+    local targetPos = targetPart.Position
+    local targetScreen = Camera:WorldToScreenPoint(targetPos)
+    local mouse = LocalPlayer:GetMouse()
+    local currentMousePos = Vector2.new(mouse.X, mouse.Y)
+    local delta = (Vector2.new(targetScreen.X, targetScreen.Y) - currentMousePos) * STRENGTH
+
+    -- 移动鼠标（Delta 执行器专用函数）
+    mousemoverel(delta.X, delta.Y)
+    -- 其他执行器可改为：mouse_move(delta.X, delta.Y)
+end
+
+-- 每帧运行
+RunService.RenderStepped:Connect(ApplyAimAssist)
+
+-- ==================== Rayfield UI（中文界面） ====================
+local Window = Rayfield:CreateWindow({
+    Name = "瞄准辅助",
+    LoadingTitle = "正在加载瞄准辅助",
+    LoadingSubtitle = "请稍候...",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "AimAssistSettings",
+        FileName = "Config"
+    }
+})
+
+local MainTab = Window:CreateTab("辅助设置")
+
+-- 启用/关闭开关
+MainTab:CreateToggle({
+    Name = "启用瞄准辅助",
+    CurrentValue = AIM_ASSIST_ENABLED,
+    Flag = "AimAssistEnabled",
+    Callback = function(Value)
+        AIM_ASSIST_ENABLED = Value
+    end
+})
+
+-- 强度滑动条（0% ~ 100%）
+MainTab:CreateSlider({
+    Name = "辅助强度",
+    Range = {0, 100},
+    Increment = 1,
+    Suffix = "%",
+    CurrentValue = STRENGTH * 100,
+    Flag = "AimStrength",
+    Callback = function(Value)
+        STRENGTH = Value / 100
+    end
+})
+
+-- FOV 半径滑动条
+MainTab:CreateSlider({
+    Name = "激活范围（像素）",
+    Range = {50, 300},
+    Increment = 5,
+    Suffix = "px",
+    CurrentValue = FOV_RADIUS,
+    Flag = "AimFOV",
+    Callback = function(Value)
+        FOV_RADIUS = Value
+    end
+})
+
+-- 最大追踪距离
+MainTab:CreateSlider({
+    Name = "最大追踪距离（游戏单位）",
+    Range = {50, 500},
+    Increment = 10,
+    Suffix = "u",
+    CurrentValue = MAX_DISTANCE,
+    Flag = "MaxDistance",
+    Callback = function(Value)
+        MAX_DISTANCE = Value
+    end
+})
+
+print("瞄准辅助已加载。可通过 Rayfield UI 调整辅助强度。")
