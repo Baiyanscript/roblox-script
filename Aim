@@ -1,23 +1,25 @@
 --[[
-    带 Rayfield UI 的瞄准辅助（Aim Assist）
-    放置于 LocalScript（如 StarterPlayerScripts 或工具中）
-    需要全局加载 Rayfield 库
+    具備 Rayfield UI 的瞄準輔助（Aim Assist）
+    請放置於 LocalScript（例如 StarterPlayerScripts 或工具中）
+    需先載入 Rayfield 函式庫
 ]]
 
-local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source.lua"))()
+-- 修正：使用有效的新連結
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- 配置参数
-local AIM_ASSIST_ENABLED = true      -- 是否启用
-local MAX_DISTANCE = 200             -- 最大追踪距离（单位：游戏单位）
-local FOV_RADIUS = 150               -- 激活区域半径（屏幕像素，准星进入此范围时吸附）
-local STRENGTH = 0.5                 -- 辅助强度 (0 ~ 1)
+-- 設定參數
+local AIM_ASSIST_ENABLED = true      -- 是否啟用
+local MAX_DISTANCE = 200             -- 最大追蹤距離（單位：遊戲單位）
+local FOV_RADIUS = 150               -- 啟動區域半徑（螢幕像素，準星進入此範圍時吸附）
+local STRENGTH = 0.5                 -- 輔助強度 (0 ~ 1)
 
--- 获取敌方玩家（可根据队伍判断修改）
+-- 取得敵方玩家（可依隊伍判斷修改）
 local function GetEnemies()
     local enemies = {}
     for _, player in ipairs(Players:GetPlayers()) do
@@ -31,7 +33,7 @@ local function GetEnemies()
     return enemies
 end
 
--- 找到屏幕 FOV 内最近的敌人
+-- 找到螢幕 FOV 內最近的敵人
 local function GetClosestEnemy()
     local mouse = LocalPlayer:GetMouse()
     local viewportPoint = Vector2.new(mouse.X, mouse.Y)
@@ -54,10 +56,10 @@ local function GetClosestEnemy()
     return closestEnemy, closestDistance
 end
 
--- 瞄准辅助核心逻辑（移动鼠标）
+-- 瞄準輔助核心邏輯（移動滑鼠）
 local function ApplyAimAssist()
     if not AIM_ASSIST_ENABLED or STRENGTH <= 0 then return end
-    if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then return end  -- 仅当右键瞄准时生效
+    if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then return end  -- 僅在右鍵瞄準時生效
 
     local targetPart = GetClosestEnemy()
     if not targetPart then return end
@@ -68,19 +70,19 @@ local function ApplyAimAssist()
     local currentMousePos = Vector2.new(mouse.X, mouse.Y)
     local delta = (Vector2.new(targetScreen.X, targetScreen.Y) - currentMousePos) * STRENGTH
 
-    -- 移动鼠标（Delta 执行器专用函数）
+    -- 移動滑鼠（Delta 執行器專用函式）
     mousemoverel(delta.X, delta.Y)
-    -- 其他执行器可改为：mouse_move(delta.X, delta.Y)
+    -- 其他執行器可改為：mouse_move(delta.X, delta.Y)
 end
 
--- 每帧运行
+-- 每幀執行
 RunService.RenderStepped:Connect(ApplyAimAssist)
 
--- ==================== Rayfield UI（中文界面） ====================
+-- ==================== Rayfield UI（台灣繁體中文介面） ====================
 local Window = Rayfield:CreateWindow({
-    Name = "瞄准辅助",
-    LoadingTitle = "正在加载瞄准辅助",
-    LoadingSubtitle = "请稍候...",
+    Name = "瞄準輔助",
+    LoadingTitle = "正在載入瞄準輔助",
+    LoadingSubtitle = "請稍候...",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "AimAssistSettings",
@@ -88,11 +90,11 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
-local MainTab = Window:CreateTab("辅助设置")
+local MainTab = Window:CreateTab("輔助設定")
 
--- 启用/关闭开关
+-- 啟用／關閉開關
 MainTab:CreateToggle({
-    Name = "启用瞄准辅助",
+    Name = "啟用瞄準輔助",
     CurrentValue = AIM_ASSIST_ENABLED,
     Flag = "AimAssistEnabled",
     Callback = function(Value)
@@ -100,9 +102,9 @@ MainTab:CreateToggle({
     end
 })
 
--- 强度滑动条（0% ~ 100%）
+-- 強度滑桿（0% ~ 100%）
 MainTab:CreateSlider({
-    Name = "辅助强度",
+    Name = "輔助強度",
     Range = {0, 100},
     Increment = 1,
     Suffix = "%",
@@ -113,9 +115,9 @@ MainTab:CreateSlider({
     end
 })
 
--- FOV 半径滑动条
+-- FOV 半徑滑桿
 MainTab:CreateSlider({
-    Name = "激活范围（像素）",
+    Name = "啟動範圍（像素）",
     Range = {50, 300},
     Increment = 5,
     Suffix = "px",
@@ -126,9 +128,9 @@ MainTab:CreateSlider({
     end
 })
 
--- 最大追踪距离
+-- 最大追蹤距離
 MainTab:CreateSlider({
-    Name = "最大追踪距离（游戏单位）",
+    Name = "最大追蹤距離（遊戲單位）",
     Range = {50, 500},
     Increment = 10,
     Suffix = "u",
@@ -139,4 +141,4 @@ MainTab:CreateSlider({
     end
 })
 
-print("瞄准辅助已加载。可通过 Rayfield UI 调整辅助强度。")
+print("瞄準輔助已載入。可透過 Rayfield UI 調整輔助強度。")
