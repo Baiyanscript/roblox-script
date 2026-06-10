@@ -1,0 +1,289 @@
+--[[
+    ESP 腳本（無擁有者限制）- Delta 執行器
+    功能：2D方框、血條、名稱、距離、雷射線
+    介面：Rayfield UI
+    任何人執行即可使用
+--]]
+
+-- ================================
+-- 載入 Rayfield UI 庫（已更新為有效連結）
+-- ================================
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+-- ================================
+-- 建立介面視窗
+-- ================================
+local Window = Rayfield:CreateWindow({
+    Name = "ESP 控制面板",
+    LoadingTitle = "ESP 載入中...",
+    LoadingSubtitle = "通用版",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "UniversalESP",
+        FileName = "Settings"
+    }
+})
+
+local MainTab = Window:CreateTab("ESP 設定", 4483362458)
+
+-- 開關狀態
+local espEnabled = true
+local showBox = true
+local showHealthBar = true
+local showName = true
+local showDistance = true
+local showTracer = true
+
+-- UI 控制項
+MainTab:CreateToggle({
+    Name = "啟用 ESP",
+    CurrentValue = espEnabled,
+    Flag = "ESP_Toggle",
+    Callback = function(v)
+        espEnabled = v
+        if not espEnabled then
+            for _, data in pairs(espObjects) do
+                for _, obj in pairs(data) do
+                    if obj and obj.Remove then obj:Remove() end
+                end
+            end
+            table.clear(espObjects)
+        end
+    end
+})
+
+MainTab:CreateToggle({
+    Name = "2D 方框",
+    CurrentValue = showBox,
+    Flag = "Box_Toggle",
+    Callback = function(v) showBox = v end
+})
+
+MainTab:CreateToggle({
+    Name = "血條",
+    CurrentValue = showHealthBar,
+    Flag = "HealthBar_Toggle",
+    Callback = function(v) showHealthBar = v end
+})
+
+MainTab:CreateToggle({
+    Name = "名稱標籤",
+    CurrentValue = showName,
+    Flag = "Name_Toggle",
+    Callback = function(v) showName = v end
+})
+
+MainTab:CreateToggle({
+    Name = "距離顯示",
+    CurrentValue = showDistance,
+    Flag = "Distance_Toggle",
+    Callback = function(v) showDistance = v end
+})
+
+MainTab:CreateToggle({
+    Name = "雷射線",
+    CurrentValue = showTracer,
+    Flag = "Tracer_Toggle",
+    Callback = function(v) showTracer = v end
+})
+
+local maxDistance = 250
+MainTab:CreateSlider({
+    Name = "最大渲染距離",
+    Range = {50, 500},
+    Increment = 10,
+    CurrentValue = maxDistance,
+    Flag = "Distance_Slider",
+    Callback = function(v) maxDistance = v end
+})
+
+-- ================================
+-- ESP 核心邏輯（繪圖 API）
+-- ================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local localPlayer = Players.LocalPlayer
+
+-- 儲存每個玩家的繪圖物件
+local espObjects = {}
+
+-- 輔助函式：取得角色的螢幕方框位置
+local function getCharacterBox(character)
+    if not character or not character.PrimaryPart then return nil end
+    local rootPart = character.PrimaryPart
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoid or humanoid.Health <= 0 then return nil end
+    
+    local head = character:FindFirstChild("Head")
+    if not head then return nil end
+    local footPos = rootPart.Position - Vector3.new(0, rootPart.Size.Y/2, 0)
+    local headPos = head.Position + Vector3.new(0, head.Size.Y/2, 0)
+    
+    local headScreen, headVis = Camera:WorldToViewportPoint(headPos)
+    local footScreen, footVis = Camera:WorldToViewportPoint(footPos)
+    if not (headVis and footVis) then return nil end
+    
+    local height = math.abs(headScreen.Y - footScreen.Y)
+    local width = height * 0.6
+    local topLeft = Vector2.new(headScreen.X - width/2, headScreen.Y)
+    local bottomRight = Vector2.new(headScreen.X + width/2, footScreen.Y)
+    return topLeft, bottomRight, height, width, headScreen.Z
+end
+
+-- 更新單一玩家的 ESP
+local function updateESP(player)
+    if not espEnabled then return end
+    if player == localPlayer then return end  -- 不顯示自己
+    
+    local character = player.Character
+    if not character then
+        if espObjects[player] then
+            for _, obj in pairs(espObjects[player]) do
+                if obj and obj.Remove then obj:Remove() end
+            end
+            espObjects[player] = nil
+        end
+        return
+    end
+    
+    local boxData = getCharacterBox(character)
+    if not boxData then return end
+    local topLeft, bottomRight, height, width, distanceZ = unpack(boxData)
+    
+    local rootPart = character.PrimaryPart
+    local distance = rootPart and (rootPart.Position - Camera.CFrame.Position).Magnitude or distanceZ
+    if distance > maxDistance then
+        if espObjects[player] then
+            for _, obj in pairs(espObjects[player]) do
+                if obj and obj.Remove then obj:Remove() end
+            end
+            espObjects[player] = nil
+        end
+        return
+    end
+    
+    local data = espObjects[player]
+    if not data then
+        data = {}
+        espObjects[player] = data
+    end
+    
+    -- 2D 方框
+    if showBox then
+        if not data.box then
+            data.box = Drawing.new("Square")
+            data.box.Thickness = 1
+            data.box.Color = Color3.fromRGB(255, 255, 255)
+            data.box.Filled = false
+        end
+        data.box.Position = topLeft
+        data.box.Size = Vector2.new(bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y)
+        data.box.Visible = true
+    elseif data.box then
+        data.box.Visible = false
+    end
+    
+    -- 血條（在方框上方）
+    local humanoid = character:FindFirstChild("Humanoid")
+    local healthPercent = humanoid and (humanoid.Health / humanoid.MaxHealth) or 1
+    if showHealthBar then
+        if not data.healthBar then
+            data.healthBar = Drawing.new("Square")
+            data.healthBar.Thickness = 0
+            data.healthBar.Filled = true
+        end
+        local barWidth = (bottomRight.X - topLeft.X)
+        local barHeight = 4
+        local barPos = Vector2.new(topLeft.X, topLeft.Y - barHeight - 2)
+        data.healthBar.Position = barPos
+        data.healthBar.Size = Vector2.new(barWidth * healthPercent, barHeight)
+        data.healthBar.Color = Color3.fromRGB(0, 255, 0)
+        if healthPercent < 0.3 then data.healthBar.Color = Color3.fromRGB(255, 0, 0)
+        elseif healthPercent < 0.6 then data.healthBar.Color = Color3.fromRGB(255, 255, 0) end
+        data.healthBar.Visible = true
+    elseif data.healthBar then
+        data.healthBar.Visible = false
+    end
+    
+    -- 名稱標籤
+    if showName then
+        if not data.name then
+            data.name = Drawing.new("Text")
+            data.name.Center = true
+            data.name.Font = 2
+            data.name.Size = 16
+            data.name.Color = Color3.fromRGB(255, 255, 255)
+            data.name.Outline = true
+            data.name.OutlineColor = Color3.fromRGB(0, 0, 0)
+        end
+        data.name.Text = player.Name
+        data.name.Position = Vector2.new(topLeft.X + (bottomRight.X - topLeft.X)/2, topLeft.Y - 20)
+        data.name.Visible = true
+    elseif data.name then
+        data.name.Visible = false
+    end
+    
+    -- 距離標籤
+    if showDistance then
+        if not data.distance then
+            data.distance = Drawing.new("Text")
+            data.distance.Center = true
+            data.distance.Font = 1
+            data.distance.Size = 12
+            data.distance.Color = Color3.fromRGB(200, 200, 200)
+            data.distance.Outline = true
+        end
+        data.distance.Text = string.format("%.1f 公尺", distance)
+        data.distance.Position = Vector2.new(topLeft.X + (bottomRight.X - topLeft.X)/2, bottomRight.Y + 2)
+        data.distance.Visible = true
+    elseif data.distance then
+        data.distance.Visible = false
+    end
+    
+    -- 雷射線（從螢幕底部中心指向玩家）
+    if showTracer then
+        if not data.tracer then
+            data.tracer = Drawing.new("Line")
+            data.tracer.Thickness = 1
+            data.tracer.Color = Color3.fromRGB(255, 0, 0)
+            data.tracer.Transparency = 0.7
+        end
+        local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+        local targetPos = Vector2.new(topLeft.X + (bottomRight.X - topLeft.X)/2, topLeft.Y + (bottomRight.Y - topLeft.Y)/2)
+        data.tracer.From = screenCenter
+        data.tracer.To = targetPos
+        data.tracer.Visible = true
+    elseif data.tracer then
+        data.tracer.Visible = false
+    end
+end
+
+-- 玩家離開時清理
+local function onPlayerRemoving(player)
+    if espObjects[player] then
+        for _, obj in pairs(espObjects[player]) do
+            if obj and obj.Remove then obj:Remove() end
+        end
+        espObjects[player] = nil
+    end
+end
+
+Players.PlayerRemoving:Connect(onPlayerRemoving)
+
+-- 主渲染迴圈
+RunService.RenderStepped:Connect(function()
+    if not espEnabled then return end
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer then
+            updateESP(player)
+        end
+    end
+end)
+
+-- 啟動完成提示
+Rayfield:Notify({
+    Title = "ESP 已啟動",
+    Content = "所有功能可用，透過介面開關",
+    Duration = 3
+})
