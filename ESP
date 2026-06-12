@@ -1,140 +1,133 @@
 --[[
-    ESP 腳本（無擁有者限制）- Delta 執行器
-    功能：2D方框、血條、名稱、距離、雷射線
-    介面：Rayfield UI
-    任何人執行即可使用
+    简易 ESP 控制面板（纯 Roblox GUI）
+    功能：2D 方框、血条、名称、距离、雷射線
+    介面：可拖拽的小窗口，按鈕切換
+    無需外部庫，執行後立即生效
 --]]
 
--- ================================
--- 載入 Rayfield UI 庫（已更新為有效連結）
--- ================================
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+-- ========== 設定預設值 ==========
+local settings = {
+    enabled = true,
+    box = true,
+    healthBar = true,
+    nameTag = true,
+    distance = true,
+    tracer = true,
+    maxDistance = 250
+}
 
--- ================================
--- 建立介面視窗
--- ================================
-local Window = Rayfield:CreateWindow({
-    Name = "ESP 控制面板",
-    LoadingTitle = "ESP 載入中...",
-    LoadingSubtitle = "通用版",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "UniversalESP",
-        FileName = "Settings"
-    }
-})
+-- ========== 建立 GUI 介面 ==========
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "EZ_ESP_Menu"
+gui.Parent = player:WaitForChild("PlayerGui")
 
-local MainTab = Window:CreateTab("ESP 設定", 4483362458)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 200, 0, 280)
+mainFrame.Position = UDim2.new(0, 20, 0, 100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+mainFrame.BackgroundTransparency = 0.1
+mainFrame.BorderSizePixel = 1
+mainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = gui
 
--- 開關狀態
-local espEnabled = true
-local showBox = true
-local showHealthBar = true
-local showName = true
-local showDistance = true
-local showTracer = true
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "ESP 控制面板"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.Parent = mainFrame
 
--- UI 控制項
-MainTab:CreateToggle({
-    Name = "啟用 ESP",
-    CurrentValue = espEnabled,
-    Flag = "ESP_Toggle",
-    Callback = function(v)
-        espEnabled = v
-        if not espEnabled then
-            for _, data in pairs(espObjects) do
-                for _, obj in pairs(data) do
-                    if obj and obj.Remove then obj:Remove() end
-                end
+local function makeButton(text, yPos, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9, 0, 0, 30)
+    btn.Position = UDim2.new(0.05, 0, 0, yPos)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 14
+    btn.Parent = mainFrame
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+-- 建立按鈕，顯示目前狀態
+local espToggleBtn = makeButton("✓ ESP 啟用", 40, function()
+    settings.enabled = not settings.enabled
+    espToggleBtn.Text = settings.enabled and "✓ ESP 啟用" or "✗ ESP 停用"
+    if not settings.enabled then
+        -- 清除所有繪圖
+        for _, data in pairs(espObjects) do
+            for _, obj in pairs(data) do
+                if obj and obj.Remove then obj:Remove() end
             end
-            table.clear(espObjects)
         end
+        table.clear(espObjects)
     end
-})
+end)
 
-MainTab:CreateToggle({
-    Name = "2D 方框",
-    CurrentValue = showBox,
-    Flag = "Box_Toggle",
-    Callback = function(v) showBox = v end
-})
+local boxBtn = makeButton("✓ 2D 方框", 80, function()
+    settings.box = not settings.box
+    boxBtn.Text = settings.box and "✓ 2D 方框" or "✗ 2D 方框"
+end)
 
-MainTab:CreateToggle({
-    Name = "血條",
-    CurrentValue = showHealthBar,
-    Flag = "HealthBar_Toggle",
-    Callback = function(v) showHealthBar = v end
-})
+local healthBtn = makeButton("✓ 血條", 120, function()
+    settings.healthBar = not settings.healthBar
+    healthBtn.Text = settings.healthBar and "✓ 血條" or "✗ 血條"
+end)
 
-MainTab:CreateToggle({
-    Name = "名稱標籤",
-    CurrentValue = showName,
-    Flag = "Name_Toggle",
-    Callback = function(v) showName = v end
-})
+local nameBtn = makeButton("✓ 名稱標籤", 160, function()
+    settings.nameTag = not settings.nameTag
+    nameBtn.Text = settings.nameTag and "✓ 名稱標籤" or "✗ 名稱標籤"
+end)
 
-MainTab:CreateToggle({
-    Name = "距離顯示",
-    CurrentValue = showDistance,
-    Flag = "Distance_Toggle",
-    Callback = function(v) showDistance = v end
-})
+local distBtn = makeButton("✓ 距離顯示", 200, function()
+    settings.distance = not settings.distance
+    distBtn.Text = settings.distance and "✓ 距離顯示" or "✗ 距離顯示"
+end)
 
-MainTab:CreateToggle({
-    Name = "雷射線",
-    CurrentValue = showTracer,
-    Flag = "Tracer_Toggle",
-    Callback = function(v) showTracer = v end
-})
+local tracerBtn = makeButton("✓ 雷射線", 240, function()
+    settings.tracer = not settings.tracer
+    tracerBtn.Text = settings.tracer and "✓ 雷射線" or "✗ 雷射線"
+end)
 
-local maxDistance = 250
-MainTab:CreateSlider({
-    Name = "最大渲染距離",
-    Range = {50, 500},
-    Increment = 10,
-    CurrentValue = maxDistance,
-    Flag = "Distance_Slider",
-    Callback = function(v) maxDistance = v end
-})
-
--- ================================
--- ESP 核心邏輯（繪圖 API）
--- ================================
+-- ========== ESP 核心邏輯 ==========
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local localPlayer = Players.LocalPlayer
-
--- 儲存每個玩家的繪圖物件
 local espObjects = {}
 
--- 輔助函式：取得角色的螢幕方框位置
 local function getCharacterBox(character)
-    if not character or not character.PrimaryPart then return nil end
+    if not character or not character.PrimaryPart then return end
     local rootPart = character.PrimaryPart
     local humanoid = character:FindFirstChild("Humanoid")
-    if not humanoid or humanoid.Health <= 0 then return nil end
+    if not humanoid or humanoid.Health <= 0 then return end
     
     local head = character:FindFirstChild("Head")
-    if not head then return nil end
+    if not head then return end
     local footPos = rootPart.Position - Vector3.new(0, rootPart.Size.Y/2, 0)
     local headPos = head.Position + Vector3.new(0, head.Size.Y/2, 0)
     
     local headScreen, headVis = Camera:WorldToViewportPoint(headPos)
     local footScreen, footVis = Camera:WorldToViewportPoint(footPos)
-    if not (headVis and footVis) then return nil end
+    if not (headVis and footVis) then return end
     
     local height = math.abs(headScreen.Y - footScreen.Y)
     local width = height * 0.6
     local topLeft = Vector2.new(headScreen.X - width/2, headScreen.Y)
     local bottomRight = Vector2.new(headScreen.X + width/2, footScreen.Y)
-    return topLeft, bottomRight, height, width, headScreen.Z
+    return topLeft, bottomRight, headScreen.Z
 end
 
--- 更新單一玩家的 ESP
 local function updateESP(player)
-    if not espEnabled then return end
-    if player == localPlayer then return end  -- 不顯示自己
+    if not settings.enabled then return end
+    if player == localPlayer then return end
     
     local character = player.Character
     if not character then
@@ -149,11 +142,11 @@ local function updateESP(player)
     
     local boxData = getCharacterBox(character)
     if not boxData then return end
-    local topLeft, bottomRight, height, width, distanceZ = unpack(boxData)
+    local topLeft, bottomRight, distanceZ = unpack(boxData)
     
     local rootPart = character.PrimaryPart
     local distance = rootPart and (rootPart.Position - Camera.CFrame.Position).Magnitude or distanceZ
-    if distance > maxDistance then
+    if distance > settings.maxDistance then
         if espObjects[player] then
             for _, obj in pairs(espObjects[player]) do
                 if obj and obj.Remove then obj:Remove() end
@@ -170,7 +163,7 @@ local function updateESP(player)
     end
     
     -- 2D 方框
-    if showBox then
+    if settings.box then
         if not data.box then
             data.box = Drawing.new("Square")
             data.box.Thickness = 1
@@ -184,10 +177,10 @@ local function updateESP(player)
         data.box.Visible = false
     end
     
-    -- 血條（在方框上方）
+    -- 血條
     local humanoid = character:FindFirstChild("Humanoid")
     local healthPercent = humanoid and (humanoid.Health / humanoid.MaxHealth) or 1
-    if showHealthBar then
+    if settings.healthBar then
         if not data.healthBar then
             data.healthBar = Drawing.new("Square")
             data.healthBar.Thickness = 0
@@ -198,16 +191,14 @@ local function updateESP(player)
         local barPos = Vector2.new(topLeft.X, topLeft.Y - barHeight - 2)
         data.healthBar.Position = barPos
         data.healthBar.Size = Vector2.new(barWidth * healthPercent, barHeight)
-        data.healthBar.Color = Color3.fromRGB(0, 255, 0)
-        if healthPercent < 0.3 then data.healthBar.Color = Color3.fromRGB(255, 0, 0)
-        elseif healthPercent < 0.6 then data.healthBar.Color = Color3.fromRGB(255, 255, 0) end
+        data.healthBar.Color = healthPercent < 0.3 and Color3.fromRGB(255,0,0) or (healthPercent < 0.6 and Color3.fromRGB(255,255,0) or Color3.fromRGB(0,255,0))
         data.healthBar.Visible = true
     elseif data.healthBar then
         data.healthBar.Visible = false
     end
     
     -- 名稱標籤
-    if showName then
+    if settings.nameTag then
         if not data.name then
             data.name = Drawing.new("Text")
             data.name.Center = true
@@ -224,8 +215,8 @@ local function updateESP(player)
         data.name.Visible = false
     end
     
-    -- 距離標籤
-    if showDistance then
+    -- 距離
+    if settings.distance then
         if not data.distance then
             data.distance = Drawing.new("Text")
             data.distance.Center = true
@@ -241,8 +232,8 @@ local function updateESP(player)
         data.distance.Visible = false
     end
     
-    -- 雷射線（從螢幕底部中心指向玩家）
-    if showTracer then
+    -- 雷射線
+    if settings.tracer then
         if not data.tracer then
             data.tracer = Drawing.new("Line")
             data.tracer.Thickness = 1
@@ -259,31 +250,30 @@ local function updateESP(player)
     end
 end
 
--- 玩家離開時清理
-local function onPlayerRemoving(player)
+Players.PlayerRemoving:Connect(function(player)
     if espObjects[player] then
         for _, obj in pairs(espObjects[player]) do
             if obj and obj.Remove then obj:Remove() end
         end
         espObjects[player] = nil
     end
-end
+end)
 
-Players.PlayerRemoving:Connect(onPlayerRemoving)
-
--- 主渲染迴圈
 RunService.RenderStepped:Connect(function()
-    if not espEnabled then return end
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= localPlayer then
-            updateESP(player)
-        end
+        updateESP(player)
     end
 end)
 
--- 啟動完成提示
-Rayfield:Notify({
-    Title = "ESP 已啟動",
-    Content = "所有功能可用，透過介面開關",
-    Duration = 3
-})
+-- 提示
+local hint = Instance.new("TextLabel")
+hint.Size = UDim2.new(0, 300, 0, 40)
+hint.Position = UDim2.new(0.5, -150, 1, -50)
+hint.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+hint.BackgroundTransparency = 0.5
+hint.Text = "ESP 已啟動 | 可拖拽視窗"
+hint.TextColor3 = Color3.fromRGB(255, 255, 255)
+hint.Font = Enum.Font.Gotham
+hint.TextSize = 14
+hint.Parent = gui
+task.delay(3, function() hint:Destroy() end)
