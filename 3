@@ -6,23 +6,24 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
-local TweenService = game:GetService("TweenService")
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 -- ==================== PREMIUM CONFIGURATION ====================
 _G.Config = {
-    ESP = false,
-    TeamCheck = true,
+    BoxESP = false,      -- 獨立開關：方框
+    NameESP = false,     -- 獨立開關：名字與距離
+    TeamCheck = true,    -- 獨立開關：隊友過濾
+    
     Aimbot = false,
     FOVCircle = true,
     FOVSize = 90,
-    Sensitivity = 0.05, -- Direct radian lerp modifier
+    Sensitivity = 0.05, 
     AimPart = "Head",
     SilentAim = false,
     HitboxSize = 12,
     
-    -- Character & Weapon Modifiers
+    -- 其他修改
     InfiniteJump = false,
     SpeedHack = false,
     WalkSpeed = 100,
@@ -58,7 +59,7 @@ end
 
 local function ConstructESP(plr)
     if plr == LocalPlayer then return end
-    CleanESP(plr) -- Wipe existing allocations to prevent ghost threads
+    CleanESP(plr)
 
     local Box = Drawing.new("Square")
     Box.Visible = false
@@ -80,20 +81,19 @@ local function HookPlayer(plr)
     if plr == LocalPlayer then return end
     ConstructESP(plr)
     plr.CharacterAdded:Connect(function()
-        task.wait(0.2) -- Safe engine synchronization delay
+        task.wait(0.2)
         ConstructESP(plr)
     end)
 end
 
--- Track Active Session
 for _, plr in ipairs(Players:GetPlayers()) do HookPlayer(plr) end
 Players.PlayerAdded:Connect(HookPlayer)
 Players.PlayerRemoving:Connect(CleanESP)
 
--- ==================== INSTANT RE-SCAN MECHANISM (ANTI-LEAK) ====================
+-- 定時掃描防漏人
 task.spawn(function()
     while true do
-        task.wait(1.0) -- Force audit tracking states across instances
+        task.wait(1.5)
         for _, plr in ipairs(Players:GetPlayers()) do
             if plr ~= LocalPlayer and not ESP_Registry[plr] then
                 HookPlayer(plr)
@@ -133,13 +133,13 @@ end
 
 -- ==================== CORE PIPELINE RENDERING ====================
 RunService.RenderStepped:Connect(function()
-    -- Sync FOV Profile
+    -- 更新中央 FOV
     local midPoint = GetScreenCenter()
     CenterFOV.Position = midPoint
     CenterFOV.Radius = _G.Config.FOVSize
     CenterFOV.Visible = _G.Config.FOVCircle
 
-    -- Process Dynamic Screen Scaling ESP
+    -- 渲染 ESP
     for plr, render in pairs(ESP_Registry) do
         if not plr or not Players:FindFirstChild(plr.Name) then
             CleanESP(plr)
@@ -152,32 +152,38 @@ RunService.RenderStepped:Connect(function()
         
         local validTarget = hrp and (hum == nil or hum.Health > 0)
         local teamAffiliation = (plr.Team and LocalPlayer.Team and plr.Team == LocalPlayer.Team)
-        local evaluateVisibility = _G.Config.ESP and validTarget and (not _G.Config.TeamCheck or not teamAffiliation)
-
-        if evaluateVisibility then
+        
+        -- 只要角色活著，且滿足隊友過濾條件，就進行 3D 座標計算
+        if validTarget and (not _G.Config.TeamCheck or not teamAffiliation) then
             local rootPos, onViewport = Camera:WorldToViewportPoint(hrp.Position)
             
             if onViewport then
-                -- Precise 3D Extents Extraction Vector Mechanics
                 local highCap = Camera:WorldToViewportPoint(hrp.Position + Vector3.new(0, 2.4, 0))
                 local lowCap = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3.0, 0))
-                
                 local boxHeight = math.abs(lowCap.Y - highCap.Y)
-                local boxWidth = boxHeight / 1.65 -- Perfect character framing index
+                local boxWidth = boxHeight / 1.65
                 local teamColor = plr.TeamColor.Color
 
-                -- Update 2D Square Layout properties
-                render.Box.Size = Vector2.new(boxWidth, boxHeight)
-                render.Box.Position = Vector2.new(rootPos.X - (boxWidth / 2), highCap.Y)
-                render.Box.Color = teamColor
-                render.Box.Visible = true
+                -- 方框開關判斷
+                if _G.Config.BoxESP then
+                    render.Box.Size = Vector2.new(boxWidth, boxHeight)
+                    render.Box.Position = Vector2.new(rootPos.X - (boxWidth / 2), highCap.Y)
+                    render.Box.Color = teamColor
+                    render.Box.Visible = true
+                else
+                    render.Box.Visible = false
+                end
 
-                -- Update Text Layout elements
-                local realDistance = math.floor((Camera.CFrame.Position - hrp.Position).Magnitude)
-                render.Name.Position = Vector2.new(rootPos.X, highCap.Y - 16)
-                render.Name.Color = teamColor
-                render.Name.Text = plr.Name .. " [" .. realDistance .. "m]"
-                render.Name.Visible = true
+                -- 名字與距離開關判斷
+                if _G.Config.NameESP then
+                    local realDistance = math.floor((Camera.CFrame.Position - hrp.Position).Magnitude)
+                    render.Name.Position = Vector2.new(rootPos.X, highCap.Y - 16)
+                    render.Name.Color = teamColor
+                    render.Name.Text = plr.Name .. " [" .. realDistance .. "m]"
+                    render.Name.Visible = true
+                else
+                    render.Name.Visible = false
+                end
             else
                 render.Box.Visible = false
                 render.Name.Visible = false
@@ -188,7 +194,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Process Clean Vector Camera Tracking Aimbot
+    -- 自瞄鎖定
     if Holding and _G.Config.Aimbot then
         local targetMatch = TargetLockSelection()
         if targetMatch and targetMatch.Character then
@@ -218,7 +224,6 @@ UserInputService.JumpRequest:Connect(function()
 end)
 
 -- ==================== SYSTEM PARALLEL COROUTINES ====================
--- Persistent Hitbox Resizer Thread
 task.spawn(function()
     while true do
         task.wait(1)
@@ -236,7 +241,6 @@ task.spawn(function()
     end
 end)
 
--- Engine Gun Config Hooks Thread
 task.spawn(function()
     while true do
         task.wait(2)
@@ -269,7 +273,6 @@ task.spawn(function()
     end
 end)
 
--- Character Persistence Control
 local speedConn = nil
 local function ApplySpeedHack(state)
     if speedConn then speedConn:Disconnect() end
@@ -278,7 +281,7 @@ local function ApplySpeedHack(state)
         if state then
             humanoid.WalkSpeed = _G.Config.WalkSpeed
             speedConn = humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                if _G.Config.SpeedHack and humanoid and humanoid.Parent then
+                if _G.Config.SpeedHack abuses and humanoid and humanoid.Parent then
                     humanoid.WalkSpeed = _G.Config.WalkSpeed
                 end
             end)
@@ -295,8 +298,8 @@ end)
 
 -- ==================== RAYFIELD PANEL PRESENTATION ====================
 local Window = Rayfield:CreateWindow({
-    Name = "Quotas Hub V5 ULTIMATE",
-    LoadingTitle = "Assembling Fresh Architecture...",
+    Name = "Quotas Hub V5 精簡版",
+    LoadingTitle = "Loading Custom Architecture...",
     LoadingSubtitle = "by Quotas",
     ConfigurationSaving = { Enabled = false }
 })
@@ -305,9 +308,11 @@ local CombatTab = Window:CreateTab("Combat", nil)
 local MovementTab = Window:CreateTab("Movement", nil)
 local WeaponsTab = Window:CreateTab("Weapons", nil)
 
--- Combat Components
-CombatTab:CreateToggle({ Name = "Enable Scale-Perfect ESP", CurrentValue = _G.Config.ESP, Callback = function(v) _G.Config.ESP = v end })
-CombatTab:CreateToggle({ Name = "Team Filter", CurrentValue = _G.Config.TeamCheck, Callback = function(v) _G.Config.TeamCheck = v end })
+-- Combat Components（獨立開關）
+CombatTab:CreateToggle({ Name = "Show Box ESP (方框)", CurrentValue = _G.Config.BoxESP, Callback = function(v) _G.Config.BoxESP = v end })
+CombatTab:CreateToggle({ Name = "Show Name & Dist ESP (名字/距離)", CurrentValue = _G.Config.NameESP, Callback = function(v) _G.Config.NameESP = v end })
+CombatTab:CreateToggle({ Name = "Team Filter (過濾隊友)", CurrentValue = _G.Config.TeamCheck, Callback = function(v) _G.Config.TeamCheck = v end })
+
 CombatTab:CreateToggle({ Name = "Camera Lock Aimbot (RMB)", CurrentValue = _G.Config.Aimbot, Callback = function(v) _G.Config.Aimbot = v end })
 CombatTab:CreateToggle({ Name = "Render Center FOV", CurrentValue = _G.Config.FOVCircle, Callback = function(v) _G.Config.FOVCircle = v end })
 CombatTab:CreateSlider({ Name = "Center FOV Radius", Range = {30, 400}, Increment = 5, CurrentValue = _G.Config.FOVSize, Callback = function(v) _G.Config.FOVSize = v end })
@@ -325,4 +330,4 @@ WeaponsTab:CreateToggle({ Name = "Infinite Reserves", CurrentValue = _G.Config.I
 WeaponsTab:CreateToggle({ Name = "Overclock FireRate", CurrentValue = _G.Config.FireRateMod, Callback = function(v) _G.Config.FireRateMod = v end })
 WeaponsTab:CreateToggle({ Name = "Nullify Recoil & Spread", CurrentValue = _G.Config.RecoilMod, Callback = function(v) _G.Config.RecoilMod = v end })
 
-Rayfield:Notify({ Title = "Quotas Hub V5 UNIFIED", Content = "Brand new framework loaded flawlessly!", Duration = 3 })
+Rayfield:Notify({ Title = "Quotas Hub V5", Content = "精細化控制加載完成！", Duration = 3 })
