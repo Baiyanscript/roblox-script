@@ -1,0 +1,328 @@
+-- ==================== LIBRARY INITIALIZATION ====================
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Service References
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+-- ==================== PREMIUM CONFIGURATION ====================
+_G.Config = {
+    ESP = false,
+    TeamCheck = true,
+    Aimbot = false,
+    FOVCircle = true,
+    FOVSize = 90,
+    Sensitivity = 0.05, -- Direct radian lerp modifier
+    AimPart = "Head",
+    SilentAim = false,
+    HitboxSize = 12,
+    
+    -- Character & Weapon Modifiers
+    InfiniteJump = false,
+    SpeedHack = false,
+    WalkSpeed = 100,
+    InfAmmo = false,
+    FireRateMod = false,
+    RecoilMod = false,
+}
+
+local Holding = false
+local ESP_Registry = {}
+
+-- ==================== FORCE STABLE FOV (ABSOLUTE CENTER) ====================
+local CenterFOV = Drawing.new("Circle")
+CenterFOV.Visible = _G.Config.FOVCircle
+CenterFOV.Radius = _G.Config.FOVSize
+CenterFOV.Color = Color3.fromRGB(255, 65, 65)
+CenterFOV.Thickness = 1.5
+CenterFOV.Filled = false
+CenterFOV.NumSides = 64
+
+local function GetScreenCenter()
+    return Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+end
+
+-- ==================== ENGINE-LEVEL DRAWING ESP SYSTEM ====================
+local function CleanESP(plr)
+    if ESP_Registry[plr] then
+        pcall(function() ESP_Registry[plr].Box:Remove() end)
+        pcall(function() ESP_Registry[plr].Name:Remove() end)
+        ESP_Registry[plr] = nil
+    end
+end
+
+local function ConstructESP(plr)
+    if plr == LocalPlayer then return end
+    CleanESP(plr) -- Wipe existing allocations to prevent ghost threads
+
+    local Box = Drawing.new("Square")
+    Box.Visible = false
+    Box.Color = Color3.fromRGB(255, 65, 65)
+    Box.Thickness = 1.5
+    Box.Filled = false
+
+    local Name = Drawing.new("Text")
+    Name.Visible = false
+    Name.Color = Color3.fromRGB(255, 255, 255)
+    Name.Size = 13
+    Name.Center = true
+    Name.Outline = true
+
+    ESP_Registry[plr] = { Box = Box, Name = Name }
+end
+
+local function HookPlayer(plr)
+    if plr == LocalPlayer then return end
+    ConstructESP(plr)
+    plr.CharacterAdded:Connect(function()
+        task.wait(0.2) -- Safe engine synchronization delay
+        ConstructESP(plr)
+    end)
+end
+
+-- Track Active Session
+for _, plr in ipairs(Players:GetPlayers()) do HookPlayer(plr) end
+Players.PlayerAdded:Connect(HookPlayer)
+Players.PlayerRemoving:Connect(CleanESP)
+
+-- ==================== INSTANT RE-SCAN MECHANISM (ANTI-LEAK) ====================
+task.spawn(function()
+    while true do
+        task.wait(1.0) -- Force audit tracking states across instances
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and not ESP_Registry[plr] then
+                HookPlayer(plr)
+            end
+        end
+    end
+end)
+
+-- ==================== TARGET ACQUISITION (CENTER METRIC) ====================
+local function TargetLockSelection()
+    local lockedTarget = nil
+    local shortestRadius = _G.Config.FOVSize
+    local screenCenter = GetScreenCenter()
+    
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            if _G.Config.TeamCheck and plr.Team == LocalPlayer.Team then continue end
+            
+            local character = plr.Character
+            if not character then continue end
+            local root = character:FindFirstChild("HumanoidRootPart")
+            local hum = character:FindFirstChildOfClass("Humanoid")
+            if not root or not hum or hum.Health <= 0 then continue end
+            
+            local screenPosition, visibleOnViewport = Camera:WorldToScreenPoint(root.Position)
+            if not visibleOnViewport then continue end
+            
+            local distanceToCenter = (Vector2.new(screenPosition.X, screenPosition.Y) - screenCenter).Magnitude
+            if distanceToCenter < shortestRadius then
+                shortestRadius = distanceToCenter
+                lockedTarget = plr
+            end
+        end
+    end
+    return lockedTarget
+end
+
+-- ==================== CORE PIPELINE RENDERING ====================
+RunService.RenderStepped:Connect(function()
+    -- Sync FOV Profile
+    local midPoint = GetScreenCenter()
+    CenterFOV.Position = midPoint
+    CenterFOV.Radius = _G.Config.FOVSize
+    CenterFOV.Visible = _G.Config.FOVCircle
+
+    -- Process Dynamic Screen Scaling ESP
+    for plr, render in pairs(ESP_Registry) do
+        if not plr or not Players:FindFirstChild(plr.Name) then
+            CleanESP(plr)
+            continue
+        end
+
+        local character = plr.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        local hum = character and character:FindFirstChildOfClass("Humanoid")
+        
+        local validTarget = hrp and (hum == nil or hum.Health > 0)
+        local teamAffiliation = (plr.Team and LocalPlayer.Team and plr.Team == LocalPlayer.Team)
+        local evaluateVisibility = _G.Config.ESP and validTarget and (not _G.Config.TeamCheck or not teamAffiliation)
+
+        if evaluateVisibility then
+            local rootPos, onViewport = Camera:WorldToViewportPoint(hrp.Position)
+            
+            if onViewport then
+                -- Precise 3D Extents Extraction Vector Mechanics
+                local highCap = Camera:WorldToViewportPoint(hrp.Position + Vector3.new(0, 2.4, 0))
+                local lowCap = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3.0, 0))
+                
+                local boxHeight = math.abs(lowCap.Y - highCap.Y)
+                local boxWidth = boxHeight / 1.65 -- Perfect character framing index
+                local teamColor = plr.TeamColor.Color
+
+                -- Update 2D Square Layout properties
+                render.Box.Size = Vector2.new(boxWidth, boxHeight)
+                render.Box.Position = Vector2.new(rootPos.X - (boxWidth / 2), highCap.Y)
+                render.Box.Color = teamColor
+                render.Box.Visible = true
+
+                -- Update Text Layout elements
+                local realDistance = math.floor((Camera.CFrame.Position - hrp.Position).Magnitude)
+                render.Name.Position = Vector2.new(rootPos.X, highCap.Y - 16)
+                render.Name.Color = teamColor
+                render.Name.Text = plr.Name .. " [" .. realDistance .. "m]"
+                render.Name.Visible = true
+            else
+                render.Box.Visible = false
+                render.Name.Visible = false
+            end
+        else
+            render.Box.Visible = false
+            render.Name.Visible = false
+        end
+    end
+
+    -- Process Clean Vector Camera Tracking Aimbot
+    if Holding and _G.Config.Aimbot then
+        local targetMatch = TargetLockSelection()
+        if targetMatch and targetMatch.Character then
+            local executionNode = targetMatch.Character:FindFirstChild(_G.Config.AimPart)
+            if executionNode then
+                local transformMatrix = CFrame.new(Camera.CFrame.Position, executionNode.Position)
+                Camera.CFrame = Camera.CFrame:Lerp(transformMatrix, _G.Config.Sensitivity)
+            end
+        end
+    end
+end)
+
+-- ==================== HARDWARE CONTROL ASSIGNMENTS ====================
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = true end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = false end
+end)
+
+UserInputService.JumpRequest:Connect(function()
+    if _G.Config.InfiniteJump then
+        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end
+    end
+end)
+
+-- ==================== SYSTEM PARALLEL COROUTINES ====================
+-- Persistent Hitbox Resizer Thread
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if _G.Config.SilentAim then
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= LocalPlayer and plr.Character then
+                    if _G.Config.TeamCheck and plr.Team == LocalPlayer.Team then continue end
+                    local root = plr.Character:FindFirstChild("HumanoidRootPart")
+                    local head = plr.Character:FindFirstChild("Head")
+                    if root then root.Size = Vector3.new(_G.Config.HitboxSize, _G.Config.HitboxSize, _G.Config.HitboxSize) root.CanCollide = false end
+                    if head then head.Size = Vector3.new(_G.Config.HitboxSize, _G.Config.HitboxSize, _G.Config.HitboxSize) head.CanCollide = false end
+                end
+            end
+        end
+    end
+end)
+
+-- Engine Gun Config Hooks Thread
+task.spawn(function()
+    while true do
+        task.wait(2)
+        local repStorage = game:GetService("ReplicatedStorage")
+        local weapons = repStorage:FindFirstChild("Weapons")
+        
+        if weapons then
+            for _, desc in ipairs(weapons:GetDescendants()) do
+                if desc:IsA("ValueBase") then
+                    if _G.Config.FireRateMod then
+                        if desc.Name == "Auto" then desc.Value = true
+                        elseif desc.Name == "FireRate" then desc.Value = 0.02 end
+                    end
+                    if _G.Config.RecoilMod and (desc.Name == "RecoilControl" or desc.Name == "MaxSpread") then
+                        desc.Value = 0
+                    end
+                end
+            end
+        end
+        
+        if _G.Config.InfAmmo then
+            local gui = LocalPlayer:FindFirstChild("PlayerGui")
+            local clientVars = gui and gui:FindFirstChild("GUI") and gui.GUI:FindFirstChild("Client") and gui.GUI.Client:FindFirstChild("Variables")
+            if clientVars then
+                local a1, a2 = clientVars:FindFirstChild("ammocount"), clientVars:FindFirstChild("ammocount2")
+                if a1 then a1.Value = 999 end
+                if a2 then a2.Value = 999 end
+            end
+        end
+    end
+end)
+
+-- Character Persistence Control
+local speedConn = nil
+local function ApplySpeedHack(state)
+    if speedConn then speedConn:Disconnect() end
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        if state then
+            humanoid.WalkSpeed = _G.Config.WalkSpeed
+            speedConn = humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if _G.Config.SpeedHack and humanoid and humanoid.Parent then
+                    humanoid.WalkSpeed = _G.Config.WalkSpeed
+                end
+            end)
+        else
+            humanoid.WalkSpeed = 16
+        end
+    end
+end
+
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(0.6)
+    if _G.Config.SpeedHack then ApplySpeedHack(true) end
+end)
+
+-- ==================== RAYFIELD PANEL PRESENTATION ====================
+local Window = Rayfield:CreateWindow({
+    Name = "Quotas Hub V5 ULTIMATE",
+    LoadingTitle = "Assembling Fresh Architecture...",
+    LoadingSubtitle = "by Quotas",
+    ConfigurationSaving = { Enabled = false }
+})
+
+local CombatTab = Window:CreateTab("Combat", nil)
+local MovementTab = Window:CreateTab("Movement", nil)
+local WeaponsTab = Window:CreateTab("Weapons", nil)
+
+-- Combat Components
+CombatTab:CreateToggle({ Name = "Enable Scale-Perfect ESP", CurrentValue = _G.Config.ESP, Callback = function(v) _G.Config.ESP = v end })
+CombatTab:CreateToggle({ Name = "Team Filter", CurrentValue = _G.Config.TeamCheck, Callback = function(v) _G.Config.TeamCheck = v end })
+CombatTab:CreateToggle({ Name = "Camera Lock Aimbot (RMB)", CurrentValue = _G.Config.Aimbot, Callback = function(v) _G.Config.Aimbot = v end })
+CombatTab:CreateToggle({ Name = "Render Center FOV", CurrentValue = _G.Config.FOVCircle, Callback = function(v) _G.Config.FOVCircle = v end })
+CombatTab:CreateSlider({ Name = "Center FOV Radius", Range = {30, 400}, Increment = 5, CurrentValue = _G.Config.FOVSize, Callback = function(v) _G.Config.FOVSize = v end })
+CombatTab:CreateSlider({ Name = "Smooth Lock Factor", Range = {1, 10}, Increment = 1, CurrentValue = 5, Callback = function(v) _G.Config.Sensitivity = (11 - v) * 0.02 end })
+CombatTab:CreateDropdown({ Name = "Tracking Node Target", Options = {"Head", "HumanoidRootPart"}, CurrentOption = {_G.Config.AimPart}, Callback = function(v) _G.Config.AimPart = v[1] end })
+CombatTab:CreateToggle({ Name = "Hitbox Expander (Silent Aim)", CurrentValue = _G.Config.SilentAim, Callback = function(v) _G.Config.SilentAim = v end })
+
+-- Movement Components
+MovementTab:CreateToggle({ Name = "Infinite Jump", CurrentValue = _G.Config.InfiniteJump, Callback = function(v) _G.Config.InfiniteJump = v end })
+MovementTab:CreateToggle({ Name = "Velocity Speed Hack", CurrentValue = _G.Config.SpeedHack, Callback = function(v) _G.Config.SpeedHack = v ApplySpeedHack(v) end })
+MovementTab:CreateSlider({ Name = "Custom Speed Modifier", Range = {16, 200}, Increment = 2, CurrentValue = _G.Config.WalkSpeed, Callback = function(v) _G.Config.WalkSpeed = v if _G.Config.SpeedHack then ApplySpeedHack(true) end end })
+
+-- Weapon Components
+WeaponsTab:CreateToggle({ Name = "Infinite Reserves", CurrentValue = _G.Config.InfAmmo, Callback = function(v) _G.Config.InfAmmo = v end })
+WeaponsTab:CreateToggle({ Name = "Overclock FireRate", CurrentValue = _G.Config.FireRateMod, Callback = function(v) _G.Config.FireRateMod = v end })
+WeaponsTab:CreateToggle({ Name = "Nullify Recoil & Spread", CurrentValue = _G.Config.RecoilMod, Callback = function(v) _G.Config.RecoilMod = v end })
+
+Rayfield:Notify({ Title = "Quotas Hub V5 UNIFIED", Content = "Brand new framework loaded flawlessly!", Duration = 3 })
