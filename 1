@@ -1,0 +1,32 @@
+-- 极简方框测试（仅针对第一个其他玩家）
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local localPlayer = Players.LocalPlayer
+local testBox
+
+RunService.RenderStepped:Connect(function()
+    local target
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= localPlayer then target = p break end
+    end
+    if not target or not target.Character or not target.Character.PrimaryPart then
+        if testBox then testBox.Visible = false end
+        return
+    end
+    local head = target.Character.Head
+    if not head then return end
+    local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+    if onScreen then
+        if not testBox then testBox = Drawing.new("Square") end
+        testBox.Size = Vector2.new(50, 50)
+        testBox.Position = Vector2.new(pos.X - 25, pos.Y - 50)
+        testBox.Thickness = 2
+        testBox.Color = Color3.fromRGB(255, 0, 0)
+        testBox.Filled = false
+        testBox.Visible = true
+    elseif testBox then
+        testBox.Visible = false
+    end
+end)
+print("极简方框测试已运行，如果屏幕上有红色方框跟随其他玩家，说明 Drawing API 正常。")
