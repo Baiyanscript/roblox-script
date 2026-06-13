@@ -1,0 +1,165 @@
+--[[
+    具備 FOV 視野調整的瞄準輔助（Aim Assist）
+    適用於 Delta 執行器
+    需先載入 Rayfield 函式庫
+]]
+
+-- 載入 Rayfield UI（使用有效連結）
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- 預設參數
+local AIM_ASSIST_ENABLED = true      -- 是否啟用
+local MAX_DISTANCE = 200             -- 最大追蹤距離（遊戲單位）
+local AIM_FOV = 30                   -- 視野範圍（角度，0~90）
+local STRENGTH = 0.5                 -- 輔助強度 (0~1)
+
+-- 取得所有敵方玩家（自動過濾隊伍）
+local function GetEnemies()
+    local enemies = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local team = player.Team
+            if team ~= LocalPlayer.Team or team == nil then
+                table.insert(enemies, player.Character)
+            end
+        end
+    end
+    return enemies
+end
+
+-- 計算目標方向與攝影機正前方的水平＋垂直角度差（取最大值）
+local function GetAngleToTarget(targetPos)
+    local cameraCF = Camera.CFrame
+    local cameraPos = cameraCF.Position
+    local toTarget = (targetPos - cameraPos).Unit
+    local forward = cameraCF.LookVector
+    
+    -- 水平角度差（度）
+    local horizontalAngle = math.deg(math.acos(math.clamp(forward:Dot(toTarget), -1, 1)))
+    
+    -- 也可以另外算垂直角度，但為了簡化且符合一般 FPS 習慣，直接使用綜合角度差
+    return horizontalAngle
+end
+
+-- 找出視野 (FOV) 內且距離最近的敵人
+local function GetClosestEnemyInFOV()
+    local closestEnemy = nil
+    local closestDistance = MAX_DISTANCE
+    local smallestAngle = AIM_FOV  -- 只接受角度 ≤ AIM_FOV 的目標
+
+    for _, enemyChar in ipairs(GetEnemies()) do
+        local rootPart = enemyChar:FindFirstChild("HumanoidRootPart") or enemyChar:FindFirstChild("Head")
+        if rootPart then
+            local targetPos = rootPart.Position
+            local distance = (Camera.CFrame.Position - targetPos).Magnitude
+            if distance <= MAX_DISTANCE then
+                local angle = GetAngleToTarget(targetPos)
+                if angle <= smallestAngle then
+                    smallestAngle = angle
+                    closestDistance = distance
+                    closestEnemy = rootPart
+                end
+            end
+        end
+    end
+    return closestEnemy
+end
+
+-- 瞄準輔助核心（移動滑鼠）
+local function ApplyAimAssist()
+    if not AIM_ASSIST_ENABLED or STRENGTH <= 0 then return end
+    -- 僅在按住右鍵瞄準時生效（可視遊戲調整按鍵）
+    if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then return end
+
+    local targetPart = GetClosestEnemyInFOV()
+    if not targetPart then return end
+
+    -- 將敵人世界座標轉為螢幕座標
+    local targetScreen, onScreen = Camera:WorldToScreenPoint(targetPart.Position)
+    if not onScreen then return end
+
+    local mouse = LocalPlayer:GetMouse()
+    local currentMousePos = Vector2.new(mouse.X, mouse.Y)
+    local targetMousePos = Vector2.new(targetScreen.X, targetScreen.Y)
+    
+    -- 計算需要移動的像素差，再乘上強度
+    local delta = (targetMousePos - currentMousePos) * STRENGTH
+
+    -- 移動滑鼠（Delta 執行器專用函式）
+    mousemoverel(delta.X, delta.Y)
+    -- 若使用其他執行器可替換為 mouse_move(delta.X, delta.Y)
+end
+
+-- 每幀執行
+RunService.RenderStepped:Connect(ApplyAimAssist)
+
+-- ==================== Rayfield UI（台灣繁體中文） ====================
+local Window = Rayfield:CreateWindow({
+    Name = "瞄準輔助",
+    LoadingTitle = "正在載入瞄準輔助",
+    LoadingSubtitle = "請稍候...",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "AimAssistSettings",
+        FileName = "Config"
+    }
+})
+
+local MainTab = Window:CreateTab("輔助設定")
+
+-- 啟用／關閉開關
+MainTab:CreateToggle({
+    Name = "啟用瞄準輔助",
+    CurrentValue = AIM_ASSIST_ENABLED,
+    Flag = "AimAssistEnabled",
+    Callback = function(Value)
+        AIM_ASSIST_ENABLED = Value
+    end
+})
+
+-- 輔助強度（0% ~ 100%）
+MainTab:CreateSlider({
+    Name = "輔助強度",
+    Range = {0, 100},
+    Increment = 1,
+    Suffix = "%",
+    CurrentValue = STRENGTH * 100,
+    Flag = "AimStrength",
+    Callback = function(Value)
+        STRENGTH = Value / 100
+    end
+})
+
+-- 視野範圍 FOV（角度）
+MainTab:CreateSlider({
+    Name = "視野範圍 (FOV)",
+    Range = {0, 90},
+    Increment = 1,
+    Suffix = "°",
+    CurrentValue = AIM_FOV,
+    Flag = "AimFOV",
+    Callback = function(Value)
+        AIM_FOV = Value
+    end
+})
+
+-- 最大追蹤距離
+MainTab:CreateSlider({
+    Name = "最大追蹤距離",
+    Range = {50, 500},
+    Increment = 10,
+    Suffix = "u",
+    CurrentValue = MAX_DISTANCE,
+    Flag = "MaxDistance",
+    Callback = function(Value)
+        MAX_DISTANCE = Value
+    end
+})
+
+print("瞄準輔助已載入，FOV 視野調整功能已啟用。")
