@@ -1,4 +1,4 @@
--- ==================== MOBILE GEN 10.1: WIREFRAME AUTO ARCHITECTURE ====================
+-- ==================== MOBILE GEN 12: RAYFIELD WIREFRAME AUTO-LOCK ====================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
@@ -7,7 +7,7 @@ local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
--- Global Architecture State Config
+-- 全域組態設定（手機硬體優化預設值）
 _G.Config = {
     BoxESP = false,
     NameESP = false,
@@ -16,7 +16,7 @@ _G.Config = {
     Aimbot = false,
     FOVCircle = true,
     FOVSize = 135,
-    Sensitivity = 0.22,  -- 手機防劇烈抖動的最佳平衡值
+    Sensitivity = 0.22,  -- 手機最穩防震自瞄平滑度 (0.1 ~ 0.3 最舒適)
     AimPart = "Head",
     SilentAim = false,
     HitboxSize = 12,
@@ -31,14 +31,14 @@ _G.Config = {
 
 local RenderRegistry = {}
 
--- ==================== SCREEN HARDWARE MATRICES (⚠️ 修正空心設定) ====================
+-- ==================== SCREEN HARDWARE MATRICES (⚠️ 強制空心圓框) ====================
 local HardwareCenterCircle = Drawing.new("Circle")
 HardwareCenterCircle.Visible = _G.Config.FOVCircle
 HardwareCenterCircle.Radius = _G.Config.FOVSize
 HardwareCenterCircle.Color = Color3.fromRGB(0, 240, 255) -- 動態冰藍色
-HardwareCenterCircle.Thickness = 2                         -- 線條粗細
+HardwareCenterCircle.Thickness = 2                         -- 外框粗細
 
--- 【關鍵修正】強制重設手機端執行器的填滿 Bug，確保只有外框
+-- 【核心修復】防止手機端執行器渲染成實心藍色
 HardwareCenterCircle.Filled = false                        
 HardwareCenterCircle.Transparency = 1                      
 
@@ -46,7 +46,7 @@ local function ComputeAbsoluteCenter()
     return Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 end
 
--- ==================== RE-ARCHITECTED MEMORY CLEAN LIFE-CYCLE ====================
+-- ==================== PERFORMANCE LIFE-CYCLE MANAGEMENT ====================
 local function DestroyEntityAssets(plr)
     if RenderRegistry[plr] then
         pcall(function() RenderRegistry[plr].Box:Remove() end)
@@ -90,7 +90,7 @@ for _, player in ipairs(Players:GetPlayers()) do SyncPlayerSession(player) end
 Players.PlayerAdded:Connect(SyncPlayerSession)
 Players.PlayerRemoving:Connect(DestroyEntityAssets)
 
--- ==================== HARDWARE-ORIENTED SEARCH PIPELINE ====================
+-- ==================== SCREEN SPACE SEARCH ENGINE (MOBILE PURE VECTOR) ====================
 local function EvaluateScreenSpaceTargets()
     local displayPivot = ComputeAbsoluteCenter()
     local focalChampion = nil
@@ -106,9 +106,11 @@ local function EvaluateScreenSpaceTargets()
             if structuralRoot and mechanicalHum and mechanicalHum.Health > 0 and objectiveBone then
                 if not _G.Config.TeamCheck or (targetPlayer.Team ~= LocalPlayer.Team) then
                     
+                    -- 改用 WorldToScreenPoint 完美避開手機 UI 像素干擾
                     local calculatedVector, isRenderedOnDisplay = Camera:WorldToScreenPoint(objectiveBone.Position)
                     
                     if isRenderedOnDisplay then
+                        -- 計算「玩家」到「螢幕絕對中心點」的純二維距離
                         local linearMagnitude = (displayPivot - Vector2.new(calculatedVector.X, calculatedVector.Y)).Magnitude
                         
                         if linearMagnitude < boundaryDelta then
@@ -123,9 +125,9 @@ local function EvaluateScreenSpaceTargets()
     return focalChampion
 end
 
--- ==================== RENDERING COMPOSITOR ENGINE ====================
+-- ==================== RENDERING & PURE AUTO LOCK COMPOSITOR ====================
 RunService.RenderStepped:Connect(function()
-    -- 每幀重複鎖定空心狀態，防止某些執行器自動重置
+    -- 每幀在螢幕中心重畫空心圓框，防止部分手機執行器將其自動重置為實心
     local structuralCenter = ComputeAbsoluteCenter()
     HardwareCenterCircle.Position = structuralCenter
     HardwareCenterCircle.Radius = _G.Config.FOVSize
@@ -133,7 +135,7 @@ RunService.RenderStepped:Connect(function()
     HardwareCenterCircle.Filled = false 
     HardwareCenterCircle.Transparency = 1
 
-    -- ESP 二維渲染
+    -- ESP 二維轉換渲染
     for playerKey, assetGroup in pairs(RenderRegistry) do
         if not playerKey or not Players:FindFirstChild(playerKey.Name) then
             DestroyEntityAssets(playerKey)
@@ -187,20 +189,22 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- ==================== ANTI-SHAKE FULL AUTOMATIC CAMERA TRACKING ====================
+    -- ==================== 全自動死區追蹤自瞄核心 ====================
     if _G.Config.Aimbot then
         local validTargetInstance = EvaluateScreenSpaceTargets()
         
         if validTargetInstance then
-            -- 目標進入：圓框變更為高亮暖橘色空心圓
+            -- 視覺反饋：敵人進到空心圈圈裡時，圓框瞬間變成暖橘色
             HardwareCenterCircle.Color = Color3.fromRGB(255, 120, 0)
             
             local explicitMeshPart = validTargetInstance:FindFirstChild(_G.Config.AimPart)
             if explicitMeshPart then
+                -- 引入平滑阻尼，防止手機觸控時畫面因微小指尖顫抖而劇烈晃動
                 local targetingMatrix = CFrame.new(Camera.CFrame.Position, explicitMeshPart.Position)
                 Camera.CFrame = Camera.CFrame:Lerp(targetingMatrix, _G.Config.Sensitivity)
             end
         else
+            -- 圈圈內沒人時，恢復原本的冰藍色
             HardwareCenterCircle.Color = Color3.fromRGB(0, 240, 255)
         end
     else
@@ -288,10 +292,10 @@ LocalPlayer.CharacterAdded:Connect(function()
     if _G.Config.SpeedHack then SyncHardwareWalkSpeed(true) end
 end)
 
--- ==================== CONTROLLER CANVAS INTERFACE BUILD ====================
+-- ==================== RAYFIELD CONTROLLER PANEL INTERFACE ====================
 local Window = Rayfield:CreateWindow({
-    Name = "Quotas Mobile G10.1 (Wireframe FOV)",
-    LoadingTitle = "Assembling Patched Rendering Engine...",
+    Name = "Quotas Mobile G12 (Rayfield Fix)",
+    LoadingTitle = "Assembling Screen Center Auto-Locks...",
     LoadingSubtitle = "by Quotas",
     ConfigurationSaving = { Enabled = false }
 })
@@ -300,21 +304,22 @@ local CombatTab = Window:CreateTab("Combat", nil)
 local MovementTab = Window:CreateTab("Movement", nil)
 local WeaponsTab = Window:CreateTab("Weapons", nil)
 
--- Configuration Deployment UI
+-- Combat UI Config
 CombatTab:CreateToggle({ Name = "Enable Box ESP", CurrentValue = _G.Config.BoxESP, Callback = function(s) _G.Config.BoxESP = s end })
 CombatTab:CreateToggle({ Name = "Enable Name & Dist ESP", CurrentValue = _G.Config.NameESP, Callback = function(s) _G.Config.NameESP = s end })
-CombatTab:CreateToggle({ Name = "Ignore Allied Matrix", CurrentValue = _G.Config.TeamCheck, Callback = function(s) _G.Config.TeamCheck = s end })
+CombatTab:CreateToggle({ Name = "Ignore Friendly Team", CurrentValue = _G.Config.TeamCheck, Callback = function(s) _G.Config.TeamCheck = s end })
 
-CombatTab:CreateSection("— Smart Mobile Aimbot Engine —")
-CombatTab:CreateToggle({ Name = "Active Aim Assistance", CurrentValue = _G.Config.Aimbot, Callback = function(s) _G.Config.Aimbot = s end })
-CombatTab:CreateToggle({ Name = "Render Central FOV", CurrentValue = _G.Config.FOVCircle, Callback = function(s) _G.Config.FOVCircle = s end })
+CombatTab:CreateSection("— Mobile Aimbot Engine —")
+CombatTab:CreateToggle({ Name = "Active Aim Assistance (Aimbot)", CurrentValue = _G.Config.Aimbot, Callback = function(s) _G.Config.Aimbot = s end })
+CombatTab:CreateToggle({ Name = "Render Central FOV Wireframe", CurrentValue = _G.Config.FOVCircle, Callback = function(s) _G.Config.FOVCircle = s end })
 
 CombatTab:CreateSlider({ Name = "Center FOV Radius", Range = {40, 500}, Increment = 5, CurrentValue = _G.Config.FOVSize, Callback = function(v) 
     _G.Config.FOVSize = type(v) == "table" and v[1] or v 
 end })
 
-CombatTab:CreateSlider({ Name = "Lock Smoothing (Anti-Shake Scale)", Range = {1, 10}, Increment = 1, CurrentValue = 3, Callback = function(v) 
+CombatTab:CreateSlider({ Name = "Smoothing Speed (Low = Anti-Shake)", Range = {1, 10}, Increment = 1, CurrentValue = 3, Callback = function(v) 
     local raw = type(v) == "table" and v[1] or v
+    -- 分率阻尼換算，數字越低鎖得越滑順，可有效防震顫
     _G.Config.Sensitivity = raw * 0.075
 end })
 
@@ -324,7 +329,7 @@ end })
 
 CombatTab:CreateToggle({ Name = "Volumetric Hitboxes", CurrentValue = _G.Config.SilentAim, Callback = function(s) _G.Config.SilentAim = s end })
 
--- Movement Interface
+-- Movement UI Config
 MovementTab:CreateToggle({ Name = "De-activate Gravitational Bounds", CurrentValue = _G.Config.InfiniteJump, Callback = function(s) _G.Config.InfiniteJump = s end })
 MovementTab:CreateToggle({ Name = "Enable Target Velocity", CurrentValue = _G.Config.SpeedHack, Callback = function(s) _G.Config.SpeedHack = s SyncHardwareWalkSpeed(s) end })
 MovementTab:CreateSlider({ Name = "Velocity Absolute Value", Range = {16, 200}, Increment = 2, CurrentValue = _G.Config.WalkSpeed, Callback = function(v) 
@@ -332,9 +337,9 @@ MovementTab:CreateSlider({ Name = "Velocity Absolute Value", Range = {16, 200}, 
     if _G.Config.SpeedHack then SyncHardwareWalkSpeed(true) end 
 end })
 
--- Weapon Interface
+-- Weapon UI Config
 WeaponsTab:CreateToggle({ Name = "Prevent Munition Depletion", CurrentValue = _G.Config.InfAmmo, Callback = function(s) _G.Config.InfAmmo = s end })
 WeaponsTab:CreateToggle({ Name = "Overclock Fire Engine Cycles", CurrentValue = _G.Config.FireRateMod, Callback = function(s) _G.Config.FireRateMod = s end })
 WeaponsTab:CreateToggle({ Name = "Suppress Kinetic Dispersion", CurrentValue = _G.Config.RecoilMod, Callback = function(s) _G.Config.RecoilMod = s end })
 
-Rayfield:Notify({ Title = "Mobile Gen 10.1 Deployed", Content = "FOV Circle set to pure wireframe vector.", Duration = 4 })
+Rayfield:Notify({ Title = "Mobile Fix Ready", Content = "Wireframe Center-FOV pipeline activated.", Duration = 4 })
