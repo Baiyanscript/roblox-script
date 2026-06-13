@@ -1,7 +1,7 @@
--- Load Rayfield Library safely
+-- 加载 Rayfield 库
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Service References
+-- 服务引用
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -9,33 +9,45 @@ local workspace = game:GetService("Workspace")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
--- ==================== GLOBAL CONFIGURATION ====================
+-- ==================== 全局配置 ====================
 _G.Config = {
     ESP = false,
     TeamCheck = true,
     Aimbot = false,
     FOVCircle = true,
     FOVSize = 80,
-    Sensitivity = 0.1, -- Lower = Faster, Higher = Smoother
+    Sensitivity = 0.1, -- 越低越快，越高越平滑
     AimPart = "Head",
     SilentAim = false,
     HitboxSize = 12,
     
-    -- Movement & Gun
+    -- 移动与武器
     InfiniteJump = false,
     SpeedHack = false,
     WalkSpeed = 100,
     InfAmmo = false,
+    FireRateMod = false,
+    RecoilMod = false,
 }
 
 local Holding = false
-
--- ==================== NEW DRAWING ESP SYSTEM ====================
 local ESP_Cache = {}
 
+-- ==================== 高稳定性 ESP 核心系统 ====================
+-- 清理单个玩家的所有 ESP 绘图
+local function CleanPlayerESP(plr)
+    if ESP_Cache[plr] then
+        pcall(function() ESP_Cache[plr].Box:Remove() end)
+        pcall(function() ESP_Cache[plr].Name:Remove() end)
+        ESP_Cache[plr] = nil
+    end
+end
+
+-- 为玩家创建/刷新 ESP 绘图
 local function CreateESP(plr)
     if plr == LocalPlayer then return end
-    
+    CleanPlayerESP(plr) -- 先彻底清理防止叠加残留
+
     local Box = Drawing.new("Square")
     Box.Visible = false
     Box.Color = Color3.fromRGB(255, 0, 0)
@@ -53,19 +65,23 @@ local function CreateESP(plr)
     ESP_Cache[plr] = {Box = Box, Name = Name}
 end
 
-local function RemoveESP(plr)
-    if ESP_Cache[plr] then
-        ESP_Cache[plr].Box:Remove()
-        ESP_Cache[plr].Name:Remove()
-        ESP_Cache[plr] = nil
-    end
+-- 智能监听：处理玩家中途加入、复活、或者由于延迟导致未加载完的情况
+local function MonitorPlayer(plr)
+    if plr == LocalPlayer then return end
+    CreateESP(plr)
+    
+    plr.CharacterAdded:Connect(function()
+        task.wait(0.3) -- 等待角色物理完全加载
+        CreateESP(plr)
+    end)
 end
 
-for _, plr in ipairs(Players:GetPlayers()) do CreateESP(plr) end
-Players.PlayerAdded:Connect(CreateESP)
-Players.PlayerRemoving:Connect(RemoveESP)
+-- 初始化当前房间内所有玩家
+for _, plr in ipairs(Players:GetPlayers()) do MonitorPlayer(plr) end
+Players.PlayerAdded:Connect(MonitorPlayer)
+Players.PlayerRemoving:Connect(CleanPlayerESP)
 
--- ==================== FOV CIRCLE ====================
+-- ==================== FOV 圆圈 (固定于屏幕中央) ====================
 local FovCircle = Drawing.new("Circle")
 FovCircle.Visible = _G.Config.FOVCircle
 FovCircle.Radius = _G.Config.FOVSize
@@ -74,11 +90,16 @@ FovCircle.Thickness = 1
 FovCircle.Filled = false
 FovCircle.NumSides = 64
 
--- ==================== GET CLOSEST PLAYER ====================
+-- 获取屏幕中心点坐标
+local function GetScreenCenter()
+    return Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+end
+
+-- ==================== 获取 FOV 内最近玩家 ====================
 local function GetClosestPlayer()
     local closest = nil
     local minDist = _G.Config.FOVSize
-    local mousePos = UserInputService:GetMouseLocation()
+    local centerPos = GetScreenCenter() -- 改为获取屏幕中心，配合Aimbot固定FOV
     
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
@@ -93,7 +114,7 @@ local function GetClosestPlayer()
             local screenPos, onScreen = Camera:WorldToScreenPoint(root.Position)
             if not onScreen then continue end
             
-            local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+            local dist = (Vector2.new(screenPos.X, screenPos.Y) - centerPos).Magnitude
             if dist < minDist then
                 minDist = dist
                 closest = plr
@@ -103,16 +124,22 @@ local function GetClosestPlayer()
     return closest
 end
 
--- ==================== MAIN RENDER LOOP (ESP & AIMBOT) ====================
+-- ==================== 每帧渲染主循环 ====================
 RunService.RenderStepped:Connect(function()
-    -- Update FOV Circle Position
-    local mousePos = UserInputService:GetMouseLocation()
-    FovCircle.Position = mousePos
+    -- 更新 FOV 位置和半径（保持绝对居中）
+    local screenCenter = GetScreenCenter()
+    FovCircle.Position = screenCenter
     FovCircle.Radius = _G.Config.FOVSize
     FovCircle.Visible = _G.Config.FOVCircle
 
-    -- Handle ESP rendering
+    -- ESP 渲染控制
     for plr, cache in pairs(ESP_Cache) do
+        -- 容错机制：防人跑了或者数据还没删干净崩溃
+        if not plr or not Players:FindFirstChild(plr.Name) then 
+            CleanPlayerESP(plr)
+            continue 
+        end
+
         local char = plr.Character
         local root = char and char:FindFirstChild("HumanoidRootPart")
         local humanoid = char and char:FindFirstChildOfClass("Humanoid")
@@ -126,10 +153,10 @@ RunService.RenderStepped:Connect(function()
             
             local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
             if onScreen then
-                -- Dynamically size boxes based on player distance
+                -- 动态框大小（根据玩家物理距离拉伸缩放）
                 local camDist = (Camera.CFrame.Position - root.Position).Magnitude
-                local sizeX = math.clamp(2000 / camDist, 10, 150)
-                local sizeY = math.clamp(3500 / camDist, 15, 250)
+                local sizeX = math.clamp(2000 / camDist, 10, 140)
+                local sizeY = math.clamp(3500 / camDist, 15, 240)
                 
                 cache.Box.Size = Vector2.new(sizeX, sizeY)
                 cache.Box.Position = Vector2.new(pos.X - sizeX / 2, pos.Y - sizeY / 2)
@@ -147,13 +174,12 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Handle Aimbot execution
+    -- 自瞄锁定（右键按住）
     if Holding and _G.Config.Aimbot then
         local target = GetClosestPlayer()
         if target and target.Character then
             local aimPart = target.Character:FindFirstChild(_G.Config.AimPart)
             if aimPart then
-                -- Smoothly interpolate camera view vector directly
                 local targetCFrame = CFrame.new(Camera.CFrame.Position, aimPart.Position)
                 Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, _G.Config.Sensitivity)
             end
@@ -161,7 +187,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Mouse Input Listeners
+-- 输入接收器（过滤掉打字聊天）
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
     if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = true end
@@ -170,7 +196,19 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = false end
 end)
 
--- ==================== OTHER LOOPS (Hitbox / Gun Modifications) ====================
+-- ==================== 强制防护循环（彻底消灭漏人Bug）====================
+task.spawn(function()
+    while true do
+        task.wait(2) -- 每 2 秒主动扫描一次，防止突发漏人
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and not ESP_Cache[plr] then
+                MonitorPlayer(plr)
+            end
+        end
+    end
+end)
+
+-- ==================== 其他高级功能控制循环 ====================
 task.spawn(function()
     while true do
         task.wait(1)
@@ -188,7 +226,6 @@ task.spawn(function()
     end
 end)
 
--- Infinite Ammo & FireRate Modifier loop
 task.spawn(function()
     while true do
         task.wait(2)
@@ -221,7 +258,7 @@ task.spawn(function()
     end
 end)
 
--- Movement hacks
+-- 移动与跳跃机制
 local speedConn = nil
 local function ApplySpeedHack(state)
     if speedConn then speedConn:Disconnect() end
@@ -252,10 +289,10 @@ LocalPlayer.CharacterAdded:Connect(function()
     if _G.Config.SpeedHack then ApplySpeedHack(true) end
 end)
 
--- ==================== RAYFIELD UI WINDOW ====================
+-- ==================== RAYFIELD UI 页面生成 ====================
 local Window = Rayfield:CreateWindow({
-    Name = "Quotas Hub V2",
-    LoadingTitle = "Booting Engine...",
+    Name = "Quotas Hub V3",
+    LoadingTitle = "Booting Safe Engine...",
     LoadingSubtitle = "by Quotas",
     ConfigurationSaving = { Enabled = false }
 })
@@ -264,24 +301,25 @@ local CombatTab = Window:CreateTab("Combat", nil)
 local MovementTab = Window:CreateTab("Movement", nil)
 local WeaponsTab = Window:CreateTab("Weapons", nil)
 
--- Combat UI elements
+-- Combat 选项卡
 CombatTab:CreateToggle({ Name = "Player ESP Box", CurrentValue = _G.Config.ESP, Callback = function(v) _G.Config.ESP = v end })
 CombatTab:CreateToggle({ Name = "Team Check", CurrentValue = _G.Config.TeamCheck, Callback = function(v) _G.Config.TeamCheck = v end })
 CombatTab:CreateToggle({ Name = "Camera Aimbot (Hold RMB)", CurrentValue = _G.Config.Aimbot, Callback = function(v) _G.Config.Aimbot = v end })
 CombatTab:CreateToggle({ Name = "Draw FOV Circle", CurrentValue = _G.Config.FOVCircle, Callback = function(v) _G.Config.FOVCircle = v end })
-CombatTab:CreateSlider({ Name = "FOV Radius Size", Range = {30, 300}, Increment = 5, CurrentValue = _G.Config.FOVSize, Callback = function(v) _G.Config.FOVSize = v end })
+-- 这个滑块完美调节固定在中间的 FOV 圈大小
+CombatTab:CreateSlider({ Name = "FOV Center Radius Size", Range = {30, 400}, Increment = 5, CurrentValue = _G.Config.FOVSize, Callback = function(v) _G.Config.FOVSize = v end })
 CombatTab:CreateSlider({ Name = "Aimbot Smoothness (Lerp)", Range = {1, 10}, Increment = 1, CurrentValue = 5, Callback = function(v) _G.Config.Sensitivity = (11 - v) * 0.02 end })
 CombatTab:CreateDropdown({ Name = "Target Part", Options = {"Head", "HumanoidRootPart"}, CurrentOption = {_G.Config.AimPart}, Callback = function(v) _G.Config.AimPart = v[1] end })
 CombatTab:CreateToggle({ Name = "OP Big Hitbox (Silent Aim)", CurrentValue = _G.Config.SilentAim, Callback = function(v) _G.Config.SilentAim = v end })
 
--- Movement UI elements
+-- Movement 选项卡
 MovementTab:CreateToggle({ Name = "Infinite Jump", CurrentValue = _G.Config.InfiniteJump, Callback = function(v) _G.Config.InfiniteJump = v end })
 MovementTab:CreateToggle({ Name = "Enable Speed Hack", CurrentValue = _G.Config.SpeedHack, Callback = function(v) _G.Config.SpeedHack = v ApplySpeedHack(v) end })
 MovementTab:CreateSlider({ Name = "Speed Value", Range = {16, 200}, Increment = 2, CurrentValue = _G.Config.WalkSpeed, Callback = function(v) _G.Config.WalkSpeed = v if _G.Config.SpeedHack then ApplySpeedHack(true) end end })
 
--- Weapon UI elements
+-- Weapons 选项卡
 WeaponsTab:CreateToggle({ Name = "Infinite Ammo", CurrentValue = _G.Config.InfAmmo, Callback = function(v) _G.Config.InfAmmo = v end })
 WeaponsTab:CreateToggle({ Name = "Max Fire Rate Modifier", CurrentValue = _G.Config.FireRateMod, Callback = function(v) _G.Config.FireRateMod = v end })
 WeaponsTab:CreateToggle({ Name = "Remove Recoil & Spread", CurrentValue = _G.Config.RecoilMod, Callback = function(v) _G.Config.RecoilMod = v end })
 
-Rayfield:Notify({ Title = "Quotas Hub V2", Content = "System reloaded successfully!", Duration = 3 })
+Rayfield:Notify({ Title = "Quotas Hub V3", Content = "Bug Hotfixed Successfully!", Duration = 3 })
