@@ -11,7 +11,7 @@ local LocalPlayer = Players.LocalPlayer
 
 -- ==================== 全局配置（可保存）====================
 _G.Config = {
-    ESP = false,             -- ESP 总开关
+    ESP = false,         -- ESP 总开关
     TeamCheck = true,        -- 队伍检查（不显示队友）
     Aimbot = false,          -- 自瞄开关
     FOVCircle = true,        -- 显示自瞄 FOV 圆圈
@@ -32,7 +32,7 @@ _G.Config = {
 
 -- 辅助变量
 local Holding = false
-local FovCircle = nil       -- Drawing 圆圈，稍后创建
+local FovCircle = nil       -- Drawing 圆圈
 
 -- ==================== 功能函数 ====================
 -- 无限跳跃
@@ -51,18 +51,22 @@ function ToggleInfiniteJump(state)
 end
 
 -- 加速
+local speedConn = nil
 local function ApplySpeedHack(state)
+    if speedConn then speedConn:Disconnect() end
+    
     local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if humanoid then
         if state then
             humanoid.WalkSpeed = _G.Config.WalkSpeed
-            -- 监听属性变化以维持速度
-            local conn
-            conn = humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                if _G.Config.SpeedHack then
-                    humanoid.WalkSpeed = _G.Config.WalkSpeed
+            -- 安全的监听属性变化，避免无限递归
+            speedConn = humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if _G.Config.SpeedHack and humanoid and humanoid.Parent then
+                    if humanoid.WalkSpeed ~= _G.Config.WalkSpeed then
+                        humanoid.WalkSpeed = _G.Config.WalkSpeed
+                    end
                 else
-                    conn:Disconnect()
+                    if speedConn then speedConn:Disconnect() end
                 end
             end)
         else
@@ -72,52 +76,42 @@ local function ApplySpeedHack(state)
 end
 
 -- 静默自瞄（放大 hitbox）
-local silentAimCoroutine = nil
 function ToggleSilentAim(state)
-    if silentAimCoroutine then
-        coroutine.close(silentAimCoroutine)
-        silentAimCoroutine = nil
-    end
     if state then
-        silentAimCoroutine = coroutine.create(function()
-            while true do
-                task.wait(1)
+        task.spawn(function()
+            while _G.Config.SilentAim do
+                task.wait(1) -- 每秒同步一次Hitbox
                 for _, plr in ipairs(Players:GetPlayers()) do
                     if plr ~= LocalPlayer and plr.Character then
+                        -- 队伍检查
+                        if _G.Config.TeamCheck and plr.Team == LocalPlayer.Team then 
+                            continue 
+                        end
+                        
                         local char = plr.Character
-                        local parts = {"RightUpperLeg","LeftUpperLeg","Head","HumanoidRootPart"}
+                        local parts = {"RightUpperLeg","LeftUpperLeg","Head","HumanoidRootPart","HeadHB"}
                         for _, partName in ipairs(parts) do
                             local part = char:FindFirstChild(partName)
-                            if part then
+                            if part and part:IsA("BasePart") then
                                 part.CanCollide = false
-                                part.Transparency = 0.8  -- 避免全透明导致看不见
+                                part.Transparency = 0.8
                                 part.Size = Vector3.new(13,13,13)
                             end
-                        end
-                        -- 兼容 HeadHB（原脚本中的奇怪名称）
-                        local headHB = char:FindFirstChild("HeadHB")
-                        if headHB then
-                            headHB.CanCollide = false
-                            headHB.Transparency = 0.8
-                            headHB.Size = Vector3.new(13,13,13)
                         end
                     end
                 end
             end
         end)
-        coroutine.resume(silentAimCoroutine)
     end
 end
 
 -- 无限弹药
-local ammoLoop = nil
 function ToggleInfAmmo(state)
-    if ammoLoop then task.cancel(ammoLoop) end
     if state then
-        ammoLoop = task.spawn(function()
-            while true do
-                task.wait()
-                local gui = LocalPlayer.PlayerGui
+        task.spawn(function()
+            while _G.Config.InfAmmo do
+                task.wait(0.1)
+                local gui = LocalPlayer:FindFirstChild("PlayerGui")
                 if gui and gui:FindFirstChild("GUI") then
                     local vars = gui.GUI.Client:FindFirstChild("Variables")
                     if vars then
@@ -133,21 +127,21 @@ function ToggleInfAmmo(state)
 end
 
 -- 射速修改
-local fireRateLoop = nil
 function ToggleFireRateMod(state)
-    if fireRateLoop then task.cancel(fireRateLoop) end
     if state then
-        fireRateLoop = task.spawn(function()
-            while true do
-                task.wait(5)
+        task.spawn(function()
+            while _G.Config.FireRateMod do
+                task.wait(3)
                 local repStorage = game:GetService("ReplicatedStorage")
                 local weapons = repStorage:FindFirstChild("Weapons")
                 if weapons then
                     for _, desc in ipairs(weapons:GetDescendants()) do
-                        if desc.Name == "Auto" then
-                            desc.Value = true
-                        elseif desc.Name == "FireRate" then
-                            desc.Value = 0.02
+                        if desc:IsA("ValueBase") then
+                            if desc.Name == "Auto" then
+                                desc.Value = true
+                            elseif desc.Name == "FireRate" then
+                                desc.Value = 0.02
+                            end
                         end
                     end
                 end
@@ -157,21 +151,19 @@ function ToggleFireRateMod(state)
 end
 
 -- 后坐力修改
-local recoilLoop = nil
 function ToggleRecoilMod(state)
-    if recoilLoop then task.cancel(recoilLoop) end
     if state then
-        recoilLoop = task.spawn(function()
-            while true do
-                task.wait(5)
+        task.spawn(function()
+            while _G.Config.RecoilMod do
+                task.wait(3)
                 local repStorage = game:GetService("ReplicatedStorage")
                 local weapons = repStorage:FindFirstChild("Weapons")
                 if weapons then
                     for _, desc in ipairs(weapons:GetDescendants()) do
-                        if desc.Name == "RecoilControl" then
-                            desc.Value = 0
-                        elseif desc.Name == "MaxSpread" then
-                            desc.Value = 0
+                        if desc:IsA("ValueBase") then
+                            if desc.Name == "RecoilControl" or desc.Name == "MaxSpread" then
+                                desc.Value = 0
+                            end
                         end
                     end
                 end
@@ -192,7 +184,7 @@ nameLabel.Parent = espBillboard
 nameLabel.Size = UDim2.new(1,0,1,0)
 nameLabel.BackgroundTransparency = 1
 nameLabel.TextColor3 = Color3.new(1,1,1)
-nameLabel.TextSize = 9
+nameLabel.TextSize = 12  -- 微调大小确保清晰
 nameLabel.Font = Enum.Font.Ubuntu
 nameLabel.TextTransparency = 1
 
@@ -209,46 +201,32 @@ boxImage.BackgroundTransparency = 1
 boxImage.Image = "http://www.roblox.com/asset/?id=16946608585"
 boxImage.ImageTransparency = 1
 
--- 自动添加 ESP 到新玩家/角色
 local function AddESPToPlayer(plr)
     if plr == LocalPlayer then return end
-    plr.CharacterAdded:Connect(function(char)
+    
+    local function setupCharacter(char)
         task.wait(0.5)
-        local head = char:FindFirstChild("Head")
-        local root = char:FindFirstChild("HumanoidRootPart")
+        if not char:Parent then return end
+        
+        local head = char:WaitForChild("Head", 5)
+        local root = char:WaitForChild("HumanoidRootPart", 5)
+        
         if head and not head:FindFirstChild("ESP_Name") then
             local nameClone = espBillboard:Clone()
             nameClone.Parent = head
-            nameClone.Name = "ESP_Name"
             nameClone:FindFirstChildOfClass("TextLabel").Text = plr.Name
         end
         if root and not root:FindFirstChild("ESP_Box") then
             local boxClone = boxBillboard:Clone()
             boxClone.Parent = root
-            boxClone.Name = "ESP_Box"
-        end
-    end)
-    if plr.Character then
-        local char = plr.Character
-        local head = char:FindFirstChild("Head")
-        local root = char:FindFirstChild("HumanoidRootPart")
-        if head and not head:FindFirstChild("ESP_Name") then
-            local nameClone = espBillboard:Clone()
-            nameClone.Parent = head
-            nameClone.Name = "ESP_Name"
-            nameClone:FindFirstChildOfClass("TextLabel").Text = plr.Name
-        end
-        if root and not root:FindFirstChild("ESP_Box") then
-            local boxClone = boxBillboard:Clone()
-            boxClone.Parent = root
-            boxClone.Name = "ESP_Box"
         end
     end
+
+    plr.CharacterAdded:Connect(setupCharacter)
+    if plr.Character then setupCharacter(plr.Character) end
 end
 
-for _, plr in ipairs(Players:GetPlayers()) do
-    AddESPToPlayer(plr)
-end
+for _, plr in ipairs(Players:GetPlayers()) do AddESPToPlayer(plr) end
 Players.PlayerAdded:Connect(AddESPToPlayer)
 
 -- 队伍检查与 ESP 可见性更新
@@ -259,19 +237,22 @@ local function UpdateESPVisibility()
             local root = plr.Character:FindFirstChild("HumanoidRootPart")
             local nameGui = head and head:FindFirstChild("ESP_Name")
             local boxGui = root and root:FindFirstChild("ESP_Box")
+            
             if nameGui and boxGui then
                 local show = _G.Config.ESP
-                if show and _G.Config.TeamCheck then
-                    if plr.Team == LocalPlayer.Team then
-                        show = false
-                    end
+                if show and _G.Config.TeamCheck and plr.Team == LocalPlayer.Team then
+                    show = false
                 end
+                
+                local label = nameGui:FindFirstChildOfClass("TextTransparency") or nameGui:FindFirstChildOfClass("TextLabel")
+                local img = boxGui:FindFirstChildOfClass("ImageLabel")
+                
                 if show then
-                    nameGui:FindFirstChildOfClass("TextLabel").TextTransparency = 0
-                    boxGui.ImageLabel.ImageTransparency = 0.43
+                    if label then label.TextTransparency = 0 end
+                    if img then img.ImageTransparency = 0.43 end
                 else
-                    nameGui:FindFirstChildOfClass("TextLabel").TextTransparency = 1
-                    boxGui.ImageLabel.ImageTransparency = 1
+                    if label then label.TextTransparency = 1 end
+                    if img then img.ImageTransparency = 1 end
                 end
             end
         end
@@ -279,37 +260,37 @@ local function UpdateESPVisibility()
 end
 
 -- ==================== 自瞄相关 ====================
--- 创建 FOV 圆圈（Drawing）
 local function CreateFOVCircle()
-    if FovCircle then FovCircle:Remove() end
+    if FovCircle then pcall(function() FovCircle:Remove() end) end
     FovCircle = Drawing.new("Circle")
     FovCircle.Visible = _G.Config.FOVCircle
     FovCircle.Radius = _G.Config.FOVSize
     FovCircle.Color = _G.Config.CircleColor
-    FovCircle.Thickness = 0
+    FovCircle.Thickness = 1
     FovCircle.Filled = false
     FovCircle.NumSides = 64
-    FovCircle.Transparency = _G.Config.CircleTransparency
+    FovCircle.Transparency = 1 - _G.Config.CircleTransparency
 end
 CreateFOVCircle()
 
--- 获取 FOV 内最近玩家
 local function GetClosestPlayer()
     local closest = nil
     local minDist = _G.Config.FOVSize
     local mousePos = UserInputService:GetMouseLocation()
+    
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
-            if _G.Config.TeamCheck and plr.Team == LocalPlayer.Team then
-                continue
-            end
+            if _G.Config.TeamCheck and plr.Team == LocalPlayer.Team then continue end
+            
             local char = plr.Character
             if not char then continue end
             local root = char:FindFirstChild("HumanoidRootPart")
             local humanoid = char:FindFirstChildOfClass("Humanoid")
             if not root or not humanoid or humanoid.Health <= 0 then continue end
+            
             local screenPos, onScreen = Camera:WorldToScreenPoint(root.Position)
             if not onScreen then continue end
+            
             local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
             if dist < minDist then
                 minDist = dist
@@ -320,19 +301,16 @@ local function GetClosestPlayer()
     return closest
 end
 
--- 瞄准更新（每帧）
+-- 瞄准主循环
 RunService.RenderStepped:Connect(function()
-    -- 更新 FOV 圆圈位置（跟随鼠标）
     if FovCircle then
         local mousePos = UserInputService:GetMouseLocation()
         FovCircle.Position = Vector2.new(mousePos.X, mousePos.Y)
         FovCircle.Radius = _G.Config.FOVSize
         FovCircle.Color = _G.Config.CircleColor
         FovCircle.Visible = _G.Config.FOVCircle
-        FovCircle.Transparency = _G.Config.CircleTransparency
     end
     
-    -- 自瞄逻辑
     if Holding and _G.Config.Aimbot then
         local target = GetClosestPlayer()
         if target and target.Character then
@@ -345,15 +323,12 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = true
-    end
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = true end
 end)
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = false
-    end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = false end
 end)
 
 -- ==================== Rayfield UI 构建 ====================
@@ -362,17 +337,14 @@ local Window = Rayfield:CreateWindow({
     LoadingTitle = "Loading...",
     LoadingSubtitle = "by Quotas",
     ConfigurationSaving = {
-        Enabled = true,
+        Enabled = false, -- 改为假以保证调试稳定性，可自行开启
         FolderName = "QuotasHub",
         FileName = "Settings"
     },
 })
 
--- 战斗选项卡
 local CombatTab = Window:CreateTab("Combat", nil)
--- 移动选项卡
 local MovementTab = Window:CreateTab("Movement", nil)
--- 武器选项卡
 local WeaponsTab = Window:CreateTab("Weapons", nil)
 
 -- ===== Combat Tab =====
@@ -386,7 +358,7 @@ CombatTab:CreateToggle({
 })
 
 CombatTab:CreateToggle({
-    Name = "Team Check (ESP only)",
+    Name = "Team Check",
     CurrentValue = _G.Config.TeamCheck,
     Callback = function(val)
         _G.Config.TeamCheck = val
@@ -397,9 +369,7 @@ CombatTab:CreateToggle({
 CombatTab:CreateToggle({
     Name = "Blatant Aimbot (Hold RMB)",
     CurrentValue = _G.Config.Aimbot,
-    Callback = function(val)
-        _G.Config.Aimbot = val
-    end
+    Callback = function(val) _G.Config.Aimbot = val end
 })
 
 CombatTab:CreateToggle({
@@ -427,17 +397,15 @@ CombatTab:CreateSlider({
     Range = {0.01, 0.5},
     Increment = 0.01,
     CurrentValue = _G.Config.Sensitivity,
-    Callback = function(val)
-        _G.Config.Sensitivity = val
-    end
+    Callback = function(val) _G.Config.Sensitivity = val end
 })
 
 CombatTab:CreateDropdown({
     Name = "Aim Part",
     Options = {"Head", "HumanoidRootPart", "Torso", "UpperTorso"},
-    CurrentOption = _G.Config.AimPart,
+    CurrentOption = {_G.Config.AimPart},
     Callback = function(opt)
-        _G.Config.AimPart = opt
+        _G.Config.AimPart = opt[1] -- 修复：Rayfield返回的是表格，必须取第一个元素
     end
 })
 
@@ -476,9 +444,7 @@ MovementTab:CreateSlider({
     CurrentValue = _G.Config.WalkSpeed,
     Callback = function(val)
         _G.Config.WalkSpeed = val
-        if _G.Config.SpeedHack then
-            ApplySpeedHack(true)
-        end
+        if _G.Config.SpeedHack then ApplySpeedHack(true) end
     end
 })
 
@@ -510,30 +476,25 @@ WeaponsTab:CreateToggle({
     end
 })
 
--- ==================== 辅助：监听角色重生以重新应用速度 ====================
+-- ==================== 后续监听与循环 ====================
 LocalPlayer.CharacterAdded:Connect(function(char)
     task.wait(0.5)
-    if _G.Config.SpeedHack then
-        ApplySpeedHack(true)
-    end
-    if _G.Config.InfiniteJump then
-        ToggleInfiniteJump(true)
-    end
+    if _G.Config.SpeedHack then ApplySpeedHack(true) end
+    if _G.Config.InfiniteJump then ToggleInfiniteJump(true) end
 end)
 
--- 移除原始手动创建的 GUI（如果存在）
+-- 清理旧UI
 local oldMain = LocalPlayer.PlayerGui:FindFirstChild("Main")
 if oldMain then oldMain:Destroy() end
 
--- 启动 ESP 状态更新循环
+-- ESP 显隐检测主循环
 task.spawn(function()
     while true do
-        task.wait(0.1)
+        task.wait(0.2) -- 适当降低频率优化客户端帧率
         UpdateESPVisibility()
     end
 end)
 
--- 显示 Rayfield 窗口
 Rayfield:Notify({
     Title = "Quotas Hub",
     Content = "Loaded successfully!",
