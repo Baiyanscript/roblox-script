@@ -1,32 +1,111 @@
--- 极简方框测试（仅针对第一个其他玩家）
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Camera = workspace.CurrentCamera
-local localPlayer = Players.LocalPlayer
-local testBox
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-RunService.RenderStepped:Connect(function()
-    local target
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= localPlayer then target = p break end
-    end
-    if not target or not target.Character or not target.Character.PrimaryPart then
-        if testBox then testBox.Visible = false end
-        return
-    end
-    local head = target.Character.Head
-    if not head then return end
-    local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
-    if onScreen then
-        if not testBox then testBox = Drawing.new("Square") end
-        testBox.Size = Vector2.new(50, 50)
-        testBox.Position = Vector2.new(pos.X - 25, pos.Y - 50)
-        testBox.Thickness = 2
-        testBox.Color = Color3.fromRGB(255, 0, 0)
-        testBox.Filled = false
-        testBox.Visible = true
-    elseif testBox then
-        testBox.Visible = false
-    end
-end)
-print("极简方框测试已运行，如果屏幕上有红色方框跟随其他玩家，说明 Drawing API 正常。")
+local Window = Rayfield:CreateWindow({
+   Name = "遊戲輔助選單",
+   LoadingTitle = "系統載入中...",
+   LoadingSubtitle = "由 萬能助手 提供",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "GameAssistConfig",
+      FileName = "DeltaConfig"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "",
+      RememberJoins = true
+   },
+   KeySystem = false
+})
+
+-- ==========================================
+-- 功能分頁 (Tabs)
+-- ==========================================
+local VisualsTab = Window:CreateTab("視覺透視 (ESP)", 4483362458) -- 眼睛 圖示
+local CombatTab = Window:CreateTab("戰鬥輔助", 4483362610) -- 準心 圖示
+
+-- ==========================================
+-- 視覺透視分頁 (2D 方框、血條、名字等)
+-- ==========================================
+
+VisualsTab:CreateSection("玩家視覺標示")
+
+VisualsTab:CreateToggle({
+   Name = "2D 方框 (Boxes)",
+   CurrentValue = false,
+   Flag = "BoxESP",
+   Callback = function(Value)
+       -- 在此處插入您的 2D 方框繪製邏輯
+       print("2D 方框狀態:", Value)
+   end,
+})
+
+VisualsTab:CreateToggle({
+   Name = "生命血條 (Health Bars)",
+   CurrentValue = false,
+   Flag = "HealthESP",
+   Callback = function(Value)
+       -- 在此處插入您的血條繪製邏輯
+       print("生命血條狀態:", Value)
+   end,
+})
+
+VisualsTab:CreateToggle({
+   Name = "玩家名字 (Name Tags)",
+   CurrentValue = false,
+   Flag = "NameESP",
+   Callback = function(Value)
+       -- 在此處插入您的名字標籤邏輯
+       print("玩家名字狀態:", Value)
+   end,
+})
+
+VisualsTab:CreateToggle({
+   Name = "距離顯示 (Distance Labels)",
+   CurrentValue = false,
+   Flag = "DistanceESP",
+   Callback = function(Value)
+       -- 在此處插入您的距離計算與顯示邏輯
+       print("距離顯示狀態:", Value)
+   end,
+})
+
+VisualsTab:CreateToggle({
+   Name = "動態射線/追蹤線 (Tracers)",
+   CurrentValue = false,
+   Flag = "TracerESP",
+   Callback = function(Value)
+       -- 在此處插入您的射線繪製邏輯
+       print("射線狀態:", Value)
+   end,
+})
+
+-- ==========================================
+-- 戰鬥輔助分頁 (輔助瞄準與強度調整)
+-- ==========================================
+
+CombatTab:CreateSection("輔助瞄準設定 (Aim Assist)")
+
+CombatTab:CreateToggle({
+   Name = "開啟輔助瞄準",
+   CurrentValue = false,
+   Flag = "AimAssistToggle",
+   Callback = function(Value)
+       -- 在此處插入您的輔助瞄準/自瞄開關邏輯
+       print("輔助瞄準狀態:", Value)
+   end,
+})
+
+CombatTab:CreateSlider({
+   Name = "輔助瞄準強度",
+   Min = 1,
+   Max = 100,
+   DefaultValue = 50,
+   Color = Color3.fromRGB(255, 255, 255),
+   Increment = 1,
+   ValueName = "%",
+   Flag = "AimStrength",
+   Callback = function(Value)
+       -- 此數值可用於控制自瞄的平滑度或內插值 (例如：lerp alpha 權重)
+       print("輔助瞄準強度調整為:", Value)
+   end,
+})
