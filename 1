@@ -1,0 +1,287 @@
+-- Load Rayfield Library safely
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Service References
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local workspace = game:GetService("Workspace")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+-- ==================== GLOBAL CONFIGURATION ====================
+_G.Config = {
+    ESP = false,
+    TeamCheck = true,
+    Aimbot = false,
+    FOVCircle = true,
+    FOVSize = 80,
+    Sensitivity = 0.1, -- Lower = Faster, Higher = Smoother
+    AimPart = "Head",
+    SilentAim = false,
+    HitboxSize = 12,
+    
+    -- Movement & Gun
+    InfiniteJump = false,
+    SpeedHack = false,
+    WalkSpeed = 100,
+    InfAmmo = false,
+}
+
+local Holding = false
+
+-- ==================== NEW DRAWING ESP SYSTEM ====================
+local ESP_Cache = {}
+
+local function CreateESP(plr)
+    if plr == LocalPlayer then return end
+    
+    local Box = Drawing.new("Square")
+    Box.Visible = false
+    Box.Color = Color3.fromRGB(255, 0, 0)
+    Box.Thickness = 1
+    Box.Filled = false
+    
+    local Name = Drawing.new("Text")
+    Name.Visible = false
+    Name.Text = plr.Name
+    Name.Color = Color3.fromRGB(255, 255, 255)
+    Name.Size = 13
+    Name.Center = true
+    Name.Outline = true
+
+    ESP_Cache[plr] = {Box = Box, Name = Name}
+end
+
+local function RemoveESP(plr)
+    if ESP_Cache[plr] then
+        ESP_Cache[plr].Box:Remove()
+        ESP_Cache[plr].Name:Remove()
+        ESP_Cache[plr] = nil
+    end
+end
+
+for _, plr in ipairs(Players:GetPlayers()) do CreateESP(plr) end
+Players.PlayerAdded:Connect(CreateESP)
+Players.PlayerRemoving:Connect(RemoveESP)
+
+-- ==================== FOV CIRCLE ====================
+local FovCircle = Drawing.new("Circle")
+FovCircle.Visible = _G.Config.FOVCircle
+FovCircle.Radius = _G.Config.FOVSize
+FovCircle.Color = Color3.fromRGB(255, 255, 255)
+FovCircle.Thickness = 1
+FovCircle.Filled = false
+FovCircle.NumSides = 64
+
+-- ==================== GET CLOSEST PLAYER ====================
+local function GetClosestPlayer()
+    local closest = nil
+    local minDist = _G.Config.FOVSize
+    local mousePos = UserInputService:GetMouseLocation()
+    
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            if _G.Config.TeamCheck and plr.Team == LocalPlayer.Team then continue end
+            
+            local char = plr.Character
+            if not char then continue end
+            local root = char:FindFirstChild("HumanoidRootPart")
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if not root or not humanoid or humanoid.Health <= 0 then continue end
+            
+            local screenPos, onScreen = Camera:WorldToScreenPoint(root.Position)
+            if not onScreen then continue end
+            
+            local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+            if dist < minDist then
+                minDist = dist
+                closest = plr
+            end
+        end
+    end
+    return closest
+end
+
+-- ==================== MAIN RENDER LOOP (ESP & AIMBOT) ====================
+RunService.RenderStepped:Connect(function()
+    -- Update FOV Circle Position
+    local mousePos = UserInputService:GetMouseLocation()
+    FovCircle.Position = mousePos
+    FovCircle.Radius = _G.Config.FOVSize
+    FovCircle.Visible = _G.Config.FOVCircle
+
+    -- Handle ESP rendering
+    for plr, cache in pairs(ESP_Cache) do
+        local char = plr.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+        
+        if _G.Config.ESP and root and humanoid and humanoid.Health > 0 then
+            if _G.Config.TeamCheck and plr.Team == LocalPlayer.Team then
+                cache.Box.Visible = false
+                cache.Name.Visible = false
+                continue
+            end
+            
+            local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
+            if onScreen then
+                -- Dynamically size boxes based on player distance
+                local camDist = (Camera.CFrame.Position - root.Position).Magnitude
+                local sizeX = math.clamp(2000 / camDist, 10, 150)
+                local sizeY = math.clamp(3500 / camDist, 15, 250)
+                
+                cache.Box.Size = Vector2.new(sizeX, sizeY)
+                cache.Box.Position = Vector2.new(pos.X - sizeX / 2, pos.Y - sizeY / 2)
+                cache.Box.Visible = true
+                
+                cache.Name.Position = Vector2.new(pos.X, (pos.Y - sizeY / 2) - 15)
+                cache.Name.Visible = true
+            else
+                cache.Box.Visible = false
+                cache.Name.Visible = false
+            end
+        else
+            cache.Box.Visible = false
+            cache.Name.Visible = false
+        end
+    end
+
+    -- Handle Aimbot execution
+    if Holding and _G.Config.Aimbot then
+        local target = GetClosestPlayer()
+        if target and target.Character then
+            local aimPart = target.Character:FindFirstChild(_G.Config.AimPart)
+            if aimPart then
+                -- Smoothly interpolate camera view vector directly
+                local targetCFrame = CFrame.new(Camera.CFrame.Position, aimPart.Position)
+                Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, _G.Config.Sensitivity)
+            end
+        end
+    end
+end)
+
+-- Mouse Input Listeners
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = true end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = false end
+end)
+
+-- ==================== OTHER LOOPS (Hitbox / Gun Modifications) ====================
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if _G.Config.SilentAim then
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= LocalPlayer and plr.Character then
+                    if _G.Config.TeamCheck and plr.Team == LocalPlayer.Team then continue end
+                    local root = plr.Character:FindFirstChild("HumanoidRootPart")
+                    local head = plr.Character:FindFirstChild("Head")
+                    if root then root.Size = Vector3.new(_G.Config.HitboxSize, _G.Config.HitboxSize, _G.Config.HitboxSize) root.CanCollide = false end
+                    if head then head.Size = Vector3.new(_G.Config.HitboxSize, _G.Config.HitboxSize, _G.Config.HitboxSize) head.CanCollide = false end
+                end
+            end
+        end
+    end
+end)
+
+-- Infinite Ammo & FireRate Modifier loop
+task.spawn(function()
+    while true do
+        task.wait(2)
+        local repStorage = game:GetService("ReplicatedStorage")
+        local weapons = repStorage:FindFirstChild("Weapons")
+        
+        if weapons then
+            for _, desc in ipairs(weapons:GetDescendants()) do
+                if desc:IsA("ValueBase") then
+                    if _G.Config.FireRateMod then
+                        if desc.Name == "Auto" then desc.Value = true
+                        elseif desc.Name == "FireRate" then desc.Value = 0.02 end
+                    end
+                    if _G.Config.RecoilMod and (desc.Name == "RecoilControl" or desc.Name == "MaxSpread") then
+                        desc.Value = 0
+                    end
+                end
+            end
+        end
+        
+        if _G.Config.InfAmmo then
+            local gui = LocalPlayer:FindFirstChild("PlayerGui")
+            local clientVars = gui and gui:FindFirstChild("GUI") and gui.GUI:FindFirstChild("Client") and gui.GUI.Client:FindFirstChild("Variables")
+            if clientVars then
+                local a1, a2 = clientVars:FindFirstChild("ammocount"), clientVars:FindFirstChild("ammocount2")
+                if a1 then a1.Value = 999 end
+                if a2 then a2.Value = 999 end
+            end
+        end
+    end
+end)
+
+-- Movement hacks
+local speedConn = nil
+local function ApplySpeedHack(state)
+    if speedConn then speedConn:Disconnect() end
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        if state then
+            humanoid.WalkSpeed = _G.Config.WalkSpeed
+            speedConn = humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if _G.Config.SpeedHack and humanoid and humanoid.Parent then
+                    humanoid.WalkSpeed = _G.Config.WalkSpeed
+                end
+            end)
+        else
+            humanoid.WalkSpeed = 16
+        end
+    end
+end
+
+UserInputService.JumpRequest:Connect(function()
+    if _G.Config.InfiniteJump then
+        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(0.6)
+    if _G.Config.SpeedHack then ApplySpeedHack(true) end
+end)
+
+-- ==================== RAYFIELD UI WINDOW ====================
+local Window = Rayfield:CreateWindow({
+    Name = "Quotas Hub V2",
+    LoadingTitle = "Booting Engine...",
+    LoadingSubtitle = "by Quotas",
+    ConfigurationSaving = { Enabled = false }
+})
+
+local CombatTab = Window:CreateTab("Combat", nil)
+local MovementTab = Window:CreateTab("Movement", nil)
+local WeaponsTab = Window:CreateTab("Weapons", nil)
+
+-- Combat UI elements
+CombatTab:CreateToggle({ Name = "Player ESP Box", CurrentValue = _G.Config.ESP, Callback = function(v) _G.Config.ESP = v end })
+CombatTab:CreateToggle({ Name = "Team Check", CurrentValue = _G.Config.TeamCheck, Callback = function(v) _G.Config.TeamCheck = v end })
+CombatTab:CreateToggle({ Name = "Camera Aimbot (Hold RMB)", CurrentValue = _G.Config.Aimbot, Callback = function(v) _G.Config.Aimbot = v end })
+CombatTab:CreateToggle({ Name = "Draw FOV Circle", CurrentValue = _G.Config.FOVCircle, Callback = function(v) _G.Config.FOVCircle = v end })
+CombatTab:CreateSlider({ Name = "FOV Radius Size", Range = {30, 300}, Increment = 5, CurrentValue = _G.Config.FOVSize, Callback = function(v) _G.Config.FOVSize = v end })
+CombatTab:CreateSlider({ Name = "Aimbot Smoothness (Lerp)", Range = {1, 10}, Increment = 1, CurrentValue = 5, Callback = function(v) _G.Config.Sensitivity = (11 - v) * 0.02 end })
+CombatTab:CreateDropdown({ Name = "Target Part", Options = {"Head", "HumanoidRootPart"}, CurrentOption = {_G.Config.AimPart}, Callback = function(v) _G.Config.AimPart = v[1] end })
+CombatTab:CreateToggle({ Name = "OP Big Hitbox (Silent Aim)", CurrentValue = _G.Config.SilentAim, Callback = function(v) _G.Config.SilentAim = v end })
+
+-- Movement UI elements
+MovementTab:CreateToggle({ Name = "Infinite Jump", CurrentValue = _G.Config.InfiniteJump, Callback = function(v) _G.Config.InfiniteJump = v end })
+MovementTab:CreateToggle({ Name = "Enable Speed Hack", CurrentValue = _G.Config.SpeedHack, Callback = function(v) _G.Config.SpeedHack = v ApplySpeedHack(v) end })
+MovementTab:CreateSlider({ Name = "Speed Value", Range = {16, 200}, Increment = 2, CurrentValue = _G.Config.WalkSpeed, Callback = function(v) _G.Config.WalkSpeed = v if _G.Config.SpeedHack then ApplySpeedHack(true) end end })
+
+-- Weapon UI elements
+WeaponsTab:CreateToggle({ Name = "Infinite Ammo", CurrentValue = _G.Config.InfAmmo, Callback = function(v) _G.Config.InfAmmo = v end })
+WeaponsTab:CreateToggle({ Name = "Max Fire Rate Modifier", CurrentValue = _G.Config.FireRateMod, Callback = function(v) _G.Config.FireRateMod = v end })
+WeaponsTab:CreateToggle({ Name = "Remove Recoil & Spread", CurrentValue = _G.Config.RecoilMod, Callback = function(v) _G.Config.RecoilMod = v end })
+
+Rayfield:Notify({ Title = "Quotas Hub V2", Content = "System reloaded successfully!", Duration = 3 })
