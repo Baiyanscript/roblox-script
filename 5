@@ -1,0 +1,275 @@
+--[[
+    Snipe or Die - Syrex Hub (Improved)
+    Features:
+    - Box ESP with health bar (toggle with ESP button)
+    - Aimbot that snaps to nearest enemy's head (toggle with Aimbot button)
+    - FOV circle drawn on screen (toggle with FOV button)
+    - Configurable FOV radius (set via variable)
+    - Buttons toggle states and start/stop rendering loops
+]]
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
+
+local Player = Players.LocalPlayer
+local Mouse = Player:GetMouse()
+
+-- === CONFIGURATION ===
+local FOV_RADIUS = 120           -- Radius of aimbot / visual FOV circle
+local AIMBOT_KEY = Enum.KeyCode.E -- Key to hold for aimbot (or nil for always on)
+local ESP_COLOR = Color3.fromRGB(255, 0, 0)
+local ESP_THICKNESS = 2
+
+-- === STATE VARIABLES ===
+local espEnabled = false
+local aimbotEnabled = false
+local fovEnabled = false
+
+-- Store drawing objects
+local fovCircle = nil
+local espDrawings = {} -- each enemy -> { box, healthBar }
+
+-- Helper: Update ESP for all enemies
+local function updateESP()
+    if not espEnabled then
+        -- Clear all existing ESP drawings
+        for _, drawings in pairs(espDrawings) do
+            if drawings.box then drawings.box:Remove() end
+            if drawings.healthBar then drawings.healthBar:Remove() end
+        end
+        espDrawings = {}
+        return
+    end
+
+    -- Get all enemy players (excluding local player)
+    local enemies = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= Player and plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character:FindFirstChild("Head") then
+            table.insert(enemies, plr)
+        end
+    end
+
+    -- Update or create drawings for each enemy
+    for _, enemy in ipairs(enemies) do
+        local character = enemy.Character
+        local head = character.Head
+        local humanoid = character.Humanoid
+        local rootPart = character:FindFirstChild("HumanoidRootPart") or head
+
+        -- Convert 3D position to 2D screen coordinates
+        local vector, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
+        if not onScreen then
+            -- If previously had drawings, remove them
+            if espDrawings[enemy] then
+                if espDrawings[enemy].box then espDrawings[enemy].box:Remove() end
+                if espDrawings[enemy].healthBar then espDrawings[enemy].healthBar:Remove() end
+                espDrawings[enemy] = nil
+            end
+            goto continue
+        end
+
+        -- Calculate box size based on distance (simple: use head to feet distance)
+        local feetPos = character:FindFirstChild("HumanoidRootPart") and character.HumanoidRootPart.Position or head.Position
+        feetPos = Vector3.new(feetPos.X, feetPos.Y - 3, feetPos.Z) -- approximate feet
+        local feetScreen, _ = Camera:WorldToViewportPoint(feetPos)
+        local height = vector.Y - feetScreen.Y
+        local width = height * 0.5 -- typical body width
+        local left = vector.X - width/2
+        local top = feetScreen.Y
+
+        -- Create or update box
+        local drawings = espDrawings[enemy]
+        if not drawings then
+            drawings = {}
+            drawings.box = Drawing.new("Square")
+            drawings.box.Thickness = ESP_THICKNESS
+            drawings.box.Color = ESP_COLOR
+            drawings.box.Filled = false
+            drawings.healthBar = Drawing.new("Line")
+            drawings.healthBar.Thickness = 4
+            drawings.healthBar.Color = Color3.fromRGB(0, 255, 0)
+            espDrawings[enemy] = drawings
+        end
+
+        drawings.box.Size = Vector2.new(width, height)
+        drawings.box.Position = Vector2.new(left, top)
+
+        -- Health bar (top of the box)
+        local healthPercent = humanoid.Health / humanoid.MaxHealth
+        local barWidth = width * healthPercent
+        drawings.healthBar.From = Vector2.new(left, top - 5)
+        drawings.healthBar.To = Vector2.new(left + barWidth, top - 5)
+        drawings.healthBar.Visible = healthPercent < 1
+
+        ::continue::
+    end
+
+    -- Remove drawings for dead/left enemies
+    for enemy, drawings in pairs(espDrawings) do
+        if not enemy.Character or not enemy.Character:FindFirstChild("Humanoid") then
+            if drawings.box then drawings.box:Remove() end
+            if drawings.healthBar then drawings.healthBar:Remove() end
+            espDrawings[enemy] = nil
+        end
+    end
+end
+
+-- === AIMBOT LOGIC ===
+local function getClosestEnemyInFOV()
+    local closest = nil
+    local closestDistance = FOV_RADIUS
+    local center = Vector2.new(Mouse.X, Mouse.Y)
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= Player and plr.Character and plr.Character:FindFirstChild("Head") then
+            local headPos = plr.Character.Head.Position
+            local screenPos, onScreen = Camera:WorldToViewportPoint(headPos)
+            if onScreen then
+                local mouseVec = Vector2.new(screenPos.X, screenPos.Y)
+                local dist = (mouseVec - center).Magnitude
+                if dist < closestDistance then
+                    closestDistance = dist
+                    closest = plr
+                end
+            end
+        end
+    end
+    return closest
+end
+
+-- Aimbot update (called on RenderStepped)
+local function updateAimbot()
+    if not aimbotEnabled then return end
+    -- Optionally check if hold key is pressed
+    if AIMBOT_KEY and not UserInputService:IsKeyDown(AIMBOT_KEY) then return end
+
+    local target = getClosestEnemyInFOV()
+    if target and target.Character and target.Character:FindFirstChild("Head") then
+        local head = target.Character.Head
+        local screenPos = Camera:WorldToViewportPoint(head.Position)
+        -- Move mouse cursor to target's head
+        mousemoverel(screenPos.X - Mouse.X, screenPos.Y - Mouse.Y)
+    end
+end
+
+-- === FOV CIRCLE ===
+local function updateFOVCircle()
+    if fovEnabled then
+        if not fovCircle then
+            fovCircle = Drawing.new("Circle")
+            fovCircle.Thickness = 2
+            fovCircle.Color = Color3.fromRGB(255, 255, 255)
+            fovCircle.Filled = false
+            fovCircle.NumSides = 64
+            fovCircle.Visible = true
+        end
+        fovCircle.Radius = FOV_RADIUS
+        fovCircle.Position = Vector2.new(Mouse.X, Mouse.Y)
+    else
+        if fovCircle then
+            fovCircle:Remove()
+            fovCircle = nil
+        end
+    end
+end
+
+-- Update on mouse move (to reposition FOV circle)
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        if fovCircle then
+            fovCircle.Position = Vector2.new(Mouse.X, Mouse.Y)
+        end
+    end
+end)
+
+-- === MAIN RENDER LOOP ===
+RunService.RenderStepped:Connect(function()
+    updateESP()
+    updateAimbot()
+    updateFOVCircle()
+end)
+
+-- === GUI CREATION ===
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SyrexHub"
+screenGui.Parent = Player:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 250, 0, 150)
+frame.Position = UDim2.new(0.35, 0, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BackgroundTransparency = 0.2
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 25)
+title.Text = "Snipe or Die - Syrex hub"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+title.Parent = frame
+
+-- ESP Button
+local espBtn = Instance.new("TextButton")
+espBtn.Size = UDim2.new(1, -20, 0, 30)
+espBtn.Position = UDim2.new(0, 10, 0, 35)
+espBtn.Text = "ESP: OFF"
+espBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+espBtn.TextColor3 = Color3.new(1, 1, 1)
+espBtn.Parent = frame
+espBtn.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    espBtn.Text = espEnabled and "ESP: ON" or "ESP: OFF"
+    if not espEnabled then
+        -- Clear drawings immediately
+        for _, drawings in pairs(espDrawings) do
+            if drawings.box then drawings.box:Remove() end
+            if drawings.healthBar then drawings.healthBar:Remove() end
+        end
+        espDrawings = {}
+    end
+end)
+
+-- Aimbot Button
+local aimBtn = Instance.new("TextButton")
+aimBtn.Size = UDim2.new(1, -20, 0, 30)
+aimBtn.Position = UDim2.new(0, 10, 0, 75)
+aimBtn.Text = "Aimbot: OFF"
+aimBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+aimBtn.TextColor3 = Color3.new(1, 1, 1)
+aimBtn.Parent = frame
+aimBtn.MouseButton1Click:Connect(function()
+    aimbotEnabled = not aimbotEnabled
+    aimBtn.Text = aimbotEnabled and "Aimbot: ON" or "Aimbot: OFF"
+end)
+
+-- FOV Button
+local fovBtn = Instance.new("TextButton")
+fovBtn.Size = UDim2.new(1, -20, 0, 30)
+fovBtn.Position = UDim2.new(0, 10, 0, 115)
+fovBtn.Text = "FOV: OFF"
+fovBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+fovBtn.TextColor3 = Color3.new(1, 1, 1)
+fovBtn.Parent = frame
+fovBtn.MouseButton1Click:Connect(function()
+    fovEnabled = not fovEnabled
+    fovBtn.Text = fovEnabled and "FOV: ON" or "FOV: OFF"
+    if not fovEnabled and fovCircle then
+        fovCircle:Remove()
+        fovCircle = nil
+    end
+end)
+
+-- Optional: Cleanup when script stops (if the executor supports it)
+game:GetService("Players").LocalPlayer.OnTeleport:Connect(function()
+    if fovCircle then fovCircle:Remove() end
+    for _, drawings in pairs(espDrawings) do
+        if drawings.box then drawings.box:Remove() end
+        if drawings.healthBar then drawings.healthBar:Remove() end
+    end
+    screenGui:Destroy()
+end)
