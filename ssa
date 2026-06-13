@@ -1,0 +1,206 @@
+--// Services
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local Camera = workspace.CurrentCamera
+
+--// Feature Toggles & Settings
+local Settings = {
+    Esp = false,
+    Aimbot = false,
+    Fov = false,
+    FovRadius = 90,
+    AimbotSensitivity = 0.25, -- Lower = smoother, Higher = instant lock
+    TargetPart = "Head",
+    AimbotKey = Enum.UserInputType.MouseButton2 -- Right Click to lock on
+}
+
+--// UI Creation
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+ScreenGui.ResetOnSpawn = false
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 250, 0, 160)
+Frame.Position = UDim2.new(0.35, 0, 0.3, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Frame.Active = true
+Frame.Draggable = true
+
+local TextLabel = Instance.new("TextLabel", Frame)
+TextLabel.Size = UDim2.new(1, 0, 0, 30)
+TextLabel.Text = "Snipe or Die - Syrex Hub"
+TextLabel.TextColor3 = Color3.new(1, 1, 1)
+TextLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+TextLabel.Font = Enum.Font.SourceSansBold
+TextLabel.TextSize = 16
+
+local EspBtn = Instance.new("TextButton", Frame)
+EspBtn.Size = UDim2.new(1, -20, 0, 30)
+EspBtn.Position = UDim2.new(0, 10, 0, 40)
+EspBtn.Text = "ESP: OFF"
+EspBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+EspBtn.TextColor3 = Color3.new(1, 1, 1)
+
+local AimbotBtn = Instance.new("TextButton", Frame)
+AimbotBtn.Size = UDim2.new(1, -20, 0, 30)
+AimbotBtn.Position = UDim2.new(0, 10, 0, 80)
+AimbotBtn.Text = "Aimbot: OFF"
+AimbotBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+AimbotBtn.TextColor3 = Color3.new(1, 1, 1)
+
+local FovBtn = Instance.new("TextButton", Frame)
+FovBtn.Size = UDim2.new(1, -20, 0, 30)
+FovBtn.Position = UDim2.new(0, 10, 0, 120)
+FovBtn.Text = "FOV: OFF"
+FovBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+FovBtn.TextColor3 = Color3.new(1, 1, 1)
+
+--// Drawing API Setup (Exploit Specific)
+local fovCircle = Drawing.new('Circle')
+fovCircle.Color = Color3.fromRGB(255, 255, 255)
+fovCircle.Thickness = 1
+fovCircle.NumSides = 64
+fovCircle.Radius = Settings.FovRadius
+fovCircle.Filled = false
+fovCircle.Visible = false
+
+-- Cache table to track active ESP boxes per player
+local espCache = {}
+
+local function createEspElements(player)
+    if espCache[player] then return end
+    
+    local box = Drawing.new("Square")
+    box.Color = Color3.fromRGB(255, 0, 0)
+    box.Thickness = 1
+    box.Filled = false
+    box.Visible = false
+    
+    espCache[player] = { Box = box }
+end
+
+local function removeEspElements(player)
+    if espCache[player] then
+        espCache[player].Box:Remove()
+        espCache[player] = nil
+    end
+end
+
+-- Handle players leaving/joining for ESP cache cleanup
+Players.PlayerRemoving:Connect(removeEspElements)
+
+--// Button Connections (Toggles)
+EspBtn.MouseButton1Click:Connect(function()
+    Settings.Esp = not Settings.Esp
+    EspBtn.Text = Settings.Esp and "ESP: ON" or "ESP: OFF"
+    EspBtn.BackgroundColor3 = Settings.Esp and Color3.fromRGB(40, 120, 40) or Color3.fromRGB(60, 60, 60)
+    
+    if not Settings.Esp then
+        for _, cache in pairs(espCache) do
+            cache.Box.Visible = false
+        end
+    end
+end)
+
+AimbotBtn.MouseButton1Click:Connect(function()
+    Settings.Aimbot = not Settings.Aimbot
+    AimbotBtn.Text = Settings.Aimbot and "Aimbot: ON" or "Aimbot: OFF"
+    AimbotBtn.BackgroundColor3 = Settings.Aimbot and Color3.fromRGB(40, 120, 40) or Color3.fromRGB(60, 60, 60)
+end)
+
+FovBtn.MouseButton1Click:Connect(function()
+    Settings.Fov = not Settings.Fov
+    FovBtn.Text = Settings.Fov and "FOV: ON" or "FOV: OFF"
+    FovBtn.BackgroundColor3 = Settings.Fov and Color3.fromRGB(40, 120, 40) or Color3.fromRGB(60, 60, 60)
+    fovCircle.Visible = Settings.Fov
+end)
+
+--// Helper Core Functions
+local function getClosestPlayerToCursor()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local targetPart = player.Character:FindFirstChild(Settings.TargetPart)
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            
+            if targetPart and humanoid and humanoid.Health > 0 then
+                local screenPosition, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
+                
+                if onScreen then
+                    local mousePos = Vector2.new(Mouse.X, Mouse.Y)
+                    local targetPos = Vector2.new(screenPosition.X, screenPosition.Y)
+                    local distance = (mousePos - targetPos).Magnitude
+                    
+                    -- If FOV is turned on, target must be inside the circle radius
+                    if Settings.Fov and distance > Settings.FovRadius then
+                        continue
+                    end
+                    
+                    if distance < shortestDistance then
+                        closestPlayer = player
+                        shortestDistance = distance
+                    end
+                end
+            end
+        end
+    end
+    return closestPlayer
+end
+
+--// Main Render Loop
+RunService.RenderStepped:Connect(function()
+    -- Update FOV positions
+    if Settings.Fov and fovCircle then
+        fovCircle.Position = Camera.ViewportSize / 2
+    end
+    
+    -- Handle Aimbot Mechanics
+    if Settings.Aimbot and UserInputService:IsMouseButtonPressed(Settings.AimbotKey) then
+        local target = getClosestPlayerToCursor()
+        if target and target.Character then
+            local targetPart = target.Character:FindFirstChild(Settings.TargetPart)
+            if targetPart then
+                local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
+                Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, Settings.AimbotSensitivity)
+            end
+        end
+    end
+    
+    -- Handle ESP Mechanics
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if Settings.Esp and player.Character then
+                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+                
+                if hrp and humanoid and humanoid.Health > 0 then
+                    createEspElements(player)
+                    
+                    local hrpPosition, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+                    
+                    if onScreen and espCache[player] then
+                        -- Math calculation for sizing boxes cleanly regardless of distance
+                        local scaleFactor = 1 / (hrpPosition.Z * math.tan(math.rad(Camera.FieldOfView / 2))) * 1000
+                        local width, height = 4 * scaleFactor, 6 * scaleFactor
+                        
+                        local box = espCache[player].Box
+                        box.Size = Vector2.new(width, height)
+                        box.Position = Vector2.new(hrpPosition.X - width / 2, hrpPosition.Y - height / 2)
+                        box.Visible = true
+                    elseif espCache[player] then
+                        espCache[player].Box.Visible = false
+                    end
+                else
+                    if espCache[player] then espCache[player].Box.Visible = false end
+                end
+            else
+                if espCache[player] then espCache[player].Box.Visible = false end
+            end
+        end
+    end
+end)
