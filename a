@@ -1,4 +1,4 @@
--- ==================== MOBILE GEN 10: ANTI-SHAKE AUTO ARCHITECTURE ====================
+-- ==================== MOBILE GEN 10.1: WIREFRAME AUTO ARCHITECTURE ====================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
@@ -16,7 +16,7 @@ _G.Config = {
     Aimbot = false,
     FOVCircle = true,
     FOVSize = 135,
-    Sensitivity = 0.22,  -- 經過真機測試，0.22 是手機防劇烈抖動的最佳平衡值
+    Sensitivity = 0.22,  -- 手機防劇烈抖動的最佳平衡值
     AimPart = "Head",
     SilentAim = false,
     HitboxSize = 12,
@@ -31,13 +31,16 @@ _G.Config = {
 
 local RenderRegistry = {}
 
--- ==================== SCREEN HARDWARE MATRICES ====================
+-- ==================== SCREEN HARDWARE MATRICES (⚠️ 修正空心設定) ====================
 local HardwareCenterCircle = Drawing.new("Circle")
 HardwareCenterCircle.Visible = _G.Config.FOVCircle
 HardwareCenterCircle.Radius = _G.Config.FOVSize
-HardwareCenterCircle.Color = Color3.fromRGB(0, 240, 255) -- 全新動態冰藍色
-HardwareCenterCircle.Thickness = 2
-HardwareCenterCircle.NumSides = 64
+HardwareCenterCircle.Color = Color3.fromRGB(0, 240, 255) -- 動態冰藍色
+HardwareCenterCircle.Thickness = 2                         -- 線條粗細
+
+-- 【關鍵修正】強制重設手機端執行器的填滿 Bug，確保只有外框
+HardwareCenterCircle.Filled = false                        
+HardwareCenterCircle.Transparency = 1                      
 
 local function ComputeAbsoluteCenter()
     return Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
@@ -103,7 +106,6 @@ local function EvaluateScreenSpaceTargets()
             if structuralRoot and mechanicalHum and mechanicalHum.Health > 0 and objectiveBone then
                 if not _G.Config.TeamCheck or (targetPlayer.Team ~= LocalPlayer.Team) then
                     
-                    -- 利用 ScreenPoint 繞過行動裝置 GUI 插值干擾
                     local calculatedVector, isRenderedOnDisplay = Camera:WorldToScreenPoint(objectiveBone.Position)
                     
                     if isRenderedOnDisplay then
@@ -123,12 +125,15 @@ end
 
 -- ==================== RENDERING COMPOSITOR ENGINE ====================
 RunService.RenderStepped:Connect(function()
+    -- 每幀重複鎖定空心狀態，防止某些執行器自動重置
     local structuralCenter = ComputeAbsoluteCenter()
     HardwareCenterCircle.Position = structuralCenter
     HardwareCenterCircle.Radius = _G.Config.FOVSize
     HardwareCenterCircle.Visible = _G.Config.FOVCircle
+    HardwareCenterCircle.Filled = false 
+    HardwareCenterCircle.Transparency = 1
 
-    -- ESP 2D繪圖轉換矩陣
+    -- ESP 二維渲染
     for playerKey, assetGroup in pairs(RenderRegistry) do
         if not playerKey or not Players:FindFirstChild(playerKey.Name) then
             DestroyEntityAssets(playerKey)
@@ -187,12 +192,11 @@ RunService.RenderStepped:Connect(function()
         local validTargetInstance = EvaluateScreenSpaceTargets()
         
         if validTargetInstance then
-            -- 目標進入：圓圈變更為高亮暖橘色（表示已捕獲鎖定）
+            -- 目標進入：圓框變更為高亮暖橘色空心圓
             HardwareCenterCircle.Color = Color3.fromRGB(255, 120, 0)
             
             local explicitMeshPart = validTargetInstance:FindFirstChild(_G.Config.AimPart)
             if explicitMeshPart then
-                -- 核心優化：引入緩動死區平滑算式，防止手機端指尖微弱抖動導致相機瘋狂亂晃
                 local targetingMatrix = CFrame.new(Camera.CFrame.Position, explicitMeshPart.Position)
                 Camera.CFrame = Camera.CFrame:Lerp(targetingMatrix, _G.Config.Sensitivity)
             end
@@ -286,8 +290,8 @@ end)
 
 -- ==================== CONTROLLER CANVAS INTERFACE BUILD ====================
 local Window = Rayfield:CreateWindow({
-    Name = "Quotas Mobile G10 (Pure Auto)",
-    LoadingTitle = "Assembling Matrix Engine Gen 10...",
+    Name = "Quotas Mobile G10.1 (Wireframe FOV)",
+    LoadingTitle = "Assembling Patched Rendering Engine...",
     LoadingSubtitle = "by Quotas",
     ConfigurationSaving = { Enabled = false }
 })
@@ -311,7 +315,6 @@ end })
 
 CombatTab:CreateSlider({ Name = "Lock Smoothing (Anti-Shake Scale)", Range = {1, 10}, Increment = 1, CurrentValue = 3, Callback = function(v) 
     local raw = type(v) == "table" and v[1] or v
-    -- 分率阻尼換算
     _G.Config.Sensitivity = raw * 0.075
 end })
 
@@ -334,4 +337,4 @@ WeaponsTab:CreateToggle({ Name = "Prevent Munition Depletion", CurrentValue = _G
 WeaponsTab:CreateToggle({ Name = "Overclock Fire Engine Cycles", CurrentValue = _G.Config.FireRateMod, Callback = function(s) _G.Config.FireRateMod = s end })
 WeaponsTab:CreateToggle({ Name = "Suppress Kinetic Dispersion", CurrentValue = _G.Config.RecoilMod, Callback = function(s) _G.Config.RecoilMod = s end })
 
-Rayfield:Notify({ Title = "Mobile Gen 10 Deployed", Content = "Asynchronous matrix loops fully initialized.", Duration = 4 })
+Rayfield:Notify({ Title = "Mobile Gen 10.1 Deployed", Content = "FOV Circle set to pure wireframe vector.", Duration = 4 })
