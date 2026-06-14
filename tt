@@ -1,0 +1,240 @@
+-- 🤖 GOD MODE SYSTEM
+-- RED = OFF | GREEN = ON | WHITE TEXT ONLY
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local workspace = game:GetService("Workspace")
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- ===================== UI ELEMENTS =====================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "GodModeUI"
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.ResetOnSpawn = false
+
+-- ===================== MAIN FRAME =====================
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 170)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -85)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner", MainFrame)
+UICorner.CornerRadius = UDim.new(0, 16)
+
+-- Shadow
+local Shadow = Instance.new("ImageLabel")
+Shadow.Size = UDim2.new(1, 40, 1, 40)
+Shadow.Position = UDim2.new(0, -20, 0, -20)
+Shadow.BackgroundTransparency = 1
+Shadow.Image = "rbxassetid://6014261993"
+Shadow.ImageTransparency = 0.65
+Shadow.ScaleType = Enum.ScaleType.Slice
+Shadow.SliceCenter = Rect.new(49, 49, 450, 450)
+Shadow.ZIndex = -1
+Shadow.Parent = MainFrame
+
+-- Gradient (background only)
+local UIGradient = Instance.new("UIGradient", MainFrame)
+UIGradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(35,35,45)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(15,15,25))
+}
+UIGradient.Rotation = 90
+
+-- ===================== TITLE BAR =====================
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 45)
+TitleBar.BackgroundColor3 = Color3.fromRGB(25,25,35)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner", TitleBar)
+TitleCorner.CornerRadius = UDim.new(0, 16)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -50, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBlack
+Title.Text = "🤖 IMMORTAL SYSTEM"
+Title.TextColor3 = Color3.fromRGB(255,255,255)
+Title.TextSize = 18
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TitleBar
+
+-- ===================== TOGGLE BUTTON =====================
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0.88, 0, 0, 60)
+ToggleBtn.Position = UDim2.new(0.06, 0, 0, 70)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(170, 40, 40) -- RED (OFF)
+ToggleBtn.BorderSizePixel = 0
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.Text = "GOD MODE : OFF"
+ToggleBtn.TextSize = 22
+ToggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+ToggleBtn.AutoButtonColor = false
+ToggleBtn.Parent = MainFrame
+
+local ToggleCorner = Instance.new("UICorner", ToggleBtn)
+ToggleCorner.CornerRadius = UDim.new(0, 12)
+
+-- ===================== FOOTER (CENTERED BOTTOM) =====================
+local FooterHolder = Instance.new("Frame")
+FooterHolder.Size = UDim2.new(1, 0, 0, 26)
+FooterHolder.Position = UDim2.new(0, 0, 1, -30)
+FooterHolder.BackgroundTransparency = 1
+FooterHolder.Parent = MainFrame
+
+local FooterText = Instance.new("TextLabel")
+FooterText.Size = UDim2.new(1, 0, 1, 0)
+FooterText.BackgroundTransparency = 1
+FooterText.Text = "Made by Mark L."
+FooterText.Font = Enum.Font.GothamMedium
+FooterText.TextSize = 13
+FooterText.TextColor3 = Color3.fromRGB(255, 255, 255) -- WHITE TEXT ONLY
+FooterText.TextTransparency = 0.25
+FooterText.TextXAlignment = Enum.TextXAlignment.Center
+FooterText.TextYAlignment = Enum.TextYAlignment.Center
+FooterText.Parent = FooterHolder
+
+-- ===================== GODMODE LOGIC =====================
+local isGodmode = false
+local ghostClone, connection, noclipConn, deathConn = nil, nil, nil, nil
+local lastPromptUpdate = 0
+
+local function cleanup()
+    isGodmode = false
+    if connection then connection:Disconnect() connection = nil end
+    if noclipConn then noclipConn:Disconnect() noclipConn = nil end
+    if deathConn then deathConn:Disconnect() deathConn = nil end
+    local char = player.Character
+    if char then
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if root and ghostClone then root.CFrame = ghostClone.HumanoidRootPart.CFrame end
+        if char:FindFirstChild("Humanoid") then 
+            char.Humanoid.PlatformStand = false 
+            camera.CameraSubject = char.Humanoid 
+        end
+    end
+    if ghostClone then ghostClone:Destroy() ghostClone = nil end
+end
+
+local function enableGodmode()
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    
+    cleanup()
+    
+    isGodmode = true
+    
+    char.Archivable = true
+    ghostClone = char:Clone()
+    ghostClone.Name = "GhostDecoy"
+    ghostClone.Parent = workspace
+    char.Archivable = false
+    
+    for _, v in pairs(ghostClone:GetDescendants()) do
+        if v:IsA("BasePart") then
+            if v.Name:lower():find("root") or v.Name:lower():find("collision") then
+                v.Transparency = 0.5
+            else
+                v.Transparency = 0
+            end
+            v.CanCollide = true
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v.Transparency = 0
+        end
+    end
+
+    if char:FindFirstChild("Animate") then 
+        char.Animate:Clone().Parent = ghostClone 
+    end
+    
+    char.Humanoid.PlatformStand = true
+    camera.CameraSubject = ghostClone.Humanoid
+    
+    noclipConn = RunService.Stepped:Connect(function()
+        if char then
+            for _, v in pairs(char:GetDescendants()) do
+                if v:IsA("BasePart") then v.CanCollide = false end
+            end
+        end
+    end)
+
+    connection = RunService.Heartbeat:Connect(function()
+        if ghostClone and char and char:FindFirstChild("HumanoidRootPart") then
+            local moveDir = char.Humanoid.MoveDirection
+            ghostClone.Humanoid:Move(moveDir, false)
+            ghostClone.Humanoid.Jump = char.Humanoid.Jump
+            
+            if moveDir.Magnitude > 0 then
+                local targetRot = CFrame.lookAt(ghostClone.HumanoidRootPart.Position, ghostClone.HumanoidRootPart.Position + moveDir)
+                ghostClone.HumanoidRootPart.CFrame = ghostClone.HumanoidRootPart.CFrame:Lerp(targetRot, 0.25)
+            end
+            
+            if tick() - lastPromptUpdate > 0.5 then
+                for _, p in pairs(workspace:GetDescendants()) do
+                    if p:IsA("ProximityPrompt") then
+                        p.MaxActivationDistance = 25
+                        p.RequiresLineOfSight = false
+                    end
+                end
+                lastPromptUpdate = tick()
+            end
+            
+            char.HumanoidRootPart.CFrame = ghostClone.HumanoidRootPart.CFrame * CFrame.new(0, -15, 0)
+            char.HumanoidRootPart.Velocity = Vector3.zero
+        else 
+            cleanup() 
+        end
+    end)
+    
+    deathConn = char.Humanoid.Died:Connect(cleanup)
+end
+
+-- ===================== TOGGLE LOGIC =====================
+local enabled = false
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    enabled = not enabled
+
+    if enabled then
+        ToggleBtn.Text = "GOD MODE : ON"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 90) -- GREEN
+        enableGodmode()
+    else
+        ToggleBtn.Text = "GOD MODE : OFF"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(170, 40, 40) -- RED
+        cleanup()
+    end
+end)
+
+-- ===================== CLOSE BUTTON =====================
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 32, 0, 32)
+CloseBtn.Position = UDim2.new(1, -38, 0, 6)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "×"
+CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 24
+CloseBtn.Parent = MainFrame
+
+CloseBtn.MouseButton1Click:Connect(function()
+    cleanup()  -- Ensure godmode is turned off when closing
+    ScreenGui:Destroy()
+end)
+
+-- ===================== AUTO-REENABLE ON RESPAWN =====================
+player.CharacterAdded:Connect(function()
+    if enabled then
+        wait(0.5)  -- Let the character load
+        enableGodmode()
+    end
+end)
