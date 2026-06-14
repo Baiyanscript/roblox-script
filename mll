@@ -6,22 +6,24 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 
--- ESP 狀態變數
+-- ESP 狀態變數 (Rayfield 標準功能組合)
 local ESPActive = false
 local ESPBoxActive = false
 local ESPNameActive = false
+local ESPLineActive = false
 local CurrentTheme = "Dark"
 
 local espCooldown = false
 local boxCooldown = false
 local nameCooldown = false
+local lineCooldown = false
 
 -- 儲存所有玩家的 ESP 繪製對象
 local espObjects = {}
 
--- 建立單個玩家的 ESP 圖形 (使用 CoreGui 內的 ScreenGui 實現，相容性最高)
+-- 建立繪製容器 (確保高相容性與圖層頂置)
 local espGui = Instance.new("ScreenGui", CoreGui)
-espGui.Name = "ESP_Storage"
+espGui.Name = "RayfieldStyle_ESP"
 
 local function createESP(targetPlayer)
     if targetPlayer == player then return end
@@ -30,6 +32,7 @@ local function createESP(targetPlayer)
         if espObjects[targetPlayer] then
             if espObjects[targetPlayer].BoxFrame then espObjects[targetPlayer].BoxFrame:Destroy() end
             if espObjects[targetPlayer].NameLabel then espObjects[targetPlayer].NameLabel:Destroy() end
+            if espObjects[targetPlayer].SnapLine then espObjects[targetPlayer].SnapLine:Destroy() end
             espObjects[targetPlayer] = nil
         end
     end
@@ -39,6 +42,7 @@ local function createESP(targetPlayer)
             if espObjects[targetPlayer] then
                 if espObjects[targetPlayer].BoxFrame then espObjects[targetPlayer].BoxFrame.Visible = false end
                 if espObjects[targetPlayer].NameLabel then espObjects[targetPlayer].NameLabel.Visible = false end
+                if espObjects[targetPlayer].SnapLine then espObjects[targetPlayer].SnapLine.Visible = false end
             end
             return
         end
@@ -51,6 +55,7 @@ local function createESP(targetPlayer)
             if espObjects[targetPlayer] then
                 if espObjects[targetPlayer].BoxFrame then espObjects[targetPlayer].BoxFrame.Visible = false end
                 if espObjects[targetPlayer].NameLabel then espObjects[targetPlayer].NameLabel.Visible = false end
+                if espObjects[targetPlayer].SnapLine then espObjects[targetPlayer].SnapLine.Visible = false end
             end
             return
         end
@@ -62,13 +67,16 @@ local function createESP(targetPlayer)
                 espObjects[targetPlayer] = {}
             end
 
-            -- 計算角色在螢幕上的大小
+            -- Rayfield 演算法：計算精確動態方框
             local topPos = camera:WorldToViewportPoint(hrp.Position + Vector3.new(0, 3, 0))
             local bottomPos = camera:WorldToViewportPoint(hrp.Position + Vector3.new(0, -3.5, 0))
             local boxHeight = math.abs(topPos.Y - bottomPos.Y)
             local boxWidth = boxHeight * 0.6
+            
+            -- 計算與在地玩家的距離 (Rayfield 標誌特色)
+            local distance = math.floor((player.Character and player.Character:FindFirstChild("HumanoidRootPart") and (hrp.Position - player.Character.HumanoidRootPart.Position).Magnitude) or 0)
 
-            -- Box 邏輯
+            -- 1. 方框 (Box)
             if ESPBoxActive then
                 if not espObjects[targetPlayer].BoxFrame then
                     local box = Instance.new("Frame", espGui)
@@ -77,7 +85,7 @@ local function createESP(targetPlayer)
                     
                     local stroke = Instance.new("UIStroke", box)
                     stroke.Thickness = 1.5
-                    stroke.Color = Color3.fromRGB(255, 0, 0) -- 紅色外框
+                    stroke.Color = Color3.fromRGB(255, 60, 60) -- Rayfield 經典淡紅/橘紅
                     
                     espObjects[targetPlayer].BoxFrame = box
                 end
@@ -90,15 +98,15 @@ local function createESP(targetPlayer)
                 if espObjects[targetPlayer].BoxFrame then espObjects[targetPlayer].BoxFrame.Visible = false end
             end
 
-            -- Name 邏輯
+            -- 2. 名字與距離 (Name & Distance - 完全比照 Rayfield 排版)
             if ESPNameActive then
                 if not espObjects[targetPlayer].NameLabel then
                     local lbl = Instance.new("TextLabel", espGui)
                     lbl.BackgroundTransparency = 1
                     lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
                     lbl.Font = Enum.Font.GothamBold
-                    lbl.TextSize = 12
-                    lbl.TextStrokeTransparency = 0
+                    lbl.TextSize = 11
+                    lbl.TextStrokeTransparency = 0.3
                     lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
                     
                     espObjects[targetPlayer].NameLabel = lbl
@@ -106,26 +114,50 @@ local function createESP(targetPlayer)
                 
                 local lbl = espObjects[targetPlayer].NameLabel
                 lbl.Visible = true
-                lbl.Text = targetPlayer.Name .. " [" .. math.floor(hum.Health) .. "]"
-                lbl.Position = UDim2.new(0, hrpPos.X - 50, 0, hrpPos.Y - (boxHeight / 2) - 20)
-                lbl.Size = UDim2.new(0, 100, 0, 15)
+                lbl.Text = string.format("%s\n[%d HP] [%ds]", targetPlayer.Name, math.floor(hum.Health), distance)
+                lbl.Position = UDim2.new(0, hrpPos.X - 100, 0, hrpPos.Y - (boxHeight / 2) - 32)
+                lbl.Size = UDim2.new(0, 200, 0, 28)
             else
                 if espObjects[targetPlayer].NameLabel then espObjects[targetPlayer].NameLabel.Visible = false end
+            end
+
+            -- 3. 追蹤射線 (Snaplines)
+            if ESPLineActive then
+                if not espObjects[targetPlayer].SnapLine then
+                    local line = Instance.new("Frame", espGui)
+                    line.BorderSizePixel = 0
+                    line.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- 白色射線
+                    line.AnchorPoint = Vector2.new(0.5, 0.5)
+                    
+                    espObjects[targetPlayer].SnapLine = line
+                end
+                
+                local line = espObjects[targetPlayer].SnapLine
+                local startPoint = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y) -- 螢幕正底端
+                local endPoint = Vector2.new(hrpPos.X, hrpPos.Y + (boxHeight / 2))
+                
+                local distanceVector = endPoint - startPoint
+                local angle = math.atan2(distanceVector.Y, distanceVector.X)
+                
+                line.Visible = true
+                line.Size = UDim2.new(0, distanceVector.Magnitude, 0, 1)
+                line.Position = UDim2.new(0, startPoint.X + (distanceVector.X / 2), 0, startPoint.Y + (distanceVector.Y / 2))
+                line.Rotation = math.deg(angle)
+            else
+                if espObjects[targetPlayer].SnapLine then espObjects[targetPlayer].SnapLine.Visible = false end
             end
         else
             if espObjects[targetPlayer] then
                 if espObjects[targetPlayer].BoxFrame then espObjects[targetPlayer].BoxFrame.Visible = false end
                 if espObjects[targetPlayer].NameLabel then espObjects[targetPlayer].NameLabel.Visible = false end
+                if espObjects[targetPlayer].SnapLine then espObjects[targetPlayer].SnapLine.Visible = false end
             end
         end
     end
 
     local conn = RunService.RenderStepped:Connect(updateESP)
     
-    targetPlayer.CharacterRemoving:Connect(function()
-        removeESP()
-    end)
-    
+    targetPlayer.CharacterRemoving:Connect(function() removeESP() end)
     Players.PlayerRemoving:Connect(function(p)
         if p == targetPlayer then
             conn:Disconnect()
@@ -134,11 +166,10 @@ local function createESP(targetPlayer)
     end)
 end
 
--- 對現有與新加入玩家套用 ESP
 for _, p in pairs(Players:GetPlayers()) do createESP(p) end
 Players.PlayerAdded:Connect(createESP)
 
--- 主題樣式定義 (與原本完全一致)
+-- 主題樣式 (完全一模一樣)
 local Themes = {
     Dark = {
         Background = Color3.fromRGB(10, 10, 10),
@@ -160,9 +191,9 @@ local Themes = {
     }
 }
 
--- 建立主介面外框 (與原本完全一致)
+-- 建立主介面外框 (完全一模一樣)
 local MainGui = Instance.new("ScreenGui", CoreGui)
-MainGui.Name = "ESP_Premium_Gui"
+MainGui.Name = "Custom_RayfieldESP_Gui"
 MainGui.ResetOnSpawn = false
 
 local Frame = Instance.new("Frame", MainGui)
@@ -191,7 +222,7 @@ Shadow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
 Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
 Shadow.ImageTransparency = 0.5
 
--- 標題列 (與原本完全一致)
+-- 標題列 (完全一模一樣)
 local TitleBar = Instance.new("Frame", Frame)
 TitleBar.Size = UDim2.new(1, 0, 0, 35)
 TitleBar.BackgroundColor3 = Themes.Dark.TitleBar
@@ -209,14 +240,14 @@ TitleFix.BorderSizePixel = 0
 local Title = Instance.new("TextLabel", TitleBar)
 Title.Size = UDim2.new(1, -100, 1, 0)
 Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "ESP MULTIFUNCTION"
+Title.Text = "RAYFIELD ESP HUB"
 Title.TextColor3 = Themes.Dark.Text
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- 拖動邏輯 (支援手機 Touch 手勢，與原本完全一致)
+-- 手機觸控拖拽 (完全一模一樣)
 local dragging = false
 local dragInput
 local dragStart
@@ -229,9 +260,7 @@ TitleBar.InputBegan:Connect(function(input)
         startPos = Frame.Position
 
         input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
         end)
     end
 end)
@@ -249,7 +278,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- 右上角控制按鈕 (與原本完全一致)
+-- 右上角控制鈕 (完全一模一樣)
 local SettingsBtn = Instance.new("TextButton", TitleBar)
 SettingsBtn.Size = UDim2.new(0, 28, 0, 28)
 SettingsBtn.Position = UDim2.new(1, -92, 0.5, -14)
@@ -294,12 +323,11 @@ Content.Size = UDim2.new(1, -14, 1, -48)
 Content.Position = UDim2.new(0, 7, 0, 41)
 Content.BackgroundTransparency = 1
 
--- 頂部功能子標籤 (原本是 METHOD 按鈕，此處改為 ESP 引擎狀態展示)
 local MethodBtn = Instance.new("TextButton", Content)
 MethodBtn.Size = UDim2.new(1, 0, 0, 30)
 MethodBtn.Position = UDim2.new(0, 0, 0, 0)
 MethodBtn.BackgroundColor3 = Themes.Dark.Button
-MethodBtn.Text = "ENGINE: CORE-GUI SYSTEM"
+MethodBtn.Text = "MODE: UNIVERSAL RAYFIELD"
 MethodBtn.TextColor3 = Themes.Dark.Text
 MethodBtn.Font = Enum.Font.GothamBold
 MethodBtn.TextSize = 11
@@ -312,13 +340,13 @@ local buttonReferences = {}
 
 local function CreateButton(text, position, callback)
     local btn = Instance.new("TextButton", Content)
-    btn.Size = UDim2.new(1, 0, 0, 36)
+    btn.Size = UDim2.new(1, 0, 0, 32) -- 優化間距塞入4個按鈕
     btn.Position = position
     btn.BackgroundColor3 = Themes[CurrentTheme].Button
     btn.Text = text
     btn.TextColor3 = Themes[CurrentTheme].Text
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
+    btn.TextSize = 13
     btn.BorderSizePixel = 0
     btn.ClipsDescendants = true
 
@@ -340,64 +368,50 @@ local function CreateButton(text, position, callback)
         TweenService:Create(glow, TweenInfo.new(0.1), {Thickness = 0, Transparency = 1}):Play()
     end)
 
-    btn.MouseButton1Click:Connect(function()
-        callback(btn)
-    end)
-
+    btn.MouseButton1Click:Connect(function() callback(btn) end)
     table.insert(buttonReferences, btn)
     return btn
 end
 
--- 替換後的三個主按鈕功能
-local ESPMasterBtn = CreateButton(
-    "ESP MASTER: OFF",
-    UDim2.new(0, 0, 0, 37),
-    function(btn)
-        if espCooldown then return end
-        espCooldown = true
-        ESPActive = not ESPActive
-        btn.Text = "ESP MASTER: " .. (ESPActive and "ON" or "OFF")
-        task.wait(0.1)
-        espCooldown = false
-    end
-)
+-- 更換為對標 Rayfield 功能的 4 個控制按鈕
+local MasterToggle = CreateButton("ESP MASTER: OFF", UDim2.new(0, 0, 0, 35), function(btn)
+    if espCooldown then return end espCooldown = true
+    ESPActive = not ESPActive
+    btn.Text = "ESP MASTER: " .. (ESPActive and "ON" or "OFF")
+    task.wait(0.1) espCooldown = false
+end)
 
-local ESPBoxBtn = CreateButton(
-    "ESP BOX: OFF",
-    UDim2.new(0, 0, 0, 80),
-    function(btn)
-        if boxCooldown then return end
-        boxCooldown = true
-        ESPBoxActive = not ESPBoxActive
-        btn.Text = "ESP BOX: " .. (ESPBoxActive and "ON" or "OFF")
-        task.wait(0.1)
-        boxCooldown = false
-    end
-)
+local BoxToggle = CreateButton("ESP BOX: OFF", UDim2.new(0, 0, 0, 72), function(btn)
+    if boxCooldown then return end boxCooldown = true
+    ESPBoxActive = not ESPBoxActive
+    btn.Text = "ESP BOX: " .. (ESPBoxActive and "ON" or "OFF")
+    task.wait(0.1) boxCooldown = false
+end)
 
-local ESPNameBtn = CreateButton(
-    "ESP NAME: OFF",
-    UDim2.new(0, 0, 0, 123),
-    function(btn)
-        if nameCooldown then return end
-        nameCooldown = true
-        ESPNameActive = not ESPNameActive
-        btn.Text = "ESP NAME: " .. (ESPNameActive and "ON" or "OFF")
-        task.wait(0.1)
-        nameCooldown = false
-    end
-)
+local NameToggle = CreateButton("ESP NAME & DIST: OFF", UDim2.new(0, 0, 0, 109), function(btn)
+    if nameCooldown then return end nameCooldown = true
+    ESPNameActive = not ESPNameActive
+    btn.Text = "ESP NAME & DIST: " .. (ESPNameActive and "ON" or "OFF")
+    task.wait(0.1) nameCooldown = false
+end)
+
+local LineToggle = CreateButton("ESP SNAPLINES: OFF", UDim2.new(0, 0, 0, 146), function(btn)
+    if lineCooldown then return end lineCooldown = true
+    ESPLineActive = not ESPLineActive
+    btn.Text = "ESP SNAPLINES: " .. (ESPLineActive and "ON" or "OFF")
+    task.wait(0.1) lineCooldown = false
+end)
 
 local Credit = Instance.new("TextLabel", Content)
-Credit.Size = UDim2.new(1, 0, 0, 22)
-Credit.Position = UDim2.new(0, 0, 1, -22)
+Credit.Size = UDim2.new(1, 0, 0, 20)
+Credit.Position = UDim2.new(0, 0, 1, -15)
 Credit.Text = "by: romokaso"
 Credit.TextColor3 = Color3.fromRGB(120, 120, 120)
 Credit.BackgroundTransparency = 1
 Credit.Font = Enum.Font.GothamBold
 Credit.TextSize = 10
 
--- 設定頁面與設定頁面內元素 (與原本完全一致)
+-- 設定與關閉二次確認頁面 (與原本完全一模一樣)
 local SettingsFrame = Instance.new("Frame", Frame)
 SettingsFrame.Size = UDim2.new(1, 0, 1, 0)
 SettingsFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -476,40 +490,32 @@ local ConfirmFrame = Instance.new("Frame", Frame)
 local ConfirmStroke = Instance.new("UIStroke", ConfirmFrame)
 local ConfirmText = Instance.new("TextLabel", ConfirmFrame)
 
--- 主題切換邏輯 (與原本完全一致)
 local function ApplyTheme(theme)
     local colors = Themes[theme]
     CurrentTheme = theme
-
     Frame.BackgroundColor3 = colors.Background
     TitleBar.BackgroundColor3 = colors.TitleBar
     TitleFix.BackgroundColor3 = colors.TitleBar
     Title.TextColor3 = colors.Text
     FrameStroke.Color = colors.Border
-
     SettingsBtn.BackgroundColor3 = colors.TopButtons
     SettingsBtn.TextColor3 = colors.Text
     MinimizeBtn.BackgroundColor3 = colors.TopButtons
     MinimizeBtn.TextColor3 = colors.Text
     CloseBtn.BackgroundColor3= colors.TopButtons
     CloseBtn.TextColor3 = colors.Text
-
     MethodBtn.BackgroundColor3 = colors.Button
     MethodBtn.TextColor3 = colors.Text
-
     for _, btn in pairs(buttonReferences) do
         btn.BackgroundColor3 = colors.Button
         btn.TextColor3 = colors.Text
     end
-
     SettingsFrame.BackgroundColor3 = colors.Background
     SettingsTitle.TextColor3 = colors.Text
     ThemeLabel.TextColor3 = colors.Text
-
     ConfirmFrame.BackgroundColor3 = colors.Background
     ConfirmStroke.Color = colors.Border
     ConfirmText.TextColor3 = colors.Text
-
     if theme == "Dark" then
         DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100)
         DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -523,7 +529,6 @@ local function ApplyTheme(theme)
     end
 end
 
--- 二次關閉確認窗 (與原本完全一致)
 ConfirmFrame.Size = UDim2.new(1, 0, 1, 0)
 ConfirmFrame.Position = UDim2.new(0, 0, 0, 0)
 ConfirmFrame.BackgroundColor3 = Themes.Dark.Background
@@ -664,7 +669,7 @@ YesBtn.MouseButton1Click:Connect(function()
     MainGui:Destroy()
 end)
 
--- 開放初始啟動動畫 (與原本完全一致)
+-- 開場彈出動畫 (完全一模一樣)
 Frame.Size = UDim2.new(0, 0, 0, 0)
 Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
