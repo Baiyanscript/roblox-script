@@ -15,7 +15,7 @@ _G.Config = {
     HealthBarEnabled = false,
     ShowHealthText = false,
     ShowTracer = false,
-    TeamCheck = true, -- 預設開啟隊友過濾
+    TeamCheck = true,
 
     ColorBox = Color3.fromRGB(255, 255, 255),
     ColorSkeleton = Color3.fromRGB(255, 255, 255),
@@ -32,8 +32,9 @@ local buttonReferences = {}
 local ActiveRegistry = {}
 local espGui = Instance.new("ScreenGui", CoreGui)
 espGui.Name = "RayfieldEngine_MobileESP"
+espGui.IgnoreGuiInset = true -- 關鍵：忽略手機導覽列與狀態列的縮排，防止 ESP 座標對不上
 
--- ==================== 骨架關節對照表 (與原腳本相同) ====================
+-- ==================== 骨架關節對照表 ====================
 local function getBones(char)
     if char:FindFirstChild("UpperTorso") then
         return {
@@ -60,6 +61,7 @@ local function NewLine(thick, color)
     l.BorderSizePixel = 0
     l.BackgroundColor3 = color or Color3.fromRGB(255, 255, 255)
     l.Visible = false
+    l.AnchorPoint = Vector2.new(0, 0.5) -- 修正旋轉中心點
     return l
 end
 
@@ -75,13 +77,16 @@ local function NewText(size, bold)
     return t
 end
 
+-- 核心：修正版 2D 劃線函數（解決 Tracer 歪斜、對不上玩家的問題）
 local function DrawLine2D(frame, from, to, thick, color)
-    local dist = (to - from).Magnitude
-    frame.Size = UDim2.new(0, dist, 0, thick or 1)
+    local direction = to - from
+    local distance = direction.Magnitude
+    local angle = math.atan2(direction.Y, direction.X)
+
+    frame.Size = UDim2.new(0, distance, 0, thick or 1)
     frame.Position = UDim2.new(0, from.X, 0, from.Y)
-    frame.Rotation = math.deg(math.atan2(to.Y - from.Y, to.X - from.X))
+    frame.Rotation = math.deg(angle)
     frame.BackgroundColor3 = color or frame.BackgroundColor3
-    frame.AnchorPoint = Vector2.new(0, 0.5)
     frame.Visible = true
 end
 
@@ -135,7 +140,6 @@ for _, plr in ipairs(Players:GetPlayers()) do AttachToPlayer(plr) end
 Players.PlayerAdded:Connect(AttachToPlayer)
 Players.PlayerRemoving:Connect(DestroyESPInstance)
 
--- 定時檢查防漏刷機制
 task.spawn(function()
     while true do
         task.wait(1.5)
@@ -165,6 +169,7 @@ RunService.RenderStepped:Connect(function()
         local displayAllowed = isActive and (not _G.Config.TeamCheck or not isAlly)
 
         if displayAllowed then
+            -- 使用 WorldToViewportPoint 搭配 IgnoreGuiInset = true 達到最高精確度
             local rootScreenPos, inFrame = camera:WorldToViewportPoint(hrp.Position)
 
             if inFrame then
@@ -175,14 +180,13 @@ RunService.RenderStepped:Connect(function()
                 local calculatedWidth = calculatedHeight / 2
                 local root2D = Vector2.new(rootScreenPos.X, rootScreenPos.Y)
 
-                -- 1. Corners Box ESP (四角包圍框算法)
+                -- 1. Corners Box ESP
                 if _G.Config.BoxESP then
                     local x = headOffset.X - calculatedWidth / 2
                     local y = headOffset.Y
                     local w = calculatedWidth * 0.25
                     local h = calculatedHeight * 0.25
 
-                    -- 繪製角落的八條線
                     DrawLine2D(entity.Box[1], Vector2.new(x, y), Vector2.new(x + w, y), 2, _G.Config.ColorBox)
                     DrawLine2D(entity.Box[2], Vector2.new(x, y), Vector2.new(x, y + h), 2, _G.Config.ColorBox)
                     DrawLine2D(entity.Box[3], Vector2.new(x + calculatedWidth, y), Vector2.new(x + calculatedWidth - w, y), 2, _G.Config.ColorBox)
@@ -195,7 +199,7 @@ RunService.RenderStepped:Connect(function()
                     for _, l in ipairs(entity.Box) do l.Visible = false end
                 end
 
-                -- 2. Skeleton ESP (骨架透視)
+                -- 2. Skeleton ESP
                 if _G.Config.SkeletonESP then
                     local bones = getBones(char)
                     for i, bone in ipairs(bones) do
@@ -224,7 +228,7 @@ RunService.RenderStepped:Connect(function()
                     entity.Text.Visible = true
                 else entity.Text.Visible = false end
 
-                -- 4. Distance ESP (以 Z 軸計算精確距離)
+                -- 4. Distance ESP
                 if _G.Config.DistanceESP then
                     entity.Distance.Text = string.format("[%.1fm]", rootScreenPos.Z)
                     entity.Distance.TextColor3 = _G.Config.ColorDistance
@@ -233,7 +237,7 @@ RunService.RenderStepped:Connect(function()
                     entity.Distance.Visible = true
                 else entity.Distance.Visible = false end
 
-                -- 5. Health Bar (健康血條)
+                -- 5. Health Bar
                 if _G.Config.HealthBarEnabled and hum then
                     local hp = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
                     local barWidth = 3
@@ -261,10 +265,13 @@ RunService.RenderStepped:Connect(function()
                     entity.HealthText.Visible = true
                 else entity.HealthText.Visible = false end
 
-                -- 7. Tracer ESP (自底部中央射出的追蹤射線)
+                -- 7. Tracer ESP（完全參考原腳本：從螢幕底部中央連接到對手 HRP 的 2D 點）
                 if _G.Config.ShowTracer then
-                    DrawLine2D(entity.Tracer, Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y), root2D, 1, _G.Config.ColorShowTracer)
-                else entity.Tracer.Visible = false end
+                    local screenBottomCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    DrawLine2D(entity.Tracer, screenBottomCenter, root2D, 1, _G.Config.ColorShowTracer)
+                else 
+                    entity.Tracer.Visible = false 
+                end
             else
                 -- 移出視窗時清理
                 for _, l in ipairs(entity.Box) do l.Visible = false end
@@ -353,7 +360,7 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 13
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- 滑動支援 (手機觸控/滑鼠)
+-- 滑動支援
 local dragging, dragInput, dragStart, startPos
 TitleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -405,13 +412,13 @@ CloseBtn.TextSize = 18
 CloseBtn.BorderSizePixel = 0
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- 滾動功能按鈕容器 (使手機端更好點擊並完整容納 8 個開關)
+-- 滾動功能按鈕容器
 local ScrollContent = Instance.new("ScrollingFrame", Frame)
 ScrollContent.Size = UDim2.new(1, -12, 1, -45)
 ScrollContent.Position = UDim2.new(0, 6, 0, 40)
 ScrollContent.BackgroundTransparency = 1
 ScrollContent.BorderSizePixel = 0
-ScrollContent.CanvasSize = UDim2.new(0, 0, 0, 310) -- 滾動高，完美留空
+ScrollContent.CanvasSize = UDim2.new(0, 0, 0, 310)
 ScrollContent.ScrollBarThickness = 3
 ScrollContent.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 
@@ -430,9 +437,6 @@ local function CreateToggleBtn(text, configKey)
     btn.BorderSizePixel = 0
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
 
-    local glow = Instance.new("UIStroke", btn)
-    glow.Thickness = 0; glow.Color = Color3.fromRGB(100, 100, 100); glow.Transparency = 1
-
     btn.MouseButton1Click:Connect(function()
         _G.Config[configKey] = not _G.Config[configKey]
         btn.Text = text .. ": " .. (_G.Config[configKey] and "ON" or "OFF")
@@ -441,7 +445,7 @@ local function CreateToggleBtn(text, configKey)
     table.insert(buttonReferences, btn)
 end
 
--- 按鈕列表順序 (完全比照 Rayfield 腳本內的 ESP 選項)
+-- 按鈕清單
 CreateToggleBtn("BOXES ESP", "BoxESP")
 CreateToggleBtn("SKELETON ESP", "SkeletonESP")
 CreateToggleBtn("SHOW NAMES", "NameESP")
@@ -466,7 +470,7 @@ TeamToggle.MouseButton1Click:Connect(function()
 end)
 table.insert(buttonReferences, TeamToggle)
 
--- ==================== 設定與關閉二次確認 (完全保留) ====================
+-- 設定與二次確認視窗
 local SettingsFrame = Instance.new("Frame", Frame)
 SettingsFrame.Size = UDim2.new(1, 0, 1, 0); SettingsFrame.BackgroundColor3 = Themes.Dark.Background; SettingsFrame.Visible = false; SettingsFrame.ZIndex = 20
 Instance.new("UICorner", SettingsFrame).CornerRadius = UDim.new(0, 12)
