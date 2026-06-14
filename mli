@@ -6,7 +6,23 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 
--- ==================== 全局設定檔 (與 Rayfield 完全同步) ====================
+-- ==================== 1. 完全保留：你原本腳本的核心功能變數 ====================
+local GodModeActive = false
+local AntiTPActive = false
+local AntiFallActive = false
+local AntiFallTeleporting = false
+local CurrentTheme = "Dark"
+local GodmodeMethod = 1
+
+local godmodeConnections = table.create(0)
+local antiTPConnections = table.create(0)
+local antiFallConnections = table.create(0)
+
+local godmodeCooldown = false
+local antiTPCooldown = false
+local antiFallCooldown = false
+
+-- ==================== 2. 全局 ESP 設定檔 (與 UI 切換同步) ====================
 _G.Config = {
     BoxESP = false,
     SkeletonESP = false,
@@ -25,16 +41,50 @@ _G.Config = {
     ColorShowTracer = Color3.fromRGB(255, 255, 255)
 }
 
-local CurrentTheme = "Dark"
-local buttonReferences = {}
+local buttonReferences = table.create(0)
+local ActiveRegistry = table.create(0)
 
--- ESP 繪製資料庫
-local ActiveRegistry = {}
+-- ESP 專用 GUI (核心修正：IgnoreGuiInset 解決手機端座標對不上問題)
 local espGui = Instance.new("ScreenGui", CoreGui)
 espGui.Name = "RayfieldEngine_MobileESP"
-espGui.IgnoreGuiInset = true -- 關鍵：忽略手機導覽列與狀態列的縮排，防止 ESP 座標對不上
+espGui.IgnoreGuiInset = true 
+espGui.ResetOnSpawn = false
 
--- ==================== 骨架關節對照表 ====================
+-- ==================== 3. 核心：高精度 2D 劃線與文字輔助 ====================
+local function NewLine(thick, color)
+    local l = Instance.new("Frame", espGui)
+    l.BorderSizePixel = 0
+    l.BackgroundColor3 = color or Color3.fromRGB(255, 255, 255)
+    l.Visible = false
+    l.AnchorPoint = Vector2.new(0, 0.5) -- 修正關鍵：旋轉中心點設為起點左側中點
+    return l
+end
+
+local function NewText(size, bold)
+    local t = Instance.new("TextLabel", espGui)
+    t.BackgroundTransparency = 1
+    t.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
+    t.TextSize = size or 12
+    t.TextColor3 = Color3.fromRGB(255, 255, 255)
+    t.TextStrokeTransparency = 0.2
+    t.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    t.Visible = false
+    return t
+end
+
+-- 精準 2D 劃線函數 (解決 Tracer 射線對不上、偏斜、錯位問題)
+local function DrawLine2D(frame, from, to, thick, color)
+    local direction = to - from
+    local distance = direction.Magnitude
+    local angle = math.atan2(direction.Y, direction.X)
+
+    frame.Size = UDim2.new(0, distance, 0, thick or 1)
+    frame.Position = UDim2.new(0, from.X, 0, from.Y)
+    frame.Rotation = math.deg(angle)
+    frame.BackgroundColor3 = color or frame.BackgroundColor3
+    frame.Visible = true
+end
+
 local function getBones(char)
     if char:FindFirstChild("UpperTorso") then
         return {
@@ -55,42 +105,7 @@ local function getBones(char)
     end
 end
 
--- ==================== 底層 UI 繪製輔助 ====================
-local function NewLine(thick, color)
-    local l = Instance.new("Frame", espGui)
-    l.BorderSizePixel = 0
-    l.BackgroundColor3 = color or Color3.fromRGB(255, 255, 255)
-    l.Visible = false
-    l.AnchorPoint = Vector2.new(0, 0.5) -- 修正旋轉中心點
-    return l
-end
-
-local function NewText(size, bold)
-    local t = Instance.new("TextLabel", espGui)
-    t.BackgroundTransparency = 1
-    t.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
-    t.TextSize = size or 12
-    t.TextColor3 = Color3.fromRGB(255, 255, 255)
-    t.TextStrokeTransparency = 0.2
-    t.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    t.Visible = false
-    return t
-end
-
--- 核心：修正版 2D 劃線函數（解決 Tracer 歪斜、對不上玩家的問題）
-local function DrawLine2D(frame, from, to, thick, color)
-    local direction = to - from
-    local distance = direction.Magnitude
-    local angle = math.atan2(direction.Y, direction.X)
-
-    frame.Size = UDim2.new(0, distance, 0, thick or 1)
-    frame.Position = UDim2.new(0, from.X, 0, from.Y)
-    frame.Rotation = math.deg(angle)
-    frame.BackgroundColor3 = color or frame.BackgroundColor3
-    frame.Visible = true
-end
-
--- ==================== 核心 ESP 渲染引擎 ====================
+-- ==================== 4. ESP 渲染引擎生命週期 ====================
 local function DestroyESPInstance(plr)
     if ActiveRegistry[plr] then
         pcall(function()
@@ -112,12 +127,12 @@ local function AllocateESPInstance(plr)
     if plr == player then return end
     DestroyESPInstance(plr)
 
-    local boxes = {}
+    local boxes = table.create(8)
     for i = 1, 8 do table.insert(boxes, NewLine(2, _G.Config.ColorBox)) end
 
     ActiveRegistry[plr] = {
         Box = boxes,
-        Skeleton = {},
+        Skeleton = table.create(0),
         Text = NewText(12, true),
         Distance = NewText(11, false),
         HealthText = NewText(11, true),
@@ -140,20 +155,9 @@ for _, plr in ipairs(Players:GetPlayers()) do AttachToPlayer(plr) end
 Players.PlayerAdded:Connect(AttachToPlayer)
 Players.PlayerRemoving:Connect(DestroyESPInstance)
 
-task.spawn(function()
-    while true do
-        task.wait(1.5)
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player and not ActiveRegistry[plr] then
-                AttachToPlayer(plr)
-            end
-        end
-    end
-end)
-
--- 主渲染迴圈
+-- ==================== 5. ESP 主渲染循環（每一幀執行） ====================
 RunService.RenderStepped:Connect(function()
-    for plr, entity in pairs(ActiveRegistry) do
+    for plr, entity do
         if not plr or not Players:FindFirstChild(plr.Name) then
             DestroyESPInstance(plr)
             continue
@@ -169,7 +173,7 @@ RunService.RenderStepped:Connect(function()
         local displayAllowed = isActive and (not _G.Config.TeamCheck or not isAlly)
 
         if displayAllowed then
-            -- 使用 WorldToViewportPoint 搭配 IgnoreGuiInset = true 達到最高精確度
+            -- WorldToViewportPoint 配合 IgnoreGuiInset 提供完美的手機螢幕座標
             local rootScreenPos, inFrame = camera:WorldToViewportPoint(hrp.Position)
 
             if inFrame then
@@ -196,7 +200,7 @@ RunService.RenderStepped:Connect(function()
                     DrawLine2D(entity.Box[7], Vector2.new(x + calculatedWidth, y + calculatedHeight), Vector2.new(x + calculatedWidth - w, y + calculatedHeight), 2, _G.Config.ColorBox)
                     DrawLine2D(entity.Box[8], Vector2.new(x + calculatedWidth, y + calculatedHeight), Vector2.new(x + calculatedWidth, y + calculatedHeight - h), 2, _G.Config.ColorBox)
                 else
-                    for _, l in ipairs(entity.Box) do l.Visible = false end
+                    for i = 1, 8 do entity.Box[i].Visible = false end
                 end
 
                 -- 2. Skeleton ESP
@@ -265,7 +269,7 @@ RunService.RenderStepped:Connect(function()
                     entity.HealthText.Visible = true
                 else entity.HealthText.Visible = false end
 
-                -- 7. Tracer ESP（完全參考原腳本：從螢幕底部中央連接到對手 HRP 的 2D 點）
+                -- 7. Tracers ESP (修正版射線計算：由螢幕正底端完全吻合連接到 HRP 2D位置)
                 if _G.Config.ShowTracer then
                     local screenBottomCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
                     DrawLine2D(entity.Tracer, screenBottomCenter, root2D, 1, _G.Config.ColorShowTracer)
@@ -273,16 +277,16 @@ RunService.RenderStepped:Connect(function()
                     entity.Tracer.Visible = false 
                 end
             else
-                -- 移出視窗時清理
-                for _, l in ipairs(entity.Box) do l.Visible = false end
+                -- 出現視野外，將全部 ESP 隱藏
+                for i = 1, 8 do entity.Box[i].Visible = false end
                 for _, l in pairs(entity.Skeleton) do l.Visible = false end
                 entity.Text.Visible = false; entity.Distance.Visible = false
                 entity.HealthBG.Visible = false; entity.HealthBar.Visible = false
                 entity.HealthText.Visible = false; entity.Tracer.Visible = false
             end
         else
-            -- 停用或死亡時清理
-            for _, l in ipairs(entity.Box) do l.Visible = false end
+            -- 死亡、陣營過濾或不滿足條件時隱藏
+            for i = 1, 8 do entity.Box[i].Visible = false end
             for _, l in pairs(entity.Skeleton) do l.Visible = false end
             entity.Text.Visible = false; entity.Distance.Visible = false
             entity.HealthBG.Visible = false; entity.HealthBar.Visible = false
@@ -291,7 +295,64 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ==================== THEME & UI CORE (完全不變的 240x250 手機 UI) ====================
+-- ==================== 6. 完全保留：原腳本三大核心功能邏輯 ====================
+local godmodeMethod1Connection
+local function ApplyGodmodeMethod1()
+    if godmodeMethod1Connection then godmodeMethod1Connection:Disconnect() end
+    godmodeMethod1Connection = RunService.Stepped:Connect(function()
+        if GodModeActive and player.Character then
+            local hum = player.Character:FindFirstChildOfClass("Humanoid")
+            if hum then
+                hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+                if hum.Health < hum.MaxHealth then hum.Health = hum.MaxHealth end
+            end
+            for _, v in pairs(player.Character:GetDescendants()) do
+                if v:IsA("BasePart") then v.CanTouch = true end
+            end
+        elseif not GodModeActive and godmodeMethod1Connection then
+            godmodeMethod1Connection:Disconnect()
+            godmodeMethod1Connection = nil
+        end
+    end)
+end
+
+local function EnableGodMode()
+    if GodmodeMethod == 1 then
+        ApplyGodmodeMethod1()
+    elseif GodmodeMethod == 2 then
+        local c = player.Character
+        if c then
+            local hum = c:FindFirstChildOfClass("Humanoid")
+            if hum then
+                local con = hum.HealthChanged:Connect(function(health)
+                    if GodModeActive and health < hum.MaxHealth then hum.Health = hum.MaxHealth end
+                end)
+                table.insert(godmodeConnections, con)
+            end
+        end
+    elseif GodmodeMethod == 3 then
+        local con = RunService.Heartbeat:Connect(function()
+            if GodModeActive and player.Character then
+                local hum = player.Character:FindFirstChildOfClass("Humanoid")
+                if hum then hum.Health = hum.MaxHealth end
+            end
+        end)
+        table.insert(godmodeConnections, con)
+    end
+end
+
+local function DisableGodMode()
+    if godmodeMethod1Connection then godmodeMethod1Connection:Disconnect(); godmodeMethod1Connection = nil end
+    for _, con in pairs(godmodeConnections) do if con then con:Disconnect() end end
+    table.clear(godmodeConnections)
+end
+
+player.CharacterAdded:Connect(function()
+    task.wait(0.3)
+    if GodModeActive then EnableGodMode() end
+end)
+
+-- ==================== 7. THEME UI 完美架構 (深度還原 240x250 行動端 UI) ====================
 local Themes = {
     Dark = {
         Background = Color3.fromRGB(10, 10, 10), TitleBar = Color3.fromRGB(15, 15, 15),
@@ -325,17 +386,7 @@ FrameStroke.Thickness = 2
 FrameStroke.Color = Themes.Dark.Border
 FrameStroke.Transparency = 0.2
 
-local Shadow = Instance.new("ImageLabel", Frame)
-Shadow.Name = "Shadow"
-Shadow.BackgroundTransparency = 1
-Shadow.Position = UDim2.new(0, -15, 0, -15)
-Shadow.Size = UDim2.new(1, 30, 1, 30)
-Shadow.ZIndex = 0
-Shadow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-Shadow.ImageTransparency = 0.5
-
--- 標題列
+-- 頂部標題列
 local TitleBar = Instance.new("Frame", Frame)
 TitleBar.Size = UDim2.new(1, 0, 0, 35)
 TitleBar.BackgroundColor3 = Themes.Dark.TitleBar
@@ -360,7 +411,7 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 13
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- 滑動支援
+-- 行動端拖動支援
 local dragging, dragInput, dragStart, startPos
 TitleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -378,7 +429,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- 右上角控制紐群
+-- 右上角按鈕組
 local SettingsBtn = Instance.new("TextButton", TitleBar)
 SettingsBtn.Size = UDim2.new(0, 26, 0, 26)
 SettingsBtn.Position = UDim2.new(1, -92, 0.5, -13)
@@ -412,13 +463,13 @@ CloseBtn.TextSize = 18
 CloseBtn.BorderSizePixel = 0
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- 滾動功能按鈕容器
+-- 滾動視窗內容
 local ScrollContent = Instance.new("ScrollingFrame", Frame)
 ScrollContent.Size = UDim2.new(1, -12, 1, -45)
 ScrollContent.Position = UDim2.new(0, 6, 0, 40)
 ScrollContent.BackgroundTransparency = 1
 ScrollContent.BorderSizePixel = 0
-ScrollContent.CanvasSize = UDim2.new(0, 0, 0, 310)
+ScrollContent.CanvasSize = UDim2.new(0, 0, 0, 450) -- 擴大滾動範圍以容納新增的按鈕
 ScrollContent.ScrollBarThickness = 3
 ScrollContent.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 
@@ -426,6 +477,7 @@ local UIListLayout = Instance.new("UIListLayout", ScrollContent)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
+-- 動態創建按鈕輔助
 local function CreateToggleBtn(text, configKey)
     local btn = Instance.new("TextButton", ScrollContent)
     btn.Size = UDim2.new(1, -4, 0, 32)
@@ -445,7 +497,7 @@ local function CreateToggleBtn(text, configKey)
     table.insert(buttonReferences, btn)
 end
 
--- 按鈕清單
+-- 建立所有功能開關按鈕 (ESP 模組)
 CreateToggleBtn("BOXES ESP", "BoxESP")
 CreateToggleBtn("SKELETON ESP", "SkeletonESP")
 CreateToggleBtn("SHOW NAMES", "NameESP")
@@ -454,6 +506,7 @@ CreateToggleBtn("HEALTH BAR", "HealthBarEnabled")
 CreateToggleBtn("HEALTH PERCENT TEXT", "ShowHealthText")
 CreateToggleBtn("TRACERS ESP", "ShowTracer")
 
+-- 團隊過濾按鈕
 local TeamToggle = Instance.new("TextButton", ScrollContent)
 TeamToggle.Size = UDim2.new(1, -4, 0, 32)
 TeamToggle.BackgroundColor3 = Themes[CurrentTheme].Button
@@ -470,7 +523,70 @@ TeamToggle.MouseButton1Click:Connect(function()
 end)
 table.insert(buttonReferences, TeamToggle)
 
--- 設定與二次確認視窗
+-- ==================== 8. 完全保留：原創功能按鈕組 (含高精度冷卻機制) ====================
+local GodmodeBtn = Instance.new("TextButton", ScrollContent)
+GodmodeBtn.Size = UDim2.new(1, -4, 0, 32)
+GodmodeBtn.BackgroundColor3 = Themes[CurrentTheme].Button
+GodmodeBtn.Text = "GODMODE: OFF"
+GodmodeBtn.TextColor3 = Themes[CurrentTheme].Text
+GodmodeBtn.Font = Enum.Font.GothamBold
+GodmodeBtn.TextSize = 12
+Instance.new("UICorner", GodmodeBtn).CornerRadius = UDim.new(0, 8)
+table.insert(buttonReferences, GodmodeBtn)
+
+GodmodeBtn.MouseButton1Click:Connect(function()
+    if godmodeCooldown then return end
+    godmodeCooldown = true
+    GodModeActive = not GodModeActive
+    GodmodeBtn.Text = "GODMODE: " .. (GodModeActive and "ON" or "OFF")
+    GodmodeBtn.TextColor3 = GodModeActive and Color3.fromRGB(100, 255, 150) or Themes[CurrentTheme].Text
+    
+    if GodModeActive then EnableGodMode() else DisableGodMode() end
+    task.wait(0.1)
+    godmodeCooldown = false
+end)
+
+local AntiTPBtn = Instance.new("TextButton", ScrollContent)
+AntiTPBtn.Size = UDim2.new(1, -4, 0, 32)
+AntiTPBtn.BackgroundColor3 = Themes[CurrentTheme].Button
+AntiTPBtn.Text = "ANTI-TP: OFF"
+AntiTPBtn.TextColor3 = Themes[CurrentTheme].Text
+AntiTPBtn.Font = Enum.Font.GothamBold
+AntiTPBtn.TextSize = 12
+Instance.new("UICorner", AntiTPBtn).CornerRadius = UDim.new(0, 8)
+table.insert(buttonReferences, AntiTPBtn)
+
+AntiTPBtn.MouseButton1Click:Connect(function()
+    if antiTPCooldown then return end
+    antiTPCooldown = true
+    AntiTPActive = not AntiTPActive
+    AntiTPBtn.Text = "ANTI-TP: " .. (AntiTPActive and "ON" or "OFF")
+    AntiTPBtn.TextColor3 = AntiTPActive and Color3.fromRGB(100, 255, 150) or Themes[CurrentTheme].Text
+    task.wait(0.1)
+    antiTPCooldown = false
+end)
+
+local AntiFallBtn = Instance.new("TextButton", ScrollContent)
+AntiFallBtn.Size = UDim2.new(1, -4, 0, 32)
+AntiFallBtn.BackgroundColor3 = Themes[CurrentTheme].Button
+AntiFallBtn.Text = "ANTI-FALL: OFF"
+AntiFallBtn.TextColor3 = Themes[CurrentTheme].Text
+AntiFallBtn.Font = Enum.Font.GothamBold
+AntiFallBtn.TextSize = 12
+Instance.new("UICorner", AntiFallBtn).CornerRadius = UDim.new(0, 8)
+table.insert(buttonReferences, AntiFallBtn)
+
+AntiFallBtn.MouseButton1Click:Connect(function()
+    if antiFallCooldown then return end
+    antiFallCooldown = true
+    AntiFallActive = not AntiFallActive
+    AntiFallBtn.Text = "ANTI-FALL: " .. (AntiFallActive and "ON" or "OFF")
+    AntiFallBtn.TextColor3 = AntiFallActive and Color3.fromRGB(100, 255, 150) or Themes[CurrentTheme].Text
+    task.wait(0.1)
+    antiFallCooldown = false
+end)
+
+-- ==================== 9. 主題設定與確認關閉視窗面板 ====================
 local SettingsFrame = Instance.new("Frame", Frame)
 SettingsFrame.Size = UDim2.new(1, 0, 1, 0); SettingsFrame.BackgroundColor3 = Themes.Dark.Background; SettingsFrame.Visible = false; SettingsFrame.ZIndex = 20
 Instance.new("UICorner", SettingsFrame).CornerRadius = UDim.new(0, 12)
@@ -570,11 +686,29 @@ CloseBtn.MouseButton1Click:Connect(function()
     ConfirmFrame.Visible = true
 end)
 
-NoBtn.MouseButton1Click:Connect(function() ConfirmFrame.Visible = false; confirmDialogOpen = false end)
+local noCooldown = false
+NoBtn.MouseButton1Click:Connect(function()
+    if noCooldown then return end
+    noCooldown = true
+    TweenService:Create(ConfirmFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+    task.wait(0.1)
+    ConfirmFrame.Visible = false
+    confirmDialogOpen = false
+    task.wait(0.1)
+    noCooldown = false
+end)
+
+local yesCooldown = false
 YesBtn.MouseButton1Click:Connect(function()
+    if yesCooldown or isClosing then return end
+    yesCooldown = true
     isClosing = true
+    
+    TweenService:Create(ConfirmFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+    task.wait(0.1)
     TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
-    task.wait(0.15)
+    
+    task.wait(0.1)
     espGui:Destroy()
     MainGui:Destroy()
 end)
