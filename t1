@@ -1,0 +1,47 @@
+-- Fixed a bug where u keep respawning when u died
+-- Fixed the bug Where u cant move when u died
+-- Really Fixed Because People is Hating Because its not fixed
+-- Sorry For not fixing it
+game:GetService('RunService').Stepped:connect(function()
+if game.Players.LocalPlayer.Character.Humanoid.RigType == Enum.HumanoidRigType.R6 then
+-- prison life god mode by bloxploits
+while wait() do 
+	if game.Players.LocalPlayer.Character.Humanoid.Health < 1 then 
+		local lastPos = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").position
+		local plr = game.Players.LocalPlayer.Name
+		local gayevent = game:GetService("Workspace").Remote.loadchar
+		gayevent:InvokeServer(plr)
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(lastPos)
+	end
+end
+else
+if game.Players.LocalPlayer.Character.Humanoid.RigType == Enum.HumanoidRigType.R15 then
+local Player = game:GetService("Players").LocalPlayer
+repeat wait() until Player.Character
+local function Main()
+	local Humanoid = Player.Character:WaitForChild("Humanoid")
+	local ripfunction = false
+	Humanoid.Died:Connect(function()
+		local DeathLocation = Player.Character:WaitForChild("HumanoidRootPart").CFrame
+		workspace.ChildAdded:Connect(function(Object)
+			if not ripfunction and Object.Name == Player.Name then
+				wait()
+				Player.Character:WaitForChild("HumanoidRootPart").CFrame = DeathLocation
+				ripfunction = true
+				Main()
+			end
+		end)
+	end)
+end
+Main()
+end
+end
+end)
+
+game:GetService("StarterGui"):SetCore("SendNotification",{
+	Title = "roblox Godmode";
+	Text = "Made by: Topcoldgaming";
+	Time = 20;
+	Icon = "rbxassetid://505845268";
+	Button1 = "Okay";
+})
