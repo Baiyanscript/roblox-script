@@ -20,7 +20,7 @@
 | **`gamepass`** | 与游戏通行证 (Gamepass) 相关的脚本[reference:18] | ~33.2 KB[reference:19] |
 | **`gamepassmenu`** | 游戏通行证的菜单界面脚本[reference:20] | ~242.3 KB[reference:21] |
 | **`godmod`** | 无敌/上帝模式 (God Mode) 脚本[reference:22] | ~8.3 KB[reference:23] |
-| **`mod1`**, **`mod2`**, **`modall`** | 功能模组 (Mod) 脚本，`modall` 可能为集合版[reference:24][reference:25] | 14.2 KB ~ 29.0 KB[reference:26][reference:27] |
+| **`mod1`**, **`mod2`**, **`modall`**, **`3`**| 功能模组 (Mod) 脚本，`modall` 可能为集合版[reference:24][reference:25] | 14.2 KB ~ 29.0 KB[reference:26][reference:27] |
 | **`sab-modded`** | 修改版 (Modded) 的 SAB 脚本[reference:28] | ~44.9 KB[reference:29] |
 | **`tp-script`** | 传送 (Teleport) 功能脚本[reference:30] | ~147.2 KB[reference:31] |
 | **`test`** | 测试用脚本[reference:32] | ~19.7 KB[reference:33] |
