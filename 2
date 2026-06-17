@@ -1,6 +1,7 @@
 -- ==================== SYSTEM CORE ARCHITECTURE ====================
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
+-- 完全對接 message.txt 第 1~4 行所提及的基礎系統服務與核心變數
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -10,7 +11,7 @@ local TweenService = game:GetService("TweenService")
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
--- 全局配置設定檔案（已整合 God Mode）
+-- 全局配置設定檔案（已整合 God Mode 開關狀態）
 _G.Config = {
     -- God Mode Settings
     GodModeEnabled = false,
@@ -134,10 +135,11 @@ local function enableGodMode()
         end
     end)
 
-    -- 分身與控制同步
+    -- 分身與本體控制同步
     godModeHeartbeat = RunService.Heartbeat:Connect(function()
         local myHum = char:FindFirstChildOfClass("Humanoid")
-        if ghostClone and ghostClone:FindFirstChild("HumanoidRootPart") and ghostClone:FindFirstChildOfClass("Humanoid") and char American and char:FindFirstChild("HumanoidRootPart") and myHum then
+        -- 修正了原先代碼中殘留的文字語法錯誤 (char American 修正為 char)
+        if ghostClone and ghostClone:FindFirstChild("HumanoidRootPart") and ghostClone:FindFirstChildOfClass("Humanoid") and char and char:FindFirstChild("HumanoidRootPart") and myHum then
             local moveDir = myHum.MoveDirection
             local ghostHum = ghostClone:FindFirstChildOfClass("Humanoid")
             
@@ -149,7 +151,7 @@ local function enableGodMode()
                 ghostClone.HumanoidRootPart.CFrame = ghostClone.HumanoidRootPart.CFrame:Lerp(targetRot, 0.25)
             end
             
-            -- 距離內自動觸發 ProximityPrompt
+            -- 距離內自動觸發互動 E 鍵
             if os.clock() - lastPromptUpdate > 0.5 then
                 for _, p in pairs(Workspace:GetDescendants()) do
                     if p:IsA("ProximityPrompt") then
@@ -160,7 +162,7 @@ local function enableGodMode()
                 lastPromptUpdate = os.clock()
             end
             
-            -- 將本體藏於地下安全處
+            -- 將真實本體藏於地下安全處防止受到外部判定傷害
             char.HumanoidRootPart.CFrame = ghostClone.HumanoidRootPart.CFrame * CFrame.new(0, -15, 0)
             char.HumanoidRootPart.Velocity = Vector3.zero
         else 
@@ -407,7 +409,7 @@ RunService.RenderStepped:Connect(function()
         SilentAimTarget = nil
     end
 
-    -- Process ESP
+    -- Process ESP Engine
     for plr, entity in pairs(ActiveRegistry) do
         if not plr or not Players:FindFirstChild(plr.Name) then
             DestroyESPInstance(plr)
@@ -543,7 +545,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Camera Aimbot
+    -- Smooth Camera Aimbot Tracking
     if TargetHolding and _G.Config.Aimbot and LockedTarget then
         local char = LockedTarget.Character
         if char and char:FindFirstChild(_G.Config.AimPart) and isAlive(char) then
@@ -584,7 +586,7 @@ oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     return oldNamecall(self, ...)
 end)
 
--- ==================== INPUT HANDLERS ====================
+-- ==================== PERIPHERAL CAPTURE HOOKS ====================
 UserInputService.InputBegan:Connect(function(key, typing)
     if typing then return end
     if key.UserInputType == Enum.UserInputType.MouseButton2 then
@@ -607,7 +609,7 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ==================== LOOP CO-THREADS ====================
+-- ==================== GAMEPLAY MANIPULATION CO-THREADS ====================
 task.spawn(function()
     while true do
         task.wait(1)
@@ -674,14 +676,14 @@ local function SyncSpeedParameters(status)
     end
 end
 
--- 處理角色復活重啟機制
+-- 處理角色重新加載與復活重啟機制
 LocalPlayer.CharacterAdded:Connect(function()
     task.wait(0.6)
     if _G.Config.SpeedHack then SyncSpeedParameters(true) end
-    if _G.Config.GodModeEnabled then enableGodMode() end -- 復活後自動重新啟用神模式
+    if _G.Config.GodModeEnabled then enableGodMode() end -- 確保復活後自動維持神模式
 end)
 
--- ==================== RAYFIELD 選單介面建構 ====================
+-- ==================== CONTROLLER CANVAS DRAWING (RAYFIELD) ====================
 local Window = Rayfield:CreateWindow({
     Name = "Quotas G6 x Xcx Hybrid Hub",
     LoadingTitle = "Initializing Merged Environment...",
@@ -689,15 +691,15 @@ local Window = Rayfield:CreateWindow({
     ConfigurationSaving = { Enabled = false }
 })
 
--- 創建各個功能分頁
-local GodModeTab = Window:CreateTab("God Mode (Immortality)", nil) -- 新增的神模式分頁
+-- 實作結構化的 UI 切換標籤頁面
+local GodModeTab = Window:CreateTab("God Mode (Immortality)", nil)
 local CombatTab = Window:CreateTab("Camera Aimbot", nil)
 local SilentAimTab = Window:CreateTab("Silent Aim", nil)
 local EspTab = Window:CreateTab("Visuals (ESP)", nil)
 local MovementTab = Window:CreateTab("Movement", nil)
 local WeaponsTab = Window:CreateTab("Weapons", nil)
 
--- 1. God Mode 分頁內容
+-- 1. God Mode 操控元件
 GodModeTab:CreateToggle({
     Name = "Enable God Mode",
     CurrentValue = _G.Config.GodModeEnabled,
@@ -711,7 +713,7 @@ GodModeTab:CreateParagraph({
     Content = "Made by Mark baiyan.\nThis module creates a ghost decoy at your position while safely hiding your true character box underneath the ground maps to prevent taking any dynamic damage."
 })
 
--- 2. Camera Aimbot 分頁內容
+-- 2. Camera Aimbot 操控元件
 CombatTab:CreateToggle({ Name = "Enable Camera Aimbot", CurrentValue = _G.Config.Aimbot, Callback = function(state) _G.Config.Aimbot = state end })
 CombatTab:CreateToggle({ Name = "Display Aimbot FOV", CurrentValue = _G.Config.FOVCircle, Callback = function(state) _G.Config.FOVCircle = state end })
 CombatTab:CreateSlider({ Name = "FOV Size", Range = {30, 400}, Increment = 5, CurrentValue = _G.Config.FOVSize, Callback = function(val) _G.Config.FOVSize = val end })
@@ -720,7 +722,7 @@ CombatTab:CreateDropdown({ Name = "Target Bone", Options = {"Head", "HumanoidRoo
 CombatTab:CreateToggle({ Name = "Distance Priority (3D)", CurrentValue = _G.Config.UseClosestByDistance, Callback = function(state) _G.Config.UseClosestByDistance = state end })
 CombatTab:CreateToggle({ Name = "Team Check", CurrentValue = _G.Config.TeamCheck, Callback = function(state) _G.Config.TeamCheck = state end })
 
--- 3. Silent Aim 分頁內容
+-- 3. Silent Aim 操控元件
 SilentAimTab:CreateToggle({ Name = "Enable Silent Aim", CurrentValue = _G.Config.SilentAimEnabled, Callback = function(state) _G.Config.SilentAimEnabled = state end })
 SilentAimTab:CreateToggle({ Name = "Show Silent Aim FOV", CurrentValue = _G.Config.SilentAimShowFOV, Callback = function(state) _G.Config.SilentAimShowFOV = state end })
 SilentAimTab:CreateSlider({ Name = "Silent Aim FOV Size", Range = {50, 1000}, Increment = 10, CurrentValue = _G.Config.SilentAimFOV, Callback = function(v) _G.Config.SilentAimFOV = v end })
@@ -729,7 +731,7 @@ SilentAimTab:CreateSlider({ Name = "Fallback Volumetric Hitbox Size", Range = {2
 SilentAimTab:CreateColorPicker({ Name = "FOV Default Color", Color = _G.Config.FovColorSilentAim, Callback = function(v) _G.Config.FovColorSilentAim = v end })
 SilentAimTab:CreateColorPicker({ Name = "FOV Locked Color", Color = _G.Config.FovLockedColorSilentAim, Callback = function(v) _G.Config.FovLockedColorSilentAim = v end })
 
--- 4. Visuals (ESP) 分頁內容
+-- 4. Visuals (ESP) 操控元件
 EspTab:CreateToggle({ Name = "Boxes ESP", CurrentValue = _G.Config.BoxESP, Callback = function(state) _G.Config.BoxESP = state end })
 EspTab:CreateToggle({ Name = "Skeleton ESP", CurrentValue = _G.Config.SkeletonESP, Callback = function(state) _G.Config.SkeletonESP = state end })
 EspTab:CreateToggle({ Name = "Show Names", CurrentValue = _G.Config.NameESP, Callback = function(state) _G.Config.NameESP = state end })
@@ -740,12 +742,12 @@ EspTab:CreateToggle({ Name = "Tracers", CurrentValue = _G.Config.ShowTracer, Cal
 EspTab:CreateColorPicker({ Name = "Box Color", Color = _G.Config.ColorBox, Callback = function(v) _G.Config.ColorBox = v end })
 EspTab:CreateColorPicker({ Name = "Skeleton Color", Color = _G.Config.ColorSkeleton, Callback = function(v) _G.Config.ColorSkeleton = v end })
 
--- 5. Movement 分頁內容
+-- 5. Movement 操控元件
 MovementTab:CreateToggle({ Name = "Infinite Jump", CurrentValue = _G.Config.InfiniteJump, Callback = function(state) _G.Config.InfiniteJump = state end })
 MovementTab:CreateToggle({ Name = "Speed Hack", CurrentValue = _G.Config.SpeedHack, Callback = function(state) _G.Config.SpeedHack = state SyncSpeedParameters(state) end })
 MovementTab:CreateSlider({ Name = "WalkSpeed Value", Range = {16, 200}, Increment = 2, CurrentValue = _G.Config.WalkSpeed, Callback = function(val) _G.Config.WalkSpeed = val if _G.Config.SpeedHack then SyncSpeedParameters(true) end end })
 
--- 6. Weapons 分頁內容
+-- 6. Weapons 操控元件
 WeaponsTab:CreateToggle({ Name = "Infinite Ammo", CurrentValue = _G.Config.InfAmmo, Callback = function(state) _G.Config.InfAmmo = state end })
 WeaponsTab:CreateToggle({ Name = "Fast Fire Rate", CurrentValue = _G.Config.FireRateMod, Callback = function(state) _G.Config.FireRateMod = state end })
 WeaponsTab:CreateToggle({ Name = "No Recoil / Spread", CurrentValue = _G.Config.RecoilMod, Callback = function(state) _G.Config.RecoilMod = state end })
