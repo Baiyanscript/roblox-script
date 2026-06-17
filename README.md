@@ -23,7 +23,6 @@
 | **`mod1`**, **`mod2`**, **`modall`**, **`3`**| 功能模组 (Mod) 脚本，`modall` 可能为集合版[reference:24][reference:25] | 14.2 KB ~ 29.0 KB[reference:26][reference:27] |
 | **`sab-modded`** | 修改版 (Modded) 的 SAB 脚本[reference:28] | ~44.9 KB[reference:29] |
 | **`tp-script`** | 传送 (Teleport) 功能脚本[reference:30] | ~147.2 KB[reference:31] |
-| **`test`** | 测试用脚本[reference:32] | ~19.7 KB[reference:33] |
 
 ## 🚀 如何使用 (How to Use)
 
@@ -63,9 +62,9 @@
 | `mod1` | 功能模組 (Mod) 腳本 #1 | ~14.2 KB |
 | `mod2` | 功能模組 (Mod) 腳本 #2 | ~26.6 KB |
 | `modall` | 功能模組集合版腳本 | ~29.0 KB |
+| `3` | 功能模組集合版腳本+GodMod | ~37.2 KB |
 | `sab-modded` | 修改版 (Modded) 的 SAB 腳本 | ~44.9 KB |
 | `tp-script` | 傳送 (Teleport) 功能腳本 | ~147.2 KB |
-| `test` | 測試用腳本 | ~19.7 KB |
 
 ## 🚀 如何使用
 
@@ -78,7 +77,7 @@
 | 項目 | 內容 |
 |------|------|
 | 創建日期 | 2026-06-07 |
-| 最後更新 | 2026-06-16 |
+| 最後更新 | 2026-06-17 |
 | 預設分支 | `main` |
 | 總檔案數 | 14 |
 | 倉庫大小 | ~4.9 MB |
