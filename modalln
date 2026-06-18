@@ -565,7 +565,7 @@ end)
 -- ==================== CONTROLLER CANVAS DRAWING (WIND UI) ====================
 local Window = WindUI:CreateWindow({
     Title = "Quotas G6 x Xcx Hybrid Hub",
-    Icon = "rbxassetid://10723343321", -- Default generic asset string, adapt as preferred
+    Icon = "rbxassetid://10723343321", 
     Author = "by Quotas & Xcx",
     Folder = "HybridHubConfig"
 })
