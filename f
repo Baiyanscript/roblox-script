@@ -1,5 +1,5 @@
 -- =================================================================
--- ✈️ FLY UI SYSTEM V3 (全新飛行功能優化 · 支援打字輸入防重疊版)
+-- ✈️ FLY UI SYSTEM V3 (保持原版飛行邏輯 · 僅優化 UI 與加減輸入框)
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -29,7 +29,7 @@ Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137) -- 亮綠色
 Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
 Frame.BorderSizePixel = 1
 Frame.Position = UDim2.new(0.1, 0, 0.35, 0)
-Frame.Size = UDim2.new(0, 180, 0, 100) -- 高度 100 像素，完美容納三排元件
+Frame.Size = UDim2.new(0, 180, 0, 100) -- 高度 100 像素
 Frame.Active = true
 Frame.Draggable = true
 
@@ -71,7 +71,7 @@ decSpeed.Name = "DecreaseSpeed"
 decSpeed.Parent = Frame
 decSpeed.BackgroundColor3 = Color3.fromRGB(240, 100, 100) -- 淡紅
 decSpeed.BorderSizePixel = 0
-decSpeed.Position = UDim2.new(0, 9, 0, 66) -- 靠左固定位置
+decSpeed.Position = UDim2.new(0, 9, 0, 66) 
 decSpeed.Size = UDim2.new(0, 30, 0, 26)
 decSpeed.Font = Enum.Font.SourceSansBold
 decSpeed.Text = "-"
@@ -84,7 +84,7 @@ speedInput.Name = "SpeedInput"
 speedInput.Parent = Frame
 speedInput.BackgroundColor3 = Color3.fromRGB(79, 255, 152) -- 亮綠
 speedInput.BorderSizePixel = 0
-speedInput.Position = UDim2.new(0, 43, 0, 66) -- 置中固定位置
+speedInput.Position = UDim2.new(0, 43, 0, 66) 
 speedInput.Size = UDim2.new(0, 94, 0, 26)
 speedInput.Font = Enum.Font.SourceSansBold
 speedInput.Text = tostring(currentFlySpeed)
@@ -98,7 +98,7 @@ incSpeed.Name = "IncreaseSpeed"
 incSpeed.Parent = Frame
 incSpeed.BackgroundColor3 = Color3.fromRGB(100, 210, 240) -- 淡藍
 incSpeed.BorderSizePixel = 0
-incSpeed.Position = UDim2.new(0, 141, 0, 66) -- 靠右固定位置
+incSpeed.Position = UDim2.new(0, 141, 0, 66) 
 incSpeed.Size = UDim2.new(0, 30, 0, 26)
 incSpeed.Font = Enum.Font.SourceSansBold
 incSpeed.Text = "+"
@@ -147,7 +147,7 @@ mini2.TextSize = 18
 mini2.Visible = false
 
 -- =================================================================
--- ⚡ FLY 核心功能邏輯
+-- ⚡ FLY 核心功能邏輯 (完全保留原版飛行算法，不作變動)
 -- =================================================================
 
 local function updateSpeedUI()
@@ -157,14 +157,13 @@ end
 local function disableFly()
 	flyEnabled = false
 	onof.Text = "飛行功能 : 關閉"
-	onof.BackgroundColor3 = Color3.fromRGB(255, 249, 74) -- 還原黃色
+	onof.BackgroundColor3 = Color3.fromRGB(255, 249, 74)
 	
 	if flyConnection then
 		flyConnection:Disconnect()
 		flyConnection = nil
 	end
 	
-	-- 恢復重力與速度
 	local char = player.Character
 	if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
 		char.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
@@ -173,10 +172,10 @@ local function disableFly()
 end
 
 local function enableFly()
-	disableFly() -- 清除舊連線
+	disableFly()
 	flyEnabled = true
 	onof.Text = "飛行功能 : 開啟"
-	onof.BackgroundColor3 = Color3.fromRGB(79, 255, 152) -- 變亮綠色
+	onof.BackgroundColor3 = Color3.fromRGB(79, 255, 152)
 	
 	local char = player.Character
 	if not char or not char:FindFirstChild("HumanoidRootPart") or not char:FindFirstChild("Humanoid") then return end
@@ -185,7 +184,7 @@ local function enableFly()
 	local humanoid = char.Humanoid
 	humanoid.PlatformStand = true
 	
-	-- 穩定的直覺飛行邏輯
+	-- 原版飛行心跳連線邏輯
 	flyConnection = RunService.Heartbeat:Connect(function()
 		if char and root and humanoid and flyEnabled then
 			local moveDirection = humanoid.MoveDirection
@@ -193,11 +192,9 @@ local function enableFly()
 			local flyVelocity = Vector3.new(0, 0, 0)
 			
 			if moveDirection.Magnitude > 0 then
-				-- 依照視角方向進行前進與後退飛行
 				flyVelocity = cameraCFrame:VectorToWorldSpace(Vector3.new(moveDirection.X, 0, moveDirection.Z).Unit * currentFlySpeed)
 			end
 			
-			-- 完美的浮空重力消除阻斷
 			root.Velocity = Vector3.new(flyVelocity.X, 0, flyVelocity.Z)
 		else
 			disableFly()
@@ -222,20 +219,20 @@ end)
 speedInput.FocusLost:Connect(function(enterPressed)
 	local inputNum = tonumber(speedInput.Text)
 	if inputNum then
-		currentFlySpeed = math.clamp(inputNum, 0, 1000) -- 限制最大速度 1000
+		currentFlySpeed = math.clamp(inputNum, 0, 1000)
 	else
-		currentFlySpeed = 16 -- 輸錯時自動還原預設
+		currentFlySpeed = 16
 	end
 	updateSpeedUI()
 end)
 
--- 速度「加」按鈕 (每次增加 10)
+-- 速度「加」按鈕
 incSpeed.MouseButton1Click:Connect(function()
 	currentFlySpeed = math.min(1000, currentFlySpeed + 10)
 	updateSpeedUI()
 end)
 
--- 速度「減」按鈕 (每次減少 10，最低維持 0)
+-- 速度「減」按鈕
 decSpeed.MouseButton1Click:Connect(function()
 	currentFlySpeed = math.max(0, currentFlySpeed - 10)
 	updateSpeedUI()
@@ -247,7 +244,7 @@ closebutton.MouseButton1Click:Connect(function()
 	main:Destroy()
 end)
 
--- 最小化點擊：隱藏下方所有輸入與開關，並把標題挪到最小化按鈕左側
+-- 最小化點擊：隱藏下方元件，標題移動到控制鈕左側
 mini.MouseButton1Click:Connect(function()
 	onof.Visible = false
 	decSpeed.Visible = false
@@ -259,12 +256,11 @@ mini.MouseButton1Click:Connect(function()
 	Frame.BackgroundTransparency = 1
 	Frame.BorderSizePixel = 0
 	
-	-- 動態改變標題大小與位置，精準顯示在「+」與「X」控制按鈕的左邊
 	TextLabel.Position = UDim2.new(1, -164, 0, -24) 
 	TextLabel.Size = UDim2.new(0, 96, 0, 22)         
 end)
 
--- 最大化還原點擊：恢復所有元件顯示與背景框架
+-- 最大化還原點擊
 mini2.MouseButton1Click:Connect(function()
 	onof.Visible = true
 	decSpeed.Visible = true
@@ -276,7 +272,6 @@ mini2.MouseButton1Click:Connect(function()
 	Frame.BackgroundTransparency = 0
 	Frame.BorderSizePixel = 1
 	
-	-- 還原標題列到頂部填滿位置
 	TextLabel.Position = UDim2.new(0, 0, 0, 0)
 	TextLabel.Size = UDim2.new(1, 0, 0, 26)
 end)
@@ -288,7 +283,7 @@ end)
 
 -- 提示執行成功
 game:GetService("StarterGui"):SetCore("SendNotification", { 
-	Title = "Fly 腳本 UI 優化",
-	Text = "飛行優化版製作完成！",
+	Title = "Fly 腳本外觀優化",
+	Text = "原版飛行邏輯不變，UI與輸入框已升級！",
 	Icon = ""
 })
