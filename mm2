@@ -1,5 +1,3 @@
--- Yet Another Baiyan Hub Menu 1.21
-
 if not game:IsLoaded() then
 	game:GetService("StarterGui"):SetCore("SendNotification", {
 		Title = "Script loading",
@@ -3722,7 +3720,7 @@ local function CEBY_routine() -- Routine: StarterGui.Baiyan.Universal
 		Type = "Button",
 		Args = {"about roblox", function(Self)
 			if setclipboard then setclipboard("https://www.roblox.com/users/9878817943/profile") end
-			fu.notification('github link has been copied to clipboard!')
+			fu.notification('roblox link has been copied to clipboard!')
 		end,}
 	})
 	
