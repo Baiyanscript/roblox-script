@@ -1,0 +1,253 @@
+-- =================================================================
+-- 🦘 JUMP CONTROL SYSTEM V3 (無限跳/次數跳 · 雙模式打字防重疊版)
+-- =================================================================
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+
+-- 核心狀態變數
+local maxJumps = "無限" -- 可以是 "無限" 或 數字 (例如 2 代表雙段跳)
+local jumpCount = 0     -- 當前的空中跳躍次數
+
+-- =================================================================
+-- 🎨 UI 基礎實例與排版建構 (精準像素定位，徹底防重疊)
+-- =================================================================
+
+local main = Instance.new("ScreenGui")
+main.Name = "JumpGui_V3"
+main.Parent = player:WaitForChild("PlayerGui")
+main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+main.ResetOnSpawn = false
+
+-- 主背景框架 (精簡輕量，高度 70 像素)
+local Frame = Instance.new("Frame")
+Frame.Name = "MainFrame"
+Frame.Parent = main
+Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137) -- 亮綠色
+Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
+Frame.BorderSizePixel = 1
+Frame.Position = UDim2.new(0.1, 0, 0.5, 0) -- 與之前的腳本錯開，預設在螢幕中下方
+Frame.Size = UDim2.new(0, 180, 0, 70) 
+Frame.Active = true
+Frame.Draggable = true
+
+-- 粉色標題列
+local TextLabel = Instance.new("TextLabel")
+TextLabel.Name = "TitleLabel"
+TextLabel.Parent = Frame
+TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255) -- 復古粉色
+TextLabel.BorderSizePixel = 0
+TextLabel.Position = UDim2.new(0, 0, 0, 0)
+TextLabel.Size = UDim2.new(1, 0, 0, 26) 
+TextLabel.Font = Enum.Font.SourceSansBold
+TextLabel.Text = "跳躍UI介面V3"
+TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextLabel.TextSize = 14
+TextLabel.TextScaled = true
+TextLabel.TextWrapped = true
+
+-- =================================================================
+-- 🛠️ 跳躍模式控制組 (左減、中輸入、右加，位置完全固定，絕不重疊)
+-- =================================================================
+
+-- 次數「減」按鈕
+local decJump = Instance.new("TextButton")
+decJump.Name = "DecreaseJump"
+decJump.Parent = Frame
+decJump.BackgroundColor3 = Color3.fromRGB(240, 100, 100) -- 淡紅
+decJump.BorderSizePixel = 0
+decJump.Position = UDim2.new(0, 9, 0, 36) 
+decJump.Size = UDim2.new(0, 30, 0, 26)
+decJump.Font = Enum.Font.SourceSansBold
+decJump.Text = "-"
+decJump.TextColor3 = Color3.fromRGB(0, 0, 0)
+decJump.TextSize = 20
+
+-- 跳躍設定【打字輸入框】(可打字輸入數字或 inf)
+local jumpInput = Instance.new("TextBox")
+jumpInput.Name = "JumpInput"
+jumpInput.Parent = Frame
+jumpInput.BackgroundColor3 = Color3.fromRGB(79, 255, 152) -- 亮綠
+jumpInput.BorderSizePixel = 0
+jumpInput.Position = UDim2.new(0, 43, 0, 36) 
+jumpInput.Size = UDim2.new(0, 94, 0, 26)
+jumpInput.Font = Enum.Font.SourceSansBold
+jumpInput.Text = "跳躍: " .. tostring(maxJumps)
+jumpInput.TextColor3 = Color3.fromRGB(0, 0, 0)
+jumpInput.TextSize = 13
+jumpInput.ClearTextOnFocus = false
+
+-- 次數「加」按鈕
+local incJump = Instance.new("TextButton")
+incJump.Name = "IncreaseJump"
+incJump.Parent = Frame
+incJump.BackgroundColor3 = Color3.fromRGB(100, 210, 240) -- 淡藍
+incJump.BorderSizePixel = 0
+incJump.Position = UDim2.new(0, 141, 0, 36) 
+incJump.Size = UDim2.new(0, 30, 0, 26)
+incJump.Font = Enum.Font.SourceSansBold
+incJump.Text = "+"
+incJump.TextColor3 = Color3.fromRGB(0, 0, 0)
+incJump.TextSize = 18
+
+-- =================================================================
+-- 📌 右上角控制鈕群 (外側絕對坐標，防止跑位)
+-- =================================================================
+
+-- 關閉按鈕 (X)
+local closebutton = Instance.new("TextButton")
+closebutton.Name = "CloseButton"
+closebutton.Parent = Frame
+closebutton.BackgroundColor3 = Color3.fromRGB(225, 25, 0) 
+closebutton.Size = UDim2.new(0, 30, 0, 22)
+closebutton.Position = UDim2.new(1, -30, 0, -24) 
+closebutton.Font = Enum.Font.SourceSansBold
+closebutton.Text = "X"
+closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closebutton.TextSize = 16
+
+-- 最小化按鈕 (-)
+local mini = Instance.new("TextButton")
+mini.Name = "MinimizeButton"
+mini.Parent = Frame
+mini.BackgroundColor3 = Color3.fromRGB(192, 150, 230) 
+mini.Size = UDim2.new(0, 30, 0, 22)
+mini.Position = UDim2.new(1, -64, 0, -24) 
+mini.Font = Enum.Font.SourceSansBold
+mini.Text = "-"
+mini.TextColor3 = Color3.fromRGB(255, 255, 255)
+mini.TextSize = 18
+
+-- 最大化還原鈕 (+)
+local mini2 = Instance.new("TextButton")
+mini2.Name = "MaximizeButton"
+mini2.Parent = Frame
+mini2.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
+mini2.Size = UDim2.new(0, 30, 0, 22)
+mini2.Position = UDim2.new(1, -64, 0, -24)
+mini2.Font = Enum.Font.SourceSansBold
+mini2.Text = "+"
+mini2.TextColor3 = Color3.fromRGB(255, 255, 255)
+mini2.TextSize = 18
+mini2.Visible = false
+
+-- =================================================================
+-- ⚡ JUMP 核心跳躍邏輯
+-- =================================================================
+
+local function updateJumpUI()
+	jumpInput.Text = "跳躍: " .. tostring(maxJumps)
+end
+
+-- 監聽空格鍵跳躍
+local jumpConnection = UserInputService.JumpRequest:Connect(function()
+	local char = player.Character
+	if not char then return end
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	local root = char:FindFirstChild("HumanoidRootPart")
+	
+	if humanoid and root then
+		-- 如果在地面上，重置空中跳躍計數
+		if humanoid:GetState() == Enum.HumanoidStateType.Freefall or humanoid:GetState() == Enum.HumanoidStateType.Jumping then
+			-- 空中跳躍邏輯
+			if maxJumps == "無限" then
+				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+			elseif type(maxJumps) == "number" then
+				if jumpCount < maxJumps then
+					jumpCount = jumpCount + 1
+					humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+				end
+			end
+		else
+			-- 站在地面上時，重置計數（第一跳算落地後的初始狀態）
+			jumpCount = 1 
+		end
+	end
+end)
+
+-- =================================================================
+-- 互動事件與動態縮小排版綁定
+-- =================================================================
+
+-- 【文字輸入框】打字結束事件
+jumpInput.FocusLost:Connect(function(enterPressed)
+	local text = jumpInput.Text:lower()
+	-- 移除前綴文字方便純文字判斷
+	text = text:gsub("跳躍:", ""):gsub(" ", "")
+	
+	local num = tonumber(text)
+	if text == "inf" or text == "無限" or text == "m" then
+		maxJumps = "無限"
+	elseif num then
+		maxJumps = math.clamp(math.floor(num), 1, 100) -- 最少跳 1 下，最多 100 下
+	else
+		maxJumps = "無限" -- 亂打字一律防呆變無限
+	end
+	updateJumpUI()
+end)
+
+-- 「+」按鈕點擊
+incJump.MouseButton1Click:Connect(function()
+	if maxJumps == "無限" then
+		maxJumps = 1
+	else
+		maxJumps = math.min(100, maxJumps + 1)
+	end
+	updateJumpUI()
+end)
+
+-- 「-」按鈕點擊
+decJump.MouseButton1Click:Connect(function()
+	if maxJumps ~= "無限" then
+		if maxJumps <= 1 then
+			maxJumps = "無限"
+		else
+			maxJumps = maxJumps - 1
+		end
+	end
+	updateJumpUI()
+end)
+
+-- 關閉 UI 按鈕
+closebutton.MouseButton1Click:Connect(function()
+	if jumpConnection then jumpConnection:Disconnect() end
+	main:Destroy()
+end)
+
+-- 最小化點擊
+mini.MouseButton1Click:Connect(function()
+	decJump.Visible = false
+	jumpInput.Visible = false
+	incJump.Visible = false
+	mini.Visible = false
+	mini2.Visible = true
+	
+	Frame.BackgroundTransparency = 1
+	Frame.BorderSizePixel = 0
+	
+	TextLabel.Position = UDim2.new(1, -164, 0, -24) 
+	TextLabel.Size = UDim2.new(0, 96, 0, 22)         
+end)
+
+-- 最大化還原點擊
+mini2.MouseButton1Click:Connect(function()
+	decJump.Visible = true
+	jumpInput.Visible = true
+	incJump.Visible = true
+	mini.Visible = true
+	mini2.Visible = false
+	
+	Frame.BackgroundTransparency = 0
+	Frame.BorderSizePixel = 1
+	
+	TextLabel.Position = UDim2.new(0, 0, 0, 0)
+	TextLabel.Size = UDim2.new(1, 0, 0, 26)
+end)
+
+-- 提示執行成功
+game:GetService("StarterGui"):SetCore("SendNotification", { 
+	Title = "跳躍UI介面V3",
+	Text = "支援無限跳躍與打字自訂次數！",
+	Icon = ""
+})
