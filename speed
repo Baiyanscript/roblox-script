@@ -1,11 +1,11 @@
 -- =================================================================
--- ⚡ PURE SPEED ADJUST SYSTEM V3 (純速度微調 · 最小化防重疊精緻版)
+-- ⚡ PURE SPEED ADJUST SYSTEM V3 (純速度微調 · 支援打字輸入輸入框版)
 -- =================================================================
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- 核心狀態變數 (預設 16，最小 16，最大 500)
+-- 核心狀態變數 (預設 16)
 local currentSpeed = 16
 
 -- =================================================================
@@ -18,7 +18,7 @@ main.Parent = player:WaitForChild("PlayerGui")
 main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 main.ResetOnSpawn = false
 
--- 主背景框架 (因為移除了無敵主開關，高度縮小至 70 像素更精緻)
+-- 主背景框架
 local Frame = Instance.new("Frame")
 Frame.Name = "MainFrame"
 Frame.Parent = main
@@ -30,7 +30,7 @@ Frame.Size = UDim2.new(0, 180, 0, 70)
 Frame.Active = true
 Frame.Draggable = true
 
--- 粉色標題列 (預設填滿頂部)
+-- 粉色標題列
 local TextLabel = Instance.new("TextLabel")
 TextLabel.Name = "TitleLabel"
 TextLabel.Parent = Frame
@@ -39,14 +39,14 @@ TextLabel.BorderSizePixel = 0
 TextLabel.Position = UDim2.new(0, 0, 0, 0)
 TextLabel.Size = UDim2.new(1, 0, 0, 26) 
 TextLabel.Font = Enum.Font.SourceSansBold
-TextLabel.Text = "無敵UI介面V3" -- 應要求保持原標題文字
+TextLabel.Text = "速度UI介面V3"
 TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextLabel.TextSize = 14
 TextLabel.TextScaled = true
 TextLabel.TextWrapped = true
 
 -- =================================================================
--- 🛠️ 速度微調控制組 (左減、中顯示、右加，徹底防重疊)
+-- 🛠️ 速度微調控制組 (左減、中輸入、右加，徹底防重疊)
 -- =================================================================
 
 -- 速度「減」按鈕
@@ -55,25 +55,26 @@ decSpeed.Name = "DecreaseSpeed"
 decSpeed.Parent = Frame
 decSpeed.BackgroundColor3 = Color3.fromRGB(240, 100, 100) -- 淡紅
 decSpeed.BorderSizePixel = 0
-decSpeed.Position = UDim2.new(0, 9, 0, 36) -- 下移至第二排固定位置
+decSpeed.Position = UDim2.new(0, 9, 0, 36) 
 decSpeed.Size = UDim2.new(0, 30, 0, 26)
 decSpeed.Font = Enum.Font.SourceSansBold
 decSpeed.Text = "-"
 decSpeed.TextColor3 = Color3.fromRGB(0, 0, 0)
 decSpeed.TextSize = 20
 
--- 速度文字狀態顯示欄
-local speedStatus = Instance.new("TextLabel")
-speedStatus.Name = "SpeedStatus"
-speedStatus.Parent = Frame
-speedStatus.BackgroundColor3 = Color3.fromRGB(79, 255, 152) -- 亮綠
-speedStatus.BorderSizePixel = 0
-speedStatus.Position = UDim2.new(0, 43, 0, 36) -- 置中固定位置
-speedStatus.Size = UDim2.new(0, 94, 0, 26)
-speedStatus.Font = Enum.Font.SourceSansBold
-speedStatus.Text = "速度 : " .. currentSpeed
-speedStatus.TextColor3 = Color3.fromRGB(0, 0, 0)
-speedStatus.TextSize = 13
+-- 速度【打字輸入框】 (由 TextLabel 改為 TextBox)
+local speedInput = Instance.new("TextBox")
+speedInput.Name = "SpeedInput"
+speedInput.Parent = Frame
+speedInput.BackgroundColor3 = Color3.fromRGB(79, 255, 152) -- 亮綠
+speedInput.BorderSizePixel = 0
+speedInput.Position = UDim2.new(0, 43, 0, 36) 
+speedInput.Size = UDim2.new(0, 94, 0, 26)
+speedInput.Font = Enum.Font.SourceSansBold
+speedInput.Text = tostring(currentSpeed) -- 預設顯示當前速度數字
+speedInput.TextColor3 = Color3.fromRGB(0, 0, 0)
+speedInput.TextSize = 14
+speedInput.ClearTextOnFocus = false -- 點擊時不會直接清空，方便微調
 
 -- 速度「加」按鈕
 local incSpeed = Instance.new("TextButton")
@@ -81,7 +82,7 @@ incSpeed.Name = "IncreaseSpeed"
 incSpeed.Parent = Frame
 incSpeed.BackgroundColor3 = Color3.fromRGB(100, 210, 240) -- 淡藍
 incSpeed.BorderSizePixel = 0
-incSpeed.Position = UDim2.new(0, 141, 0, 36) -- 靠右固定位置
+incSpeed.Position = UDim2.new(0, 141, 0, 36) 
 incSpeed.Size = UDim2.new(0, 30, 0, 26)
 incSpeed.Font = Enum.Font.SourceSansBold
 incSpeed.Text = "+"
@@ -134,7 +135,7 @@ mini2.Visible = false
 -- =================================================================
 
 local function updateCharacterSpeed()
-	speedStatus.Text = "速度 : " .. currentSpeed
+	speedInput.Text = tostring(currentSpeed)
 	if player.Character and player.Character:FindFirstChild("Humanoid") then
 		player.Character.Humanoid.WalkSpeed = currentSpeed
 	end
@@ -144,15 +145,28 @@ end
 -- 互動事件與動態縮小排版綁定
 -- =================================================================
 
--- 速度「加」按鈕 (每次增加 10)
-incSpeed.MouseButton1Click:Connect(function()
-	currentSpeed = math.min(500, currentSpeed + 10)
+-- 【文字輸入框】打字結束事件 (按下 Enter 或點擊外部時觸發)
+speedInput.FocusLost:Connect(function(enterPressed)
+	local inputNum = tonumber(speedInput.Text)
+	if inputNum then
+		-- 防呆限制：速度最低不小於 0，最高不超過 1000
+		currentSpeed = math.clamp(inputNum, 0, 1000)
+	else
+		-- 如果玩家亂輸入文字，自動還原成預設值
+		currentSpeed = 16
+	end
 	updateCharacterSpeed()
 end)
 
--- 速度「減」按鈕 (每次減少 10，最低維持正常 16)
+-- 速度「加」按鈕 (每次增加 10)
+incSpeed.MouseButton1Click:Connect(function()
+	currentSpeed = math.min(1000, currentSpeed + 10)
+	updateCharacterSpeed()
+end)
+
+-- 速度「減」按鈕 (每次減少 10，最低維持 0)
 decSpeed.MouseButton1Click:Connect(function()
-	currentSpeed = math.max(16, currentSpeed - 10)
+	currentSpeed = math.max(0, currentSpeed - 10)
 	updateCharacterSpeed()
 end)
 
@@ -163,10 +177,10 @@ closebutton.MouseButton1Click:Connect(function()
 	main:Destroy()
 end)
 
--- 最小化點擊：隱藏下方所有加減欄位，並把標題挪到最小化按鈕左側
+-- 最小化點擊：隱藏下方所有輸入與加減欄位，並把標題挪到最小化按鈕左側
 mini.MouseButton1Click:Connect(function()
 	decSpeed.Visible = false
-	speedStatus.Visible = false
+	speedInput.Visible = false
 	incSpeed.Visible = false
 	mini.Visible = false
 	mini2.Visible = true
@@ -179,10 +193,10 @@ mini.MouseButton1Click:Connect(function()
 	TextLabel.Size = UDim2.new(0, 96, 0, 22)         
 end)
 
--- 最大化還原點擊：恢復所有按鈕顯示與背景框架
+-- 最大化還原點擊：恢復所有元件顯示與背景框架
 mini2.MouseButton1Click:Connect(function()
 	decSpeed.Visible = true
-	speedStatus.Visible = true
+	speedInput.Visible = true
 	incSpeed.Visible = true
 	mini.Visible = true
 	mini2.Visible = false
@@ -203,7 +217,7 @@ end)
 
 -- 提示執行成功
 game:GetService("StarterGui"):SetCore("SendNotification", { 
-	Title = "純速度微調介面",
-	Text = "已完全移除無敵功能，精簡優化完成！",
+	Title = "速度UI介面V3",
+	Text = "已加入鍵盤打字修改速度功能！",
 	Icon = ""
 })
