@@ -671,7 +671,7 @@ tool.Parent = backpack        -- Put the tool in the player's inventory
 
 
 while wait() do
-if game.Players.LocalPlayer.Character:FindFirstChild("揮手") then
+if game.Players.LocalPlayer.Character:FindFirstChild("Wave") then
 
 
 
@@ -705,12 +705,12 @@ end
 
 
 
-game.Players.LocalPlayer.Character.揮手.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.Wave.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("過來讓我看看") then
+if game.Players.LocalPlayer.Character:FindFirstChild("ComeHere") then
 
 
 
@@ -736,12 +736,12 @@ end
 
 
 
-game.Players.LocalPlayer.Character.過來讓我看看.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.ComeHere.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("你看**") then
+if game.Players.LocalPlayer.Character:FindFirstChild("Point") then
 
 
 
@@ -767,7 +767,7 @@ end
 
 
 
-game.Players.LocalPlayer.Character.你看**.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.Point.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
