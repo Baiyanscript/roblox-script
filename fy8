@@ -1,0 +1,211 @@
+-- ZEN-HUBv10
+repeat wait() until game:IsLoaded()
+
+local player = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local pgui = player:WaitForChild("PlayerGui")
+local camera = workspace.CurrentCamera
+
+-- --- HÀM CHAT TỰ ĐỘNG (CHỈ GHI TÊN SCRIPT) ---
+local function AutoChat(msg)
+    task.spawn(function()
+        task.wait(0.5)
+        local TextChatService = game:GetService("TextChatService")
+        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            local channel = TextChatService.TextChannels.RBXGeneral
+            if channel then
+                channel:SendAsync(msg)
+            end
+        end
+        
+        local chatEvents = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+        if chatEvents and chatEvents:FindFirstChild("SayMessageRequest") then
+            chatEvents.SayMessageRequest:FireServer(msg, "All")
+        end
+    end)
+end
+
+-- Nhắn đúng tên script mới
+AutoChat("ZEN-HUBv10")
+
+-- Xóa bản cũ để tránh lỗi giao diện
+if pgui:FindFirstChild("ZenHub_Final") then pgui.ZenHub_Final:Destroy() end
+
+local MasterGui = Instance.new("ScreenGui")
+MasterGui.Name = "ZenHub_Final"
+MasterGui.Parent = pgui
+MasterGui.ResetOnSpawn = false
+
+-- --- NÚT TRÒN MỞ MENU ---
+local OpenBtn = Instance.new("ImageButton")
+OpenBtn.Name = "FloatingBtn"
+OpenBtn.Parent = MasterGui
+OpenBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+OpenBtn.Position = UDim2.new(0.05, 0, 0.4, 0)
+OpenBtn.Size = UDim2.new(0, 55, 0, 55) 
+OpenBtn.Image = "rbxassetid://11154422902" 
+OpenBtn.Active = true
+OpenBtn.Draggable = true 
+
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0) 
+local BtnStroke = Instance.new("UIStroke", OpenBtn)
+BtnStroke.Color = Color3.fromRGB(255, 255, 255)
+BtnStroke.Thickness = 2
+
+-- --- MENU CHÍNH ---
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = MasterGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.Position = UDim2.new(0.15, 0, 0.3, 0)
+MainFrame.Size = UDim2.new(0, 230, 0, 380)
+MainFrame.Visible = false 
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+local CloseBtn = Instance.new("TextButton", MainFrame)
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 5)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "×"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 25
+
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "ZEN-HUBv10" -- Cập nhật tiêu đề
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+
+local ScrollingFrame = Instance.new("ScrollingFrame", MainFrame)
+ScrollingFrame.Size = UDim2.new(1, -20, 1, -120)
+ScrollingFrame.Position = UDim2.new(0, 10, 0, 50)
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.ScrollBarThickness = 2
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+local UIListLayout = Instance.new("UIListLayout", ScrollingFrame)
+UIListLayout.Padding = UDim.new(0, 5)
+
+OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
+
+-- --- ANTI FLING (FIXED NO SLOW) ---
+local AntiFlingEnabled = false
+local IsFlinging = false 
+
+local AntiFlingBtn = Instance.new("TextButton", MainFrame)
+AntiFlingBtn.Size = UDim2.new(1, -20, 0, 40)
+AntiFlingBtn.Position = UDim2.new(0, 10, 1, -60)
+AntiFlingBtn.BackgroundColor3 = Color3.fromRGB(60, 20, 20)
+AntiFlingBtn.Text = "ANTI FLING: OFF"
+AntiFlingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AntiFlingBtn.Font = Enum.Font.GothamBold
+AntiFlingBtn.TextSize = 13
+Instance.new("UICorner", AntiFlingBtn).CornerRadius = UDim.new(0, 8)
+
+RunService.Stepped:Connect(function()
+    if AntiFlingEnabled and not IsFlinging then
+        local char = player.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        if root then
+            root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            if root.AssemblyLinearVelocity.Magnitude > 100 then
+                root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            end
+        end
+    end
+end)
+
+AntiFlingBtn.MouseButton1Click:Connect(function()
+    AntiFlingEnabled = not AntiFlingEnabled
+    AntiFlingBtn.Text = AntiFlingEnabled and "ANTI FLING: ACTIVE" or "ANTI FLING: OFF"
+    AntiFlingBtn.BackgroundColor3 = AntiFlingEnabled and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(60, 20, 20)
+end)
+
+-- --- CHỨC NĂNG FLING 3D ---
+local function flingPlayer(targetPlayer, statusDot)
+    local char = player.Character
+    local lrp = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local targetChar = targetPlayer.Character
+    local trp = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+    local targetHum = targetChar and targetChar:FindFirstChildOfClass("Humanoid")
+    
+    if lrp and trp and hum and targetHum then
+        IsFlinging = true
+        statusDot.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        local oldPos = lrp.CFrame
+        camera.CameraSubject = targetHum
+        
+        local bav = Instance.new("BodyAngularVelocity", lrp)
+        bav.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        bav.AngularVelocity = Vector3.new(1000000, 1000000, 1000000) 
+        local bv = Instance.new("BodyVelocity", lrp)
+        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        bv.Velocity = Vector3.new(1000000, 1000000, 1000000)
+
+        local connection
+        local timer = 0
+        connection = RunService.Heartbeat:Connect(function()
+            if targetChar and trp and targetHum.Health > 0 then
+                timer = timer + 0.6
+                local ySweep = math.sin(timer * 2.5) * 4 
+                local xSweep = math.cos(timer * 2) * 3  
+                local zSweep = math.sin(timer * 1.5) * 5 
+                lrp.CFrame = trp.CFrame * CFrame.new(xSweep, ySweep, zSweep) * CFrame.Angles(math.rad(90), math.random(-20, 20), math.random(-20, 20))
+                lrp.AssemblyLinearVelocity = Vector3.new(1000000, 1000000, 1000000)
+                for _, part in pairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then part.CanCollide = false end
+                end
+            else
+                connection:Disconnect()
+            end
+        end)
+        
+        task.wait(1.2)
+        connection:Disconnect()
+        bav:Destroy()
+        bv:Destroy()
+        lrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        lrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        for _, part in pairs(char:GetDescendants()) do if part:IsA("BasePart") then part.CanCollide = true end end
+        lrp.CFrame = oldPos
+        camera.CameraSubject = hum
+        hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+        task.wait(0.1)
+        IsFlinging = false
+        statusDot.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end
+
+local function updateList()
+    for _, child in pairs(ScrollingFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+    for _, p in pairs(game.Players:GetPlayers()) do
+        if p ~= player then
+            local btn = Instance.new("TextButton", ScrollingFrame)
+            btn.Size = UDim2.new(1, -5, 0, 35)
+            btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            btn.Text = "   " .. (p.DisplayName or p.Name)
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.Font = Enum.Font.GothamMedium
+            btn.TextSize = 11
+            btn.TextXAlignment = Enum.TextXAlignment.Left
+            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+            local StatusDot = Instance.new("Frame", btn)
+            StatusDot.Size = UDim2.new(0, 8, 0, 8)
+            StatusDot.Position = UDim2.new(1, -20, 0.5, -4)
+            StatusDot.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            Instance.new("UICorner", StatusDot).CornerRadius = UDim.new(1, 0)
+            btn.MouseButton1Click:Connect(function() if not IsFlinging then flingPlayer(p, StatusDot) end end)
+        end
+    end
+end
+
+game.Players.PlayerAdded:Connect(updateList)
+game.Players.PlayerRemoving:Connect(updateList)
+updateList()
