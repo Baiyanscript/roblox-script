@@ -275,14 +275,14 @@ grid2.CellPadding = grid1.CellPadding
 ----------------------------------------------------------------------
 -- PAGE 1 BUTTONS
 ----------------------------------------------------------------------
-makeButton(page1, "SkinWalker", function() 
+makeButton(page1, "皮行者", function() 
 
 
 --FE Skinwalker Animation (R15 only)
 --By Baiyan
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE Skinwalker Animation",
+            Title = "皮行者動作",
             Text = "By Baiyan",
             Duration = 5
         })
@@ -298,15 +298,15 @@ character.walk.WalkAnim.AnimationId = "rbxassetid://113771589189795"
 
 
  end)
-makeButton(page1, "Dog Pet", function() 
+makeButton(page1, "小狗", function() 
 
 
 --FE Dog Pet (R15 Only)
 --By Baiyan
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "Dog Pet By Baiyan",
-            Text = "Click Your Target Player To Be Their Pet",
+            Title = "小狗動作已啟用",
+            Text = "點擊目標玩家，讓你成為他們的寵物",
             Duration = 5
         })
   wait(0.7)
@@ -503,14 +503,14 @@ end
 
 
 end)
-makeButton(page1, "Hand", function() 
+makeButton(page1, "揮手", function() 
 
 --FE Hand Animation (R15 only)
 --By Baiyan
 
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "Hand Animation",
+            Title = "揮手動作",
             Text = "By Baiyan",
             Duration = 5
         })
@@ -1522,7 +1522,7 @@ end
 
 end)
 
-makeButton(page1, "Skateboard", function() 
+makeButton(page1, "滑板", function() 
 
 
 --FE Skateboard (R15 Only)
@@ -1530,7 +1530,7 @@ makeButton(page1, "Skateboard", function()
 
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE Skateboard",
+            Title = "滑板動作已啟用",
             Text = "By Baiyan",
             Duration = 5
         })
