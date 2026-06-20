@@ -27,7 +27,7 @@ local bg = Instance.new("ImageLabel")
 bg.Size = UDim2.new(1, 0, 1, 0)
 bg.Position = UDim2.new(0, 0, 0, 0)
 bg.BackgroundTransparency = 1
-bg.Image = "ERROR"
+bg.Image = "rbxassetid://1179108573"
 bg.ZIndex = 0
 bg.Parent = frame
 
