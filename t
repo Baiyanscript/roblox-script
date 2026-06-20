@@ -671,7 +671,7 @@ tool.Parent = backpack        -- Put the tool in the player's inventory
 
 
 while wait() do
-if game.Players.LocalPlayer.Character:FindFirstChild("Wave") then
+if game.Players.LocalPlayer.Character:FindFirstChild("揮手") then
 
 
 
@@ -705,12 +705,12 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Wave.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.揮手.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("ComeHere") then
+if game.Players.LocalPlayer.Character:FindFirstChild("過來") then
 
 
 
@@ -736,12 +736,12 @@ end
 
 
 
-game.Players.LocalPlayer.Character.ComeHere.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.過來.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Point") then
+if game.Players.LocalPlayer.Character:FindFirstChild("指") then
 
 
 
@@ -767,11 +767,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Point.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.指.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Flick") then
+if game.Players.LocalPlayer.Character:FindFirstChild("彈指") then
 
 
 
@@ -807,11 +807,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Flick.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.彈指.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Countdown") then
+if game.Players.LocalPlayer.Character:FindFirstChild("倒數") then
 
 
 
@@ -847,13 +847,13 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Countdown.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.倒數.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("PointMe") then
+if game.Players.LocalPlayer.Character:FindFirstChild("指自己") then
 
 
 
@@ -889,12 +889,12 @@ end
 
 
 
-game.Players.LocalPlayer.Character.PointMe.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.指自己.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Mog") then
+if game.Players.LocalPlayer.Character:FindFirstChild("嘲諷") then
 
 
 
@@ -930,11 +930,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Mog.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.嘲諷.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Think") then
+if game.Players.LocalPlayer.Character:FindFirstChild("思考") then
 
 
 
@@ -970,12 +970,12 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Think.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.思考.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Gun") then
+if game.Players.LocalPlayer.Character:FindFirstChild("槍") then
 
 
 
@@ -1011,12 +1011,12 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Gun.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.槍.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Peace") then
+if game.Players.LocalPlayer.Character:FindFirstChild("和平") then
 
 
 
@@ -1052,11 +1052,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Peace.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.和平.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Stop") then
+if game.Players.LocalPlayer.Character:FindFirstChild("停止") then
 
 
 
@@ -1092,11 +1092,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Stop.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.停止.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Okay") then
+if game.Players.LocalPlayer.Character:FindFirstChild("好的") then
 
 
 
@@ -1132,11 +1132,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Okay.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.好的.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("TapTap") then
+if game.Players.LocalPlayer.Character:FindFirstChild("輕敲") then
 
 
 
@@ -1172,12 +1172,12 @@ end
 
 
 
-game.Players.LocalPlayer.Character.TapTap.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.輕敲.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("HoldHead") then
+if game.Players.LocalPlayer.Character:FindFirstChild("抱頭") then
 
 
 
@@ -1213,11 +1213,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.HoldHead.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.抱頭.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("No") then
+if game.Players.LocalPlayer.Character:FindFirstChild("不") then
 
 
 
@@ -1253,12 +1253,12 @@ end
 
 
 
-game.Players.LocalPlayer.Character.No.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.不.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Come") then
+if game.Players.LocalPlayer.Character:FindFirstChild("來") then
 
 
 
@@ -1294,11 +1294,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Come.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.來.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Yes") then
+if game.Players.LocalPlayer.Character:FindFirstChild("是") then
 
 
 
@@ -1334,11 +1334,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Yes.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.是.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Crack") then
+if game.Players.LocalPlayer.Character:FindFirstChild("爆裂") then
 
 
 
@@ -1374,11 +1374,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Crack.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.爆裂.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Dislike") then
+if game.Players.LocalPlayer.Character:FindFirstChild("不喜歡") then
 
 
 
@@ -1414,11 +1414,11 @@ end
 
 
 
-game.Players.LocalPlayer.Character.Dislike.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.不喜歡.Parent = game.Players.LocalPlayer.Backpack
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("L") then
+if game.Players.LocalPlayer.Character:FindFirstChild("輸了") then
 
 
 
@@ -1454,12 +1454,12 @@ end
 
 
 
-game.Players.LocalPlayer.Character.L.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.輸了.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("PewPew") then
+if game.Players.LocalPlayer.Character:FindFirstChild("射擊") then
 
 
 
@@ -1495,7 +1495,7 @@ end
 
 
 
-game.Players.LocalPlayer.Character.PewPew.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.射擊.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
@@ -1616,7 +1616,7 @@ tool.Parent = backpack        -- Put the tool in the player's inventory
 
 while wait(0) do
 
-if game.Players.LocalPlayer.Character:FindFirstChild("MachineGun") then
+if game.Players.LocalPlayer.Character:FindFirstChild("機關槍") then
 
 local char = player.Character or player.CharacterAdded:Wait()
 local player = game.Players.LocalPlayer
@@ -1648,12 +1648,12 @@ playNonLoopAnimation()
 
 
 
-game.Players.LocalPlayer.Character.MachineGun.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.機關槍.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 
-if game.Players.LocalPlayer.Character:FindFirstChild("Crouch") then
+if game.Players.LocalPlayer.Character:FindFirstChild("蹲下") then
 
   
 -- Track clicks
@@ -1674,7 +1674,7 @@ end)
 end
 
 
-if game.Players.LocalPlayer.Character:FindFirstChild("Pistol") then
+if game.Players.LocalPlayer.Character:FindFirstChild("手槍") then
 
 local char = player.Character or player.CharacterAdded:Wait()
 local player = game.Players.LocalPlayer
@@ -1706,12 +1706,12 @@ playNonLoopAnimation()
 
 
 
-game.Players.LocalPlayer.Character.Pistol.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.手槍.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 
-if game.Players.LocalPlayer.Character:FindFirstChild("Cannon") then
+if game.Players.LocalPlayer.Character:FindFirstChild("大砲") then
 
 local char = player.Character or player.CharacterAdded:Wait()
 local player = game.Players.LocalPlayer
@@ -1743,11 +1743,11 @@ playNonLoopAnimation()
 
 
 
-game.Players.LocalPlayer.Character.Cannon.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.大砲.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
-if game.Players.LocalPlayer.Character:FindFirstChild("MiniGun") then
+if game.Players.LocalPlayer.Character:FindFirstChild("迷你槍") then
 
 local char = player.Character or player.CharacterAdded:Wait()
 local player = game.Players.LocalPlayer
@@ -1779,12 +1779,12 @@ playNonLoopAnimation()
 
 
 
-game.Players.LocalPlayer.Character.MiniGun.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.迷你槍.Parent = game.Players.LocalPlayer.Backpack
 end
 
 
 
-if game.Players.LocalPlayer.Character:FindFirstChild("Pistol 1") then
+if game.Players.LocalPlayer.Character:FindFirstChild("手槍 1") then
 
 local char = player.Character or player.CharacterAdded:Wait()
 local player = game.Players.LocalPlayer
@@ -1816,7 +1816,7 @@ playNonLoopAnimation()
 
 
 
-game.Players.LocalPlayer.Character["Pistol 1"].Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character["手槍 1"].Parent = game.Players.LocalPlayer.Backpack
 end
 
 
@@ -2420,7 +2420,7 @@ wait(0)
 
 while wait() do
 
-if game.Players.LocalPlayer.Character:FindFirstChild("Emote") then
+if game.Players.LocalPlayer.Character:FindFirstChild("表情") then
 
 local char = player.Character or player.CharacterAdded:Wait()
 local player = game.Players.LocalPlayer
@@ -2453,7 +2453,7 @@ playNonLoopAnimation()
 
 
 
-game.Players.LocalPlayer.Character["Emote"].Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character["表情"].Parent = game.Players.LocalPlayer.Backpack
 end
 end
 
@@ -2570,7 +2570,7 @@ tool.Parent = backpack        -- Put the tool in the player's inventory
 
 while wait(0) do
 
-if game.Players.LocalPlayer.Character:FindFirstChild("Explode") then
+if game.Players.LocalPlayer.Character:FindFirstChild("爆炸") then
 
 local char = player.Character or player.CharacterAdded:Wait()
 local player = game.Players.LocalPlayer
@@ -2611,7 +2611,7 @@ wait(0.2)
 game.Players.LocalPlayer.Character.Humanoid.Health = 0
 
 
-game.Players.LocalPlayer.Character.Explode.Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character.爆炸.Parent = game.Players.LocalPlayer.Backpack
 end
 end
 
@@ -5812,7 +5812,7 @@ mouse.Button1Down:Connect(function()
 
             wait(5)    
             pcall(function()  
-                LocalPlayer.Character["Knife Grab"].Parent = LocalPlayer.Backpack  
+                LocalPlayer.Character["抓刀"].Parent = LocalPlayer.Backpack  
             end)  
         end    
     end    
@@ -6579,7 +6579,7 @@ tool.Parent = backpack        -- Put the tool in the player's inventory
 
 while wait() do
 
-if game.Players.LocalPlayer.Character:FindFirstChild("Slash") then
+if game.Players.LocalPlayer.Character:FindFirstChild("斬擊") then
 
 local char = player.Character or player.CharacterAdded:Wait()
 local player = game.Players.LocalPlayer
@@ -6611,10 +6611,10 @@ playNonLoopAnimation()
 
 
 
-game.Players.LocalPlayer.Character["Slash"].Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character["斬擊"].Parent = game.Players.LocalPlayer.Backpack
 end
 
-if game.Players.LocalPlayer.Character:FindFirstChild("Slash 2") then
+if game.Players.LocalPlayer.Character:FindFirstChild("斬擊 2") then
 
 local char = player.Character or player.CharacterAdded:Wait()
 local player = game.Players.LocalPlayer
@@ -6646,7 +6646,7 @@ playNonLoopAnimation()
 
 
 
-game.Players.LocalPlayer.Character["Slash 2"].Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character["斬擊 2"].Parent = game.Players.LocalPlayer.Backpack
 end
 
 end
@@ -9786,7 +9786,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 wait(2)
-				game.Players.LocalPlayer.Character["Knife Swing"].Parent = game.Players.LocalPlayer.Backpack
+				game.Players.LocalPlayer.Character["揮刀"].Parent = game.Players.LocalPlayer.Backpack
             end
         end
     end)
@@ -9945,7 +9945,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 wait(2)
-				game.Players.LocalPlayer.Character["Knife Stab"].Parent = game.Players.LocalPlayer.Backpack
+				game.Players.LocalPlayer.Character["刺刀"].Parent = game.Players.LocalPlayer.Backpack
             end
         end
     end)
@@ -10101,7 +10101,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 wait(3)
-				game.Players.LocalPlayer.Character["Rage Stab"].Parent = game.Players.LocalPlayer.Backpack
+				game.Players.LocalPlayer.Character["憤怒刺擊"].Parent = game.Players.LocalPlayer.Backpack
             end
         end
     end)
@@ -10195,7 +10195,7 @@ tool.Equipped:Connect(function()
 
 	playDodgeAnimation()
 	wait(2)
-	game.Players.LocalPlayer.Character["Pistol"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["手槍"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 tool.Unequipped:Connect(function()
@@ -10303,7 +10303,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 wait(5)
-				game.Players.LocalPlayer.Character["Arm Swing"].Parent = game.Players.LocalPlayer.Backpack
+				game.Players.LocalPlayer.Character["揮臂"].Parent = game.Players.LocalPlayer.Backpack
             end
         end
     end)
@@ -10472,7 +10472,7 @@ tool.Equipped:Connect(function()
 
 	playDodgeAnimation()
 	wait(2)
-	game.Players.LocalPlayer.Character["Pistol"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["手槍"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 tool.Unequipped:Connect(function()
@@ -10529,7 +10529,7 @@ tool.Equipped:Connect(function()
 
 	playDodgeAnimation()
 	wait(2)
-	game.Players.LocalPlayer.Character["Whistle"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["吹口哨"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 tool.Unequipped:Connect(function()
@@ -10867,7 +10867,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 wait(6)
-				game.Players.LocalPlayer.Character["Checking"].Parent = game.Players.LocalPlayer.Backpack
+				game.Players.LocalPlayer.Character["檢查"].Parent = game.Players.LocalPlayer.Backpack
             end
         end
     end)
@@ -11039,7 +11039,7 @@ tool.Equipped:Connect(function()
 
 	playDodgeAnimation()
 	wait(2)
-	game.Players.LocalPlayer.Character["Pistol"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["手槍"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 tool.Unequipped:Connect(function()
@@ -12360,7 +12360,7 @@ tool.Equipped:Connect(function()
 	playSequence()
 	
 	wait(4)
-	game.Players.LocalPlayer.Character["Jumpscare 1"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["驚嚇 1"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 ------------------------------------------------------
@@ -12494,7 +12494,7 @@ tool.Equipped:Connect(function()
 	playSequence()
 	
 	wait(4)
-	game.Players.LocalPlayer.Character["Jumpscare 2"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["驚嚇 2"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 ------------------------------------------------------
@@ -13041,7 +13041,7 @@ tool.Equipped:Connect(function()
 
 	playDodgeAnimation()
 	wait(3)
-	game.Players.LocalPlayer.Character["Eat Banana"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["吃香蕉"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 tool.Unequipped:Connect(function()
@@ -13685,7 +13685,7 @@ tool.Equipped:Connect(function()
 
 	playDodgeAnimation()
 	wait(4)
-	game.Players.LocalPlayer.Character["Run Around"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["跑來跑去"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 tool.Unequipped:Connect(function()
@@ -13733,7 +13733,7 @@ tool.Equipped:Connect(function()
 
 	playDodgeAnimation()
 	wait(8)
-	game.Players.LocalPlayer.Character["Run Around 2"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["跑來跑去 2"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 tool.Unequipped:Connect(function()
@@ -15483,7 +15483,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 wait(5)
-				game.Players.LocalPlayer.Character["Knife Grab"].Parent = game.Players.LocalPlayer.Backpack
+				game.Players.LocalPlayer.Character["抓刀"].Parent = game.Players.LocalPlayer.Backpack
             end
         end
     end)
@@ -15638,7 +15638,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 task.wait(0.5)
-                LocalPlayer.Character["Slap"].Parent = LocalPlayer.Backpack
+                LocalPlayer.Character["巴掌"].Parent = LocalPlayer.Backpack
             end
         end
     end)
@@ -16439,7 +16439,7 @@ end
 
 pushBack()
                
-     LocalPlayer.Character["Push"].Parent = LocalPlayer.Backpack          
+     LocalPlayer.Character["推"].Parent = LocalPlayer.Backpack          
                
                
                
@@ -16689,8 +16689,8 @@ end
 
 
                 -- Move tool back to backpack after push
-                if LocalPlayer.Character:FindFirstChild("Strongest Punch") then
-                    LocalPlayer.Character["Strongest Punch"].Parent = LocalPlayer.Backpack
+                if LocalPlayer.Character:FindFirstChild("最強拳擊") then
+                    LocalPlayer.Character["最強拳擊"].Parent = LocalPlayer.Backpack
                 end
 
             end
@@ -16867,7 +16867,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 wait(5)
-                game.Players.LocalPlayer.Character["Knife Grab"].Parent = game.Players.LocalPlayer.Backpack
+                game.Players.LocalPlayer.Character["抓刀"].Parent = game.Players.LocalPlayer.Backpack
             end
         end
     end)
@@ -17026,7 +17026,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 wait(5)
-				game.Players.LocalPlayer.Character["Knife Grab"].Parent = game.Players.LocalPlayer.Backpack
+				game.Players.LocalPlayer.Character["抓刀"].Parent = game.Players.LocalPlayer.Backpack
             end
         end
     end)
@@ -17184,7 +17184,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 wait(5)
-				game.Players.LocalPlayer.Character["Knife Grab"].Parent = game.Players.LocalPlayer.Backpack
+				game.Players.LocalPlayer.Character["抓刀"].Parent = game.Players.LocalPlayer.Backpack
             end
         end
     end)
@@ -17339,7 +17339,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 task.wait(0.5)
-                LocalPlayer.Character["Slap"].Parent = LocalPlayer.Backpack
+                LocalPlayer.Character["巴掌"].Parent = LocalPlayer.Backpack
             end
         end
     end)
@@ -18071,7 +18071,7 @@ tool.Equipped:Connect(function()
 
 	task.spawn(playSequence)
 	wait(9)
-	game.Players.LocalPlayer.Character["N Word"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["N字詞"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 ------------------------------------------------------
@@ -18149,7 +18149,7 @@ tool.Equipped:Connect(function()
 
 	task.spawn(playSequence)
 	wait(9)
-	game.Players.LocalPlayer.Character["F Word"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["F字詞"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 ------------------------------------------------------
@@ -18228,7 +18228,7 @@ tool.Equipped:Connect(function()
 
 	task.spawn(playSequence)
 	wait(9)
-	game.Players.LocalPlayer.Character["B Word"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["B字詞"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 ------------------------------------------------------
@@ -18307,7 +18307,7 @@ tool.Equipped:Connect(function()
 
 	task.spawn(playSequence)
 	wait(9)
-	game.Players.LocalPlayer.Character["S Word"].Parent = game.Players.LocalPlayer.Backpack
+	game.Players.LocalPlayer.Character["S字詞"].Parent = game.Players.LocalPlayer.Backpack
 end)
 
 ------------------------------------------------------
@@ -18707,7 +18707,7 @@ tool.Equipped:Connect(function()
             if player and player ~= LocalPlayer then
                 targetPlayer = player
                 wait(8.6)
-				game.Players.LocalPlayer.Character["Telekinesis Choking"].Parent = game.Players.LocalPlayer.Backpack
+				game.Players.LocalPlayer.Character["念力掐脖"].Parent = game.Players.LocalPlayer.Backpack
             end
         end
     end)
