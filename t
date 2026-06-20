@@ -710,7 +710,7 @@ end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("ComeHere") then
+if game.Players.LocalPlayer.Character:FindFirstChild("過來讓我看看") then
 
 
 
@@ -741,7 +741,7 @@ end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Point") then
+if game.Players.LocalPlayer.Character:FindFirstChild("你看**") then
 
 
 
@@ -771,7 +771,7 @@ game.Players.LocalPlayer.Character.Point.Parent = game.Players.LocalPlayer.Backp
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Flick") then
+if game.Players.LocalPlayer.Character:FindFirstChild("彈自己的頭") then
 
 
 
@@ -811,7 +811,7 @@ game.Players.LocalPlayer.Character.Flick.Parent = game.Players.LocalPlayer.Backp
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Countdown") then
+if game.Players.LocalPlayer.Character:FindFirstChild("倒數") then
 
 
 
@@ -853,7 +853,7 @@ end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("PointMe") then
+if game.Players.LocalPlayer.Character:FindFirstChild("指自己") then
 
 
 
@@ -894,7 +894,7 @@ end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Mog") then
+if game.Players.LocalPlayer.Character:FindFirstChild("Sigma boy") then
 
 
 
@@ -934,7 +934,7 @@ game.Players.LocalPlayer.Character.Mog.Parent = game.Players.LocalPlayer.Backpac
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Think") then
+if game.Players.LocalPlayer.Character:FindFirstChild("愛因斯坦") then
 
 
 
@@ -975,7 +975,7 @@ end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Gun") then
+if game.Players.LocalPlayer.Character:FindFirstChild("槍(這個動作有點問題)") then
 
 
 
@@ -1016,7 +1016,7 @@ end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Peace") then
+if game.Players.LocalPlayer.Character:FindFirstChild("比 ya") then
 
 
 
@@ -1056,7 +1056,7 @@ game.Players.LocalPlayer.Character.Peace.Parent = game.Players.LocalPlayer.Backp
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Stop") then
+if game.Players.LocalPlayer.Character:FindFirstChild("停止") then
 
 
 
@@ -1096,7 +1096,7 @@ game.Players.LocalPlayer.Character.Stop.Parent = game.Players.LocalPlayer.Backpa
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Okay") then
+if game.Players.LocalPlayer.Character:FindFirstChild("Ok") then
 
 
 
@@ -1136,7 +1136,7 @@ game.Players.LocalPlayer.Character.Okay.Parent = game.Players.LocalPlayer.Backpa
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("TapTap") then
+if game.Players.LocalPlayer.Character:FindFirstChild("指別人") then
 
 
 
@@ -1177,7 +1177,7 @@ end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("HoldHead") then
+if game.Players.LocalPlayer.Character:FindFirstChild("拿自己的頭") then
 
 
 
@@ -1217,7 +1217,7 @@ game.Players.LocalPlayer.Character.HoldHead.Parent = game.Players.LocalPlayer.Ba
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("No") then
+if game.Players.LocalPlayer.Character:FindFirstChild("傑哥不要") then
 
 
 
@@ -1258,7 +1258,7 @@ end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Come") then
+if game.Players.LocalPlayer.Character:FindFirstChild("來讓我康康") then
 
 
 
@@ -1298,7 +1298,7 @@ game.Players.LocalPlayer.Character.Come.Parent = game.Players.LocalPlayer.Backpa
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Yes") then
+if game.Players.LocalPlayer.Character:FindFirstChild("You know") then
 
 
 
@@ -1338,7 +1338,7 @@ game.Players.LocalPlayer.Character.Yes.Parent = game.Players.LocalPlayer.Backpac
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Crack") then
+if game.Players.LocalPlayer.Character:FindFirstChild("折手指") then
 
 
 
@@ -1378,7 +1378,7 @@ game.Players.LocalPlayer.Character.Crack.Parent = game.Players.LocalPlayer.Backp
 end
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("Dislike") then
+if game.Players.LocalPlayer.Character:FindFirstChild("我不要你能拿我啥") then
 
 
 
@@ -1459,7 +1459,7 @@ end
 
 
 --other anim
-if game.Players.LocalPlayer.Character:FindFirstChild("PewPew") then
+if game.Players.LocalPlayer.Character:FindFirstChild("砰砰") then
 
 
 
