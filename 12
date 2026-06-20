@@ -671,7 +671,7 @@ tool.Parent = backpack        -- Put the tool in the player's inventory
 
 
 while wait() do
-if game.Players.LocalPlayer.Character:FindFirstChild("Wave") then
+if game.Players.LocalPlayer.Character:FindFirstChild("揮手") then
 
 
 
