@@ -5,38 +5,12 @@ local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
 local LocalPlayer = player
 local Camera = Workspace.CurrentCamera
 
---// GLOBAL SETTINGS (From mod2)
-getgenv().SilentAim = {
-    Enabled = false,
-    FOV = 250,
-    ShowFOV = false,
-    HitChance = 100
-}
-getgenv().FovColorSilentAim = Color3.fromRGB(255,255,255)
-getgenv().FovLockedColorSilentAim = Color3.fromRGB(255,0,0)
-
-getgenv().AimbotEnabled = false
-getgenv().AimbotKey = Enum.UserInputType.MouseButton2
-getgenv().AimPart = "Head"
-getgenv().TeamCheck = false
-getgenv().UseClosestByDistance = false
-getgenv().Sensitivity = 0.05
-
-getgenv().FOVCircleEnabled = false
-getgenv().FOVCircleRadius = 100
-getgenv().FOVCircleColor = Color3.fromRGB(255, 255, 255)
-getgenv().FOVCircleTransparency = 0.5
-getgenv().FOVCircleFilled = false
-getgenv().FOVCircleThickness = 1
-getgenv().FOVCircleVisible = false
-getgenv().CircleSides = 64
-
+--// GLOBAL SETTINGS (ESP Only)
 getgenv().Skeleton = false
 getgenv().Box = false
 getgenv().Distance = false
@@ -45,7 +19,7 @@ getgenv().ShowHealthText = false
 getgenv().HealthEnabled = false
 getgenv().ShowTracer = false
 getgenv().TeamCheckEsp = false
-getgenv().RefreshRate = 0.03
+getgenv().RefreshRate = 0.02
 
 getgenv().ColorSkeleton = Color3.fromRGB(255,255,255)
 getgenv().ColorBox = Color3.fromRGB(255,255,255)
@@ -56,125 +30,7 @@ getgenv().ColorShowTracer = Color3.fromRGB(255,255,255)
 
 --// STATE & VARIABLES
 local CurrentTheme = "Dark"
-local Target = nil
-local Holding = false
-local LockedTarget = nil
 local ESP = {}
-
---// SAFE REMOTE
-local ShootRemote
-pcall(function()
-    ShootRemote = ReplicatedStorage.Blaster.Remotes.Shoot
-end)
-
---// DRAWING OBJECTS
-local Circle = Drawing.new("Circle")
-Circle.Thickness = 1
-Circle.Filled = false
-Circle.NumSides = 64
-Circle.Transparency = 0.8
-Circle.Visible = false
-
-local FOVCircle = Drawing.new("Circle")
-FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-FOVCircle.Radius = getgenv().FOVCircleRadius
-FOVCircle.Color = getgenv().FOVCircleColor
-FOVCircle.Transparency = 1 - getgenv().FOVCircleTransparency
-FOVCircle.Filled = getgenv().FOVCircleFilled
-FOVCircle.NumSides = getgenv().CircleSides
-FOVCircle.Thickness = getgenv().FOVCircleThickness
-FOVCircle.Visible = getgenv().FOVCircleVisible
-
---// CORE MECHANICS FUNCTIONS
-local function isAlive(model)
-    local hum = model:FindFirstChildOfClass("Humanoid")
-    return hum and hum.Health > 0
-end
-
-local function getRoot(model)
-    return model:FindFirstChild("HumanoidRootPart")
-        or (model:FindFirstChildOfClass("Humanoid") and model:FindFirstChildOfClass("Humanoid").RootPart)
-end
-
-local function getTarget()
-    local closest, dist = nil, math.huge
-    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and plr.Character and isAlive(plr.Character) then
-            local root = getRoot(plr.Character)
-            if root then
-                local pos, onscreen = Camera:WorldToViewportPoint(root.Position)
-                if onscreen then
-                    local mag = (Vector2.new(pos.X, pos.Y) - center).Magnitude
-                    if mag <= getgenv().SilentAim.FOV and mag < dist then
-                        dist = mag
-                        closest = plr.Character:FindFirstChildOfClass("Humanoid")
-                    end
-                end
-            end
-        end
-    end
-
-    local bots = Workspace:FindFirstChild("Bots")
-    if bots then
-        for _, bot in ipairs(bots:GetChildren()) do
-            if bot:IsA("Model") and isAlive(bot) then
-                local root = getRoot(bot)
-                if root then
-                    local pos, onscreen = Camera:WorldToViewportPoint(root.Position)
-                    if onscreen then
-                        local mag = (Vector2.new(pos.X, pos.Y) - center).Magnitude
-                        if mag <= getgenv().SilentAim.FOV and mag < dist then
-                            dist = mag
-                            closest = bot:FindFirstChildOfClass("Humanoid")
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return closest
-end
-
-local function GetClosestPlayer()
-    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        return nil
-    end
-
-    local myPos = LocalPlayer.Character.HumanoidRootPart.Position
-    local mousePos = UserInputService:GetMouseLocation()
-    local target = nil
-    local shortest = math.huge
-
-    for _, v in ipairs(Players:GetPlayers()) do
-        if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("Humanoid") then
-            local humanoid = v.Character.Humanoid
-            if humanoid.Health > 0 and (not getgenv().TeamCheck or v.Team ~= LocalPlayer.Team) then
-                local root = v.Character.HumanoidRootPart
-                local screenPos, onScreen = Camera:WorldToScreenPoint(root.Position)
-                if onScreen then
-                    local distFromCursor = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
-                    if distFromCursor <= getgenv().FOVCircleRadius then
-                        if getgenv().UseClosestByDistance then
-                            local dist3D = (root.Position - myPos).Magnitude
-                            if dist3D < shortest then
-                                shortest = dist3D
-                                target = v
-                            end
-                        else
-                            if distFromCursor < shortest then
-                                shortest = distFromCursor
-                                target = v
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return target
-end
 
 --// DRAWING HELPERS FOR ESP
 local function NewLine(thick)
@@ -187,7 +43,7 @@ end
 
 local function NewText()
     local t = Drawing.new("Text")
-    t.Size = 16
+    t.Size = 14
     t.Center = true
     t.Outline = true
     t.Font = 2
@@ -288,6 +144,7 @@ local function updateESP()
         local esp = ESP[player]
         local root2D = Vector2.new(root3D.X, root3D.Y)
 
+        -- 骨骼 ESP
         if getgenv().Skeleton then
             local bones = getBones(char)
             if #esp.Skeleton ~= #bones then
@@ -314,6 +171,7 @@ local function updateESP()
             for _, l in pairs(esp.Skeleton) do l.Visible = false end
         end
 
+        -- 方框 ESP
         if getgenv().Box then
             local headPos3D = head.Position + Vector3.new(0, 0.5, 0)
             local footPos3D = hrp.Position - Vector3.new(0, 3, 0)
@@ -353,16 +211,18 @@ local function updateESP()
                 for _, l in ipairs(box) do l.Visible = false end
             end
         else
-            for _, l in ipairs(esp.Box) do l.Visible = false end
+            for _, l in ipairs(box) do l.Visible = false end
         end
 
+        -- 距離 ESP
         if getgenv().Distance then
             esp.Distance.Text = string.format("[%.1fm]", root3D.Z)
-            esp.Distance.Position = root2D + Vector2.new(0,30)
+            esp.Distance.Position = root2D + Vector2.new(0, 15)
             esp.Distance.Color = getgenv().ColorDistance
             esp.Distance.Visible = true
         else esp.Distance.Visible = false end
 
+        -- 血條 ESP
         if getgenv().HealthEnabled then
             local headPos3D = head.Position + Vector3.new(0, 0.5, 0)
             local footPos3D = hrp.Position - Vector3.new(0, 3, 0)
@@ -393,23 +253,26 @@ local function updateESP()
             esp.HealthBar.Visible = false
         end
 
+        -- 名字 ESP
         if getgenv().ShowName then
-            local h2D = Camera:WorldToViewportPoint(head.Position + Vector3.new(0,0.8,0))
+            local h2D = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.8, 0))
             esp.Name.Text = player.Name
-            esp.Name.Position = Vector2.new(h2D.X, h2D.Y - 12)
+            esp.Name.Position = Vector2.new(h2D.X, h2D.Y - 14)
             esp.Name.Color = getgenv().ColorShowName
             esp.Name.Visible = true
         else esp.Name.Visible = false end
 
+        -- 生命百分比文字
         if getgenv().ShowHealthText then
-            esp.HealthText.Text = math.floor((humanoid.Health / humanoid.MaxHealth)*100).."%"
-            esp.HealthText.Position = root2D + Vector2.new(0,45)
+            esp.HealthText.Text = math.floor((humanoid.Health / humanoid.MaxHealth) * 100) .. "%"
+            esp.HealthText.Position = root2D + Vector2.new(0, 30)
             esp.HealthText.Color = getgenv().ColorShowHealthText
             esp.HealthText.Visible = true
         else esp.HealthText.Visible = false end
 
+        -- 射線 ESP (Tracer)
         if getgenv().ShowTracer then
-            esp.Tracer.From = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y)
+            esp.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
             esp.Tracer.To = root2D
             esp.Tracer.Color = getgenv().ColorShowTracer
             esp.Tracer.Visible = true
@@ -417,74 +280,11 @@ local function updateESP()
     end
 end
 
---// LOOPS & INPUT BINDS
-RunService.RenderStepped:Connect(function()
-    Circle.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-    Circle.Radius = getgenv().SilentAim.FOV
-    Circle.Color = Target and getgenv().FovLockedColorSilentAim or getgenv().FovColorSilentAim
-    Circle.Visible = getgenv().SilentAim.ShowFOV
-
-    if getgenv().SilentAim.Enabled then Target = getTarget() else Target = nil end
-
-    if getgenv().FOVCircleEnabled then
-        FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-        FOVCircle.Radius = getgenv().FOVCircleRadius
-        FOVCircle.Color = getgenv().FOVCircleColor
-        FOVCircle.Visible = getgenv().FOVCircleVisible
-        FOVCircle.Filled = getgenv().FOVCircleFilled
-        FOVCircle.Thickness = getgenv().FOVCircleThickness
-        FOVCircle.Transparency = 1 - getgenv().FOVCircleTransparency
-        FOVCircle.NumSides = getgenv().CircleSides
-    else
-        FOVCircle.Visible = false
-    end
-
-    if Holding and getgenv().AimbotEnabled and LockedTarget then
-        local char = LockedTarget.Character
-        if char and char:FindFirstChild(getgenv().AimPart) and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
-            local aimPart = char[getgenv().AimPart]
-            local newCFrame = CFrame.new(Camera.CFrame.Position, aimPart.Position)
-            pcall(function()
-                TweenService:Create(Camera, TweenInfo.new(getgenv().Sensitivity, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
-                    CFrame = newCFrame
-                }):Play()
-            end)
-        else
-            LockedTarget = GetClosestPlayer()
-        end
-    end
-end)
-
-UserInputService.InputBegan:Connect(function(Input)
-    if Input.UserInputType == getgenv().AimbotKey and getgenv().AimbotEnabled then
-        Holding = true
-        LockedTarget = GetClosestPlayer()
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(Input)
-    if Input.UserInputType == getgenv().AimbotKey then
-        Holding = false
-        LockedTarget = nil
-    end
-end)
-
+--// LOOPS
 task.spawn(function()
     while task.wait(getgenv().RefreshRate) do pcall(updateESP) end
 end)
 Players.PlayerRemoving:Connect(removeESP)
-
---// SILENT AIM HOOK
-local oldNamecall
-oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-    local args = {...}
-    local method = getnamecallmethod()
-    if not checkcaller() and ShootRemote and self == ShootRemote and method == "FireServer" and getgenv().SilentAim.Enabled and Target and math.random(1,100) <= getgenv().SilentAim.HitChance then
-        args[4] = {["1"] = Target, ["2"] = Target, ["3"] = Target}
-        return oldNamecall(self, unpack(args))
-    end
-    return oldNamecall(self, ...)
-end)
 
 --// UI DESIGN (STYLE FROM GODMODE UI)
 local Themes = {
@@ -509,12 +309,12 @@ local Themes = {
 }
 
 local MainGui = Instance.new("ScreenGui", CoreGui)
-MainGui.Name = "XcxHubSilentAim"
+MainGui.Name = "XcxHubESP"
 MainGui.ResetOnSpawn = false
 
 local Frame = Instance.new("Frame", MainGui)
-Frame.Size = UDim2.new(0, 240, 0, 310) -- 稍微加高以容納 3 個主要開關和更多功能
-Frame.Position = UDim2.new(0.5, -120, 0.5, -155)
+Frame.Size = UDim2.new(0, 240, 0, 270)
+Frame.Position = UDim2.new(0.5, -120, 0.5, -135)
 Frame.BackgroundColor3 = Themes.Dark.Background
 Frame.BorderSizePixel = 0
 Frame.Active = true
@@ -545,7 +345,7 @@ TitleFix.BorderSizePixel = 0
 local Title = Instance.new("TextLabel", TitleBar)
 Title.Size = UDim2.new(1, -100, 1, 0)
 Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "Xcx Hub || Aim & ESP"
+Title.Text = "Xcx Hub || Visual ESP"
 Title.TextColor3 = Themes.Dark.Text
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
@@ -621,53 +421,45 @@ local function CreateButton(text, position, callback)
     return btn
 end
 
---// UI 按鈕綁定與切換
-CreateButton("SILENT AIM: OFF", UDim2.new(0, 0, 0, 5), function(btn)
-    getgenv().SilentAim.Enabled = not getgenv().SilentAim.Enabled
-    btn.Text = "SILENT AIM: " .. (getgenv().SilentAim.Enabled and "ON" or "OFF")
-end)
-
-CreateButton("AIMBOT: OFF", UDim2.new(0, 0, 0, 46), function(btn)
-    getgenv().AimbotEnabled = not getgenv().AimbotEnabled
-    btn.Text = "AIMBOT: " .. (getgenv().AimbotEnabled and "ON" or "OFF")
-end)
-
-CreateButton("SHOW FOV: OFF", UDim2.new(0, 0, 0, 87), function(btn)
-    getgenv().SilentAim.ShowFOV = not getgenv().SilentAim.ShowFOV
-    getgenv().FOVCircleEnabled = getgenv().SilentAim.ShowFOV
-    getgenv().FOVCircleVisible = getgenv().SilentAim.ShowFOV
-    btn.Text = "SHOW FOV: " .. (getgenv().SilentAim.ShowFOV and "ON" or "OFF")
-end)
-
--- ESP 整合按鈕 (點選切換常用的主 ESP 功能)
-CreateButton("ESP BOX: OFF", UDim2.new(0, 0, 0, 128), function(btn)
+--// ESP 功能開關按鈕
+CreateButton("ESP BOX: OFF", UDim2.new(0, 0, 0, 5), function(btn)
     getgenv().Box = not getgenv().Box
     getgenv().ShowName = getgenv().Box
     btn.Text = "ESP BOX: " .. (getgenv().Box and "ON" or "OFF")
 end)
 
-CreateButton("ESP SKELETON: OFF", UDim2.new(0, 0, 0, 169), function(btn)
+CreateButton("ESP SKELETON: OFF", UDim2.new(0, 0, 0, 46), function(btn)
     getgenv().Skeleton = not getgenv().Skeleton
     btn.Text = "ESP SKELETON: " .. (getgenv().Skeleton and "ON" or "OFF")
 end)
 
-CreateButton("ESP HEALTH & DIST: OFF", UDim2.new(0, 0, 0, 210), function(btn)
+CreateButton("ESP HEALTH & DIST: OFF", UDim2.new(0, 0, 0, 87), function(btn)
     getgenv().HealthEnabled = not getgenv().HealthEnabled
     getgenv().Distance = getgenv().HealthEnabled
     getgenv().ShowHealthText = getgenv().HealthEnabled
     btn.Text = "ESP HEALTH & DIST: " .. (getgenv().HealthEnabled and "ON" or "OFF")
 end)
 
+CreateButton("ESP TRACERS: OFF", UDim2.new(0, 0, 0, 128), function(btn)
+    getgenv().ShowTracer = not getgenv().ShowTracer
+    btn.Text = "ESP TRACERS: " .. (getgenv().ShowTracer and "ON" or "OFF")
+end)
+
+CreateButton("TEAM CHECK: OFF", UDim2.new(0, 0, 0, 169), function(btn)
+    getgenv().TeamCheckEsp = not getgenv().TeamCheckEsp
+    btn.Text = "TEAM CHECK: " .. (getgenv().TeamCheckEsp and "ON" or "OFF")
+end)
+
 local Credit = Instance.new("TextLabel", Content)
 Credit.Size = UDim2.new(1, 0, 0, 22)
-Credit.Position = UDim2.new(0, 0, 1, -20)
-Credit.Text = "by: Xcx & romokaso framework"
+Credit.Position = UDim2.new(0, 0, 1, -15)
+Credit.Text = "by: romokaso UI framework"
 Credit.TextColor3 = Color3.fromRGB(120, 120, 120)
 Credit.BackgroundTransparency = 1
 Credit.Font = Enum.Font.GothamBold
 Credit.TextSize = 9
 
---// 後台設置面版與關閉彈窗 (完美保留 GodMode 的設定與動態切換代碼)
+--// 後台設置面版與關閉彈窗
 local SettingsFrame = Instance.new("Frame", Frame)
 SettingsFrame.Size = UDim2.new(1, 0, 1, 0)
 SettingsFrame.BackgroundColor3 = Themes.Dark.Background
@@ -814,7 +606,7 @@ SettingsBtn.MouseButton1Click:Connect(function()
     if confirmDialogOpen then return end
     if isMinimized then
         isMinimized = false
-        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, 240, 0, 310)}):Play()
+        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, 240, 0, 270)}):Play()
         MinimizeBtn.Text = "−"
         task.wait(0.1)
     end
@@ -831,7 +623,7 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, 240, 0, 35)}):Play()
         MinimizeBtn.Text = "+"
     else
-        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, 240, 0, 310)}):Play()
+        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, 240, 0, 270)}):Play()
         MinimizeBtn.Text = "−"
     end
     task.wait(0.1)
@@ -844,7 +636,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
     if isMinimized then
         isMinimized = false
-        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, 240, 0, 310)}):Play()
+        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, 240, 0, 270)}):Play()
         MinimizeBtn.Text = "−"
         task.wait(0.1)
     end
@@ -867,8 +659,12 @@ YesBtn.MouseButton1Click:Connect(function()
     task.wait(0.1)
     TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
     task.wait(0.1)
-    Circle:Remove()
-    FOVCircle:Remove()
+    
+    -- 清理場上所有已繪製的 ESP 物件
+    for _, plr in ipairs(Players:GetPlayers()) do
+        removeESP(plr)
+    end
+    
     MainGui:Destroy()
 end)
 
@@ -876,6 +672,6 @@ end)
 Frame.Size = UDim2.new(0, 0, 0, 0)
 Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 240, 0, 310),
-    Position = UDim2.new(0.5, -120, 0.5, -155)
+    Size = UDim2.new(0, 240, 0, 270),
+    Position = UDim2.new(0.5, -120, 0.5, -135)
 }):Play()
