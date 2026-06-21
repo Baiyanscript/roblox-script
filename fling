@@ -45,6 +45,7 @@ local Themes = {
 -- 縮小整體選單尺寸
 local UIWidth = 210
 local UIHeight = 300
+local MinimizedHeight = 46 -- 調整最小化高度，確保能完整容納標題列與作者列
 
 --// MAIN SCREEN GUI
 local MainGui = Instance.new("ScreenGui", CoreGui)
@@ -93,10 +94,29 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 11
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- 狀態提示列
+-- 【作者署名列】移入至 Frame 頂部（緊貼標題列下方），防範因 ClipsDescendants 導致最小化時被裁切
+local AuthorBar = Instance.new("Frame", Frame)
+AuthorBar.Size = UDim2.new(1, -12, 0, 16)
+AuthorBar.Position = UDim2.new(0, 6, 0, 30) -- 緊接在 TitleBar (高30) 的正下方
+AuthorBar.BackgroundColor3 = Themes.Dark.AuthorBar
+AuthorBar.BorderSizePixel = 0
+
+local AuthorBarCorner = Instance.new("UICorner", AuthorBar)
+AuthorBarCorner.CornerRadius = UDim.new(0, 4)
+
+local AuthorLabel = Instance.new("TextLabel", AuthorBar)
+AuthorLabel.Size = UDim2.new(1, 0, 1, 0)
+AuthorLabel.BackgroundTransparency = 1
+AuthorLabel.Text = "by: Baiyan Multi Fling"
+AuthorLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
+AuthorLabel.Font = Enum.Font.GothamBold
+AuthorLabel.TextSize = 9
+AuthorLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+-- 狀態提示列 (因應作者列位置上移，順延往下排列)
 local StatusLabel = Instance.new("TextLabel", Frame)
 StatusLabel.Size = UDim2.new(1, -20, 0, 18)
-StatusLabel.Position = UDim2.new(0, 10, 0, 34)
+StatusLabel.Position = UDim2.new(0, 10, 0, 48) -- 從 34 下移到 48
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Text = "0 target(s) selected"
 StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
@@ -147,10 +167,10 @@ Instance.new("UICorner", SettingsBtn).CornerRadius = UDim.new(0, 6)
 Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 6)
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- 玩家清單滾動框架 (等比例縮小高度與邊距)
+-- 玩家清單滾動框架 (配合排版動態微調高度)
 local PlayerListScroll = Instance.new("ScrollingFrame", Frame)
-PlayerListScroll.Size = UDim2.new(1, -12, 0, 130)
-PlayerListScroll.Position = UDim2.new(0, 6, 0, 54)
+PlayerListScroll.Size = UDim2.new(1, -12, 0, 116) -- 高度從 130 微調到 116，留空給狀態與按鈕
+PlayerListScroll.Position = UDim2.new(0, 6, 0, 68) -- 從 54 下移到 68
 PlayerListScroll.BackgroundTransparency = 1
 PlayerListScroll.BorderSizePixel = 0
 PlayerListScroll.ScrollBarThickness = 2
@@ -400,25 +420,6 @@ local StopBtn = CreateControlBtn("STOP FLING", UDim2.new(0.5, -3, 0, 32), UDim2.
 local AllBtn = CreateControlBtn("SELECT ALL", UDim2.new(0.5, -3, 0, 24), UDim2.new(0, 0, 0, 36), Color3.fromRGB(50, 50, 50), function() ToggleAllPlayers(true) end)
 local NoneBtn = CreateControlBtn("DESELECT ALL", UDim2.new(0.5, -3, 0, 24), UDim2.new(0.5, 3, 0, 36), Color3.fromRGB(50, 50, 50), function() ToggleAllPlayers(false) end)
 
--- 【作者署名列】精準定位在 SELECT / DESELECT ALL 按鈕下方 (同步縮小體積)
-local AuthorBar = Instance.new("Frame", ControlsFrame)
-AuthorBar.Size = UDim2.new(1, 0, 0, 22)
-AuthorBar.Position = UDim2.new(0, 0, 0, 66) -- 36 (按鈕Y) + 24 (按鈕高) + 6 (間距)
-AuthorBar.BackgroundColor3 = Themes.Dark.AuthorBar
-AuthorBar.BorderSizePixel = 0
-
-local AuthorBarCorner = Instance.new("UICorner", AuthorBar)
-AuthorBarCorner.CornerRadius = UDim.new(0, 5)
-
-local AuthorLabel = Instance.new("TextLabel", AuthorBar)
-AuthorLabel.Size = UDim2.new(1, 0, 1, 0)
-AuthorLabel.BackgroundTransparency = 1
-AuthorLabel.Text = "by: Baiyan Multi Fling"
-AuthorLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
-AuthorLabel.Font = Enum.Font.GothamBold
-AuthorLabel.TextSize = 9 -- 字型調小
-AuthorLabel.TextXAlignment = Enum.TextXAlignment.Center
-
 --// SETTINGS & CONFIRM SUB PANELS
 local SettingsFrame = Instance.new("Frame", Frame)
 SettingsFrame.Size = UDim2.new(1, 0, 1, 0)
@@ -584,7 +585,8 @@ MinimizeBtn.MouseButton1Click:Connect(function()
     if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
     isMinimized = not isMinimized
     if isMinimized then
-        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, UIWidth, 0, 30)}):Play()
+        -- 最小化時縮小到 MinimizedHeight (46)，剛好完整呈現標題列與作者署名
+        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, UIWidth, 0, MinimizedHeight)}):Play()
         MinimizeBtn.Text = "+"
     else
         TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, UIWidth, 0, UIHeight)}):Play()
