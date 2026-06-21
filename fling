@@ -94,12 +94,13 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 11
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- 作者署名列 (維持原本位置)
+-- 作者署名列 (確保一開始是可見的)
 local AuthorBar = Instance.new("Frame", Frame)
 AuthorBar.Size = UDim2.new(1, -12, 0, 16)
 AuthorBar.Position = UDim2.new(0, 6, 0, 30) 
 AuthorBar.BackgroundColor3 = Themes.Dark.AuthorBar
 AuthorBar.BorderSizePixel = 0
+AuthorBar.Visible = true
 
 local AuthorBarCorner = Instance.new("UICorner", AuthorBar)
 AuthorBarCorner.CornerRadius = UDim.new(0, 4)
@@ -112,6 +113,7 @@ AuthorLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
 AuthorLabel.Font = Enum.Font.GothamBold
 AuthorLabel.TextSize = 9
 AuthorLabel.TextXAlignment = Enum.TextXAlignment.Center
+AuthorLabel.Visible = true
 
 -- 狀態提示列 (維持原本位置)
 local StatusLabel = Instance.new("TextLabel", Frame)
@@ -580,7 +582,6 @@ SettingsBtn.MouseButton1Click:Connect(function()
     settingsOpen = SettingsFrame.Visible
 end)
 
--- 【修復最小化 Bug】添加了 Visible 切換邏輯，防重疊擠壓
 MinimizeBtn.MouseButton1Click:Connect(function()
     if minimizeCooldown or confirmDialogOpen then return end
     minimizeCooldown = true
@@ -588,7 +589,6 @@ MinimizeBtn.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
     
     if isMinimized then
-        -- 最小化時：隱藏主面板內所有其他無關的面板與清單
         AuthorBar.Visible = false
         StatusLabel.Visible = false
         PlayerListScroll.Visible = false
@@ -597,9 +597,8 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, UIWidth, 0, MinimizedHeight)}):Play()
         MinimizeBtn.Text = "+"
     else
-        -- 展開時：先將大小調回，再顯示所有內件元件
         TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, UIWidth, 0, UIHeight)}):Play()
-        task.wait(0.05) -- 微小延遲防止動畫閃爍
+        task.wait(0.05)
         
         AuthorBar.Visible = true
         StatusLabel.Visible = true
@@ -661,6 +660,11 @@ UpdateStatus()
 
 Frame.Size = UDim2.new(0, 0, 0, 0)
 Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+-- 確保加載與開頭動畫播完時，AuthorBar 也是強行顯示的
+AuthorBar.Visible = true
+AuthorLabel.Visible = true
+
 TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
     Size = UDim2.new(0, UIWidth, 0, UIHeight),
     Position = UDim2.new(0.5, -(UIWidth/2), 0.5, -(UIHeight/2))
