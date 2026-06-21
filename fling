@@ -48,7 +48,7 @@ local UIHeight = 300
 
 --// MAIN SCREEN GUI
 local MainGui = Instance.new("ScreenGui", CoreGui)
-MainGui.Name = "XcxHubMultiFling"
+MainGui.Name = "BaiyanHubMultiFling"
 MainGui.ResetOnSpawn = false
 
 -- 主面板
@@ -86,7 +86,7 @@ TitleFix.BorderSizePixel = 0
 local Title = Instance.new("TextLabel", TitleBar)
 Title.Size = UDim2.new(1, -90, 1, 0)
 Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "Xcx Hub || Multi Fling"
+Title.Text = "Baiyan Hub || Multi Fling"
 Title.TextColor3 = Themes.Dark.Text
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
@@ -413,7 +413,7 @@ AuthorBarCorner.CornerRadius = UDim.new(0, 5)
 local AuthorLabel = Instance.new("TextLabel", AuthorBar)
 AuthorLabel.Size = UDim2.new(1, 0, 1, 0)
 AuthorLabel.BackgroundTransparency = 1
-AuthorLabel.Text = "by: romokaso & mod2 pure visual"
+AuthorLabel.Text = "by: Baiyan"
 AuthorLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
 AuthorLabel.Font = Enum.Font.GothamBold
 AuthorLabel.TextSize = 9 -- 字型調小
@@ -645,4 +645,4 @@ TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.Easing
     Position = UDim2.new(0.5, -(UIWidth/2), 0.5, -(UIHeight/2))
 }):Play()
 
-Message("Loaded", "Xcx Hub Multi-Fling Active!", 3)
+Message("Loaded", "Baiyan Hub Multi-Fling Active!", 3)
