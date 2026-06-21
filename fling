@@ -167,19 +167,19 @@ Instance.new("UICorner", SettingsBtn).CornerRadius = UDim.new(0, 6)
 Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 6)
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- 玩家清單滾動框架 (擴大滾動範圍，因為下方按鈕區縮小了)
+-- 玩家清單滾動框架 (擴大滾動範圍)
 local PlayerListScroll = Instance.new("ScrollingFrame", Frame)
-PlayerListScroll.Size = UDim2.new(1, -12, 0, 162) -- 高度擴大到 162，把下方多出來的空間留給清單
+PlayerListScroll.Size = UDim2.new(1, -12, 0, 162) 
 PlayerListScroll.Position = UDim2.new(0, 6, 0, 68) 
 PlayerListScroll.BackgroundTransparency = 1
 PlayerListScroll.BorderSizePixel = 0
 PlayerListScroll.ScrollBarThickness = 2
 PlayerListScroll.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 
--- 【下面那一部分：控制按鈕區縮小】高度從 102 縮小到 56，更加緊湊
+-- 控制按鈕區（縮小版高度 56）
 local ControlsFrame = Instance.new("Frame", Frame)
 ControlsFrame.Size = UDim2.new(1, -12, 0, 56)
-ControlsFrame.Position = UDim2.new(0, 6, 1, -62) -- 底部錨定上移
+ControlsFrame.Position = UDim2.new(0, 6, 1, -62) 
 ControlsFrame.BackgroundTransparency = 1
 
 --// HELPER FUNCTIONS
@@ -395,7 +395,7 @@ local function StartFling()
     end)
 end
 
---// UI BUTTON GENERATOR (優化按鈕內部高度與字體大小)
+--// UI BUTTON GENERATOR
 local function CreateControlBtn(text, size, pos, bgCol, callback)
     local btn = Instance.new("TextButton", ControlsFrame)
     btn.Size = size
@@ -404,7 +404,7 @@ local function CreateControlBtn(text, size, pos, bgCol, callback)
     btn.Text = text
     btn.TextColor3 = Color3.new(1,1,1)
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 9 -- 微調字體以貼合縮小後的按鈕
+    btn.TextSize = 9 
     btn.BorderSizePixel = 0
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
 
@@ -412,7 +412,6 @@ local function CreateControlBtn(text, size, pos, bgCol, callback)
     return btn
 end
 
--- 【按鈕部分高度縮減】由原本的 32/24 縮小為 24/22 像素高，間距變得極度緊湊
 local StartBtn = CreateControlBtn("START FLING", UDim2.new(0.5, -2, 0, 24), UDim2.new(0, 0, 0, 0), Color3.fromRGB(0, 160, 90), StartFling)
 local StopBtn = CreateControlBtn("STOP FLING", UDim2.new(0.5, -2, 0, 24), UDim2.new(0.5, 2, 0, 0), Color3.fromRGB(200, 60, 60), function() FlingActive = false UpdateStatus() Message("Stopped", "Fling process killed", 2) end)
 local AllBtn = CreateControlBtn("SELECT ALL", UDim2.new(0.5, -2, 0, 22), UDim2.new(0, 0, 0, 28), Color3.fromRGB(50, 50, 50), function() ToggleAllPlayers(true) end)
@@ -569,6 +568,10 @@ SettingsBtn.MouseButton1Click:Connect(function()
     if confirmDialogOpen then return end
     if isMinimized then
         isMinimized = false
+        AuthorBar.Visible = true
+        StatusLabel.Visible = true
+        PlayerListScroll.Visible = true
+        ControlsFrame.Visible = true
         TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, UIWidth, 0, UIHeight)}):Play()
         MinimizeBtn.Text = "−"
         task.wait(0.1)
@@ -577,16 +580,31 @@ SettingsBtn.MouseButton1Click:Connect(function()
     settingsOpen = SettingsFrame.Visible
 end)
 
+-- 【修復最小化 Bug】添加了 Visible 切換邏輯，防重疊擠壓
 MinimizeBtn.MouseButton1Click:Connect(function()
     if minimizeCooldown or confirmDialogOpen then return end
     minimizeCooldown = true
     if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
     isMinimized = not isMinimized
+    
     if isMinimized then
+        -- 最小化時：隱藏主面板內所有其他無關的面板與清單
+        AuthorBar.Visible = false
+        StatusLabel.Visible = false
+        PlayerListScroll.Visible = false
+        ControlsFrame.Visible = false
+        
         TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, UIWidth, 0, MinimizedHeight)}):Play()
         MinimizeBtn.Text = "+"
     else
+        -- 展開時：先將大小調回，再顯示所有內件元件
         TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, UIWidth, 0, UIHeight)}):Play()
+        task.wait(0.05) -- 微小延遲防止動畫閃爍
+        
+        AuthorBar.Visible = true
+        StatusLabel.Visible = true
+        PlayerListScroll.Visible = true
+        ControlsFrame.Visible = true
         MinimizeBtn.Text = "−"
     end
     task.wait(0.1)
@@ -599,6 +617,10 @@ CloseBtn.MouseButton1Click:Connect(function()
     if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
     if isMinimized then
         isMinimized = false
+        AuthorBar.Visible = true
+        StatusLabel.Visible = true
+        PlayerListScroll.Visible = true
+        ControlsFrame.Visible = true
         TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, UIWidth, 0, UIHeight)}):Play()
         MinimizeBtn.Text = "−"
         task.wait(0.1)
