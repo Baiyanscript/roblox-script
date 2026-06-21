@@ -15,8 +15,8 @@ local CurrentSpeed = 16
 local FlyActive = false     
 local FlySpeedValueNum = 1  
 local tpwalking = false
-local tis = nil            
-local dis = nil            
+local tis = nil             
+local dis = nil             
 local bg = nil
 local bv = nil
 
@@ -55,7 +55,7 @@ local function startJumpControl()
     end)
 end
 
--- 3. 飛行控制系統 (完整參考 FlyGuiV3 核心邏輯)
+-- 3. 飛行控制系統
 local function updateFlyMovement()
     tpwalking = false
     task.wait()
@@ -164,7 +164,7 @@ local function toggleFly()
 end
 
 -- ==========================================
--- UI 主題設定
+-- UI 主題設定 (比照 ESP 優化整合)
 -- ==========================================
 local Themes = {
     Dark = {
@@ -280,7 +280,7 @@ Content.BackgroundTransparency = 1
 
 local buttonReferences = {}
 
--- 1. 速度調整組合框 (高度優化為 28)
+-- 1. 速度調整組合框
 local SpeedFrame = Instance.new("Frame", Content)
 SpeedFrame.Size = UDim2.new(1, 0, 0, 28); SpeedFrame.Position = UDim2.new(0, 0, 0, 6)
 SpeedFrame.BackgroundTransparency = 1
@@ -301,7 +301,7 @@ IncSpeed.Size = UDim2.new(0, 28, 1, 0); IncSpeed.Position = UDim2.new(1, -28, 0,
 IncSpeed.BackgroundColor3 = Themes.Dark.Button; IncSpeed.TextColor3 = Themes.Dark.Text; IncSpeed.BorderSizePixel = 0
 Instance.new("UICorner", IncSpeed).CornerRadius = UDim.new(0, 5)
 
--- 2. 跳躍次數組合框 (高度優化為 28)
+-- 2. 跳躍次數組合框
 local JumpFrame = Instance.new("Frame", Content)
 JumpFrame.Size = UDim2.new(1, 0, 0, 28); JumpFrame.Position = UDim2.new(0, 0, 0, 40)
 JumpFrame.BackgroundTransparency = 1
@@ -322,7 +322,7 @@ IncJump.Size = UDim2.new(0, 28, 1, 0); IncJump.Position = UDim2.new(1, -28, 0, 0
 IncJump.BackgroundColor3 = Themes.Dark.Button; IncJump.TextColor3 = Themes.Dark.Text; IncJump.BorderSizePixel = 0
 Instance.new("UICorner", IncJump).CornerRadius = UDim.new(0, 5)
 
--- 3. 飛行速度組合框 (高度優化為 28)
+-- 3. 飛行速度組合框
 local FlyFrame = Instance.new("Frame", Content)
 FlyFrame.Size = UDim2.new(1, 0, 0, 28); FlyFrame.Position = UDim2.new(0, 0, 0, 74)
 FlyFrame.BackgroundTransparency = 1
@@ -343,7 +343,7 @@ IncFly.Size = UDim2.new(0, 28, 1, 0); IncFly.Position = UDim2.new(1, -28, 0, 0);
 IncFly.BackgroundColor3 = Themes.Dark.Button; IncFly.TextColor3 = Themes.Dark.Text; IncFly.BorderSizePixel = 0
 Instance.new("UICorner", IncFly).CornerRadius = UDim.new(0, 5)
 
--- 4. 飛行狀態開關 (高度優化為 28)
+-- 4. 飛行狀態開關
 local FlyToggleFrame = Instance.new("Frame", Content)
 FlyToggleFrame.Size = UDim2.new(1, 0, 0, 28); FlyToggleFrame.Position = UDim2.new(0, 0, 0, 108)
 FlyToggleFrame.BackgroundTransparency = 1
@@ -353,7 +353,7 @@ FlyToggleBtn.Size = UDim2.new(1, 0, 1, 0); FlyToggleBtn.Text = "飛行狀態: �
 FlyToggleBtn.BackgroundColor3 = Themes.Dark.Button; FlyToggleBtn.TextColor3 = Themes.Dark.Text; FlyToggleBtn.BorderSizePixel = 0
 Instance.new("UICorner", FlyToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- 5. 高度調整微調鈕 (高度優化為 28)
+-- 5. 高度調整微調鈕
 local HeightFrame = Instance.new("Frame", Content)
 HeightFrame.Size = UDim2.new(1, 0, 0, 28); HeightFrame.Position = UDim2.new(0, 0, 0, 142)
 HeightFrame.BackgroundTransparency = 1
@@ -368,12 +368,13 @@ DownBtn.Size = UDim2.new(0.48, 0, 1, 0); DownBtn.Position = UDim2.new(0.52, 0, 0
 DownBtn.BackgroundColor3 = Themes.Dark.Button; DownBtn.TextColor3 = Themes.Dark.Text; DownBtn.BorderSizePixel = 0
 Instance.new("UICorner", DownBtn).CornerRadius = UDim.new(0, 5)
 
+-- 註冊至主題更新列表
 table.insert(buttonReferences, DecSpeed); table.insert(buttonReferences, SpeedInput); table.insert(buttonReferences, IncSpeed)
 table.insert(buttonReferences, DecJump); table.insert(buttonReferences, JumpInput); table.insert(buttonReferences, IncJump)
 table.insert(buttonReferences, DecFly); table.insert(buttonReferences, FlySpeedInput); table.insert(buttonReferences, IncFly)
 table.insert(buttonReferences, FlyToggleBtn); table.insert(buttonReferences, UpBtn); table.insert(buttonReferences, DownBtn)
 
--- 製作人員標籤 (精確固定於最底部)
+-- 製作人員標籤
 local Credit = Instance.new("TextLabel", Content)
 Credit.Size = UDim2.new(1, 0, 0, 18)
 Credit.Position = UDim2.new(0, 0, 1, -18)
@@ -382,6 +383,105 @@ Credit.TextColor3 = Color3.fromRGB(110, 110, 110)
 Credit.BackgroundTransparency = 1
 Credit.Font = Enum.Font.GothamBold
 Credit.TextSize = 9
+
+-- ==========================================
+-- 建立設定（Settings）與關閉子面板
+-- ==========================================
+local SettingsFrame = Instance.new("Frame", Frame)
+SettingsFrame.Size = UDim2.new(1, 0, 1, 0); SettingsFrame.BackgroundColor3 = Themes.Dark.Background; SettingsFrame.BorderSizePixel = 0; SettingsFrame.Visible = false; SettingsFrame.ZIndex = 20
+Instance.new("UICorner", SettingsFrame).CornerRadius = UDim.new(0, 10)
+
+local SettingsTitle = Instance.new("TextLabel", SettingsFrame)
+SettingsTitle.Size = UDim2.new(1, 0, 0, 35); SettingsTitle.Position = UDim2.new(0, 0, 0, 10); SettingsTitle.Text = "SETTINGS"
+SettingsTitle.TextColor3 = Themes.Dark.Text; SettingsTitle.BackgroundTransparency = 1; SettingsTitle.Font = Enum.Font.GothamBold; SettingsTitle.TextSize = 13; SettingsTitle.ZIndex = 21
+
+local ThemeLabel = Instance.new("TextLabel", SettingsFrame)
+ThemeLabel.Size = UDim2.new(1, -20, 0, 20); ThemeLabel.Position = UDim2.new(0, 15, 0, 50); ThemeLabel.Text = "THEME:"
+ThemeLabel.TextColor3 = Themes.Dark.Text; ThemeLabel.BackgroundTransparency = 1; ThemeLabel.Font = Enum.Font.GothamBold; ThemeLabel.TextSize = 11; ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left; ThemeLabel.ZIndex = 21
+
+local DarkThemeBtn = Instance.new("TextButton", SettingsFrame)
+DarkThemeBtn.Size = UDim2.new(0.42, 0, 0, 28); DarkThemeBtn.Position = UDim2.new(0, 15, 0, 75); DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); DarkThemeBtn.Text = "DARK"; DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1); DarkThemeBtn.Font = Enum.Font.GothamBold; DarkThemeBtn.TextSize = 11; DarkThemeBtn.BorderSizePixel = 0; DarkThemeBtn.ZIndex = 21
+Instance.new("UICorner", DarkThemeBtn).CornerRadius = UDim.new(0, 5)
+
+local LightThemeBtn = Instance.new("TextButton", SettingsFrame)
+LightThemeBtn.Size = UDim2.new(0.42, 0, 0, 28); LightThemeBtn.Position = UDim2.new(1, -15 - 88, 0, 75); LightThemeBtn.BackgroundColor3 = Themes.Dark.Button; LightThemeBtn.Text = "LIGHT"; LightThemeBtn.TextColor3 = Themes.Dark.Text; LightThemeBtn.Font = Enum.Font.GothamBold; LightThemeBtn.TextSize = 11; LightThemeBtn.BorderSizePixel = 0; LightThemeBtn.ZIndex = 21
+Instance.new("UICorner", LightThemeBtn).CornerRadius = UDim.new(0, 5)
+
+local BackBtn = Instance.new("TextButton", SettingsFrame)
+BackBtn.Size = UDim2.new(0.86, 0, 0, 30); BackBtn.Position = UDim2.new(0.07, 0, 1, -45); BackBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); BackBtn.Text = "BACK"; BackBtn.TextColor3 = Color3.new(1, 1, 1); BackBtn.Font = Enum.Font.GothamBold; BackBtn.TextSize = 12; BackBtn.BorderSizePixel = 0; BackBtn.ZIndex = 21
+Instance.new("UICorner", BackBtn).CornerRadius = UDim.new(0, 5)
+
+-- 將設定按鈕也放入更新清單，確保同步色彩
+table.insert(buttonReferences, DarkThemeBtn); table.insert(buttonReferences, LightThemeBtn); table.insert(buttonReferences, BackBtn)
+
+local ConfirmFrame = Instance.new("Frame", Frame)
+ConfirmFrame.Size = UDim2.new(1, 0, 1, 0); ConfirmFrame.BackgroundColor3 = Themes.Dark.Background; ConfirmFrame.BorderSizePixel = 0; ConfirmFrame.Visible = false; ConfirmFrame.ZIndex = 25; ConfirmFrame.BackgroundTransparency = 0.05
+Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 10)
+local ConfirmStroke = Instance.new("UIStroke", ConfirmFrame)
+ConfirmStroke.Thickness = 2; ConfirmStroke.Color = Themes.Dark.Border
+
+local ConfirmText = Instance.new("TextLabel", ConfirmFrame)
+ConfirmText.Size = UDim2.new(1, -20, 0, 50); ConfirmText.Position = UDim2.new(0, 10, 0, 75); ConfirmText.Text = "確定要關閉選單嗎？"
+ConfirmText.TextColor3 = Themes.Dark.Text; ConfirmText.BackgroundTransparency = 1; ConfirmText.Font = Enum.Font.GothamBold; ConfirmText.TextSize = 12; ConfirmText.ZIndex = 26
+
+local YesBtn = Instance.new("TextButton", ConfirmFrame)
+YesBtn.Size = UDim2.new(0, 75, 0, 28); YesBtn.Position = UDim2.new(0, 20, 1, -45); YesBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100); YesBtn.Text = "確定"; YesBtn.TextColor3 = Color3.fromRGB(255, 255, 255); YesBtn.Font = Enum.Font.GothamBold; YesBtn.TextSize = 12; YesBtn.BorderSizePixel = 0; YesBtn.ZIndex = 26
+Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 5)
+
+local NoBtn = Instance.new("TextButton", ConfirmFrame)
+NoBtn.Size = UDim2.new(0, 75, 0, 28); NoBtn.Position = UDim2.new(1, -95, 1, -45); NoBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); NoBtn.Text = "取消"; NoBtn.TextColor3 = Color3.fromRGB(255, 255, 255); NoBtn.Font = Enum.Font.GothamBold; NoBtn.TextSize = 12; NoBtn.BorderSizePixel = 0; NoBtn.ZIndex = 26
+Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 5)
+
+local isMinimized, isClosing, minimizeCooldown, closeCooldown, confirmDialogOpen, settingsOpen = false, false, false, false, false, false
+
+-- ==========================================
+-- 動態主題切換核心系統 (修復按鈕色彩殘留問題)
+-- ==========================================
+local function ApplyTheme(theme)
+    local colors = Themes[theme]
+    CurrentTheme = theme
+    Frame.BackgroundColor3 = colors.Background; TitleBar.BackgroundColor3 = colors.TitleBar; TitleFix.BackgroundColor3 = colors.TitleBar
+    Title.TextColor3 = colors.Text; FrameStroke.Color = colors.Border
+    SettingsBtn.BackgroundColor3 = colors.TopButtons; SettingsBtn.TextColor3 = colors.Text
+    MinimizeBtn.BackgroundColor3 = colors.TopButtons; MinimizeBtn.TextColor3 = colors.Text
+    CloseBtn.BackgroundColor3= colors.TopButtons; CloseBtn.TextColor3 = colors.Text
+    
+    for _, btn in pairs(buttonReferences) do
+        if btn:IsA("TextButton") or btn:IsA("TextBox") then
+            -- 排除當前選中激活的主題標籤色
+            if btn ~= DarkThemeBtn and btn ~= LightThemeBtn and btn ~= BackBtn then
+                btn.BackgroundColor3 = colors.Button
+                btn.TextColor3 = colors.Text
+            end
+        end
+    end
+    SettingsFrame.BackgroundColor3 = colors.Background; SettingsTitle.TextColor3 = colors.Text; ThemeLabel.TextColor3 = colors.Text
+    ConfirmFrame.BackgroundColor3 = colors.Background; ConfirmStroke.Color = colors.Border; ConfirmText.TextColor3 = colors.Text
+    
+    if theme == "Dark" then
+        DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1)
+        LightThemeBtn.BackgroundColor3 = colors.Button; LightThemeBtn.TextColor3 = colors.Text
+    else
+        LightThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); LightThemeBtn.TextColor3 = Color3.new(1, 1, 1)
+        DarkThemeBtn.BackgroundColor3 = colors.Button; DarkThemeBtn.TextColor3 = colors.Text
+    end
+end
+
+-- 增加按鈕滑鼠懸停反饋
+for _, btn in pairs(buttonReferences) do
+    if btn:IsA("TextButton") then
+        btn.MouseEnter:Connect(function()
+            if btn ~= DarkThemeBtn and btn ~= LightThemeBtn and btn ~= BackBtn then
+                TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Themes[CurrentTheme].ButtonHover}):Play()
+            end
+        end)
+        btn.MouseLeave:Connect(function()
+            if btn ~= DarkThemeBtn and btn ~= LightThemeBtn and btn ~= BackBtn then
+                TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Themes[CurrentTheme].Button}):Play()
+            end
+        end)
+    end
+end
 
 -- ==========================================
 -- 系統的交互事件綁定
@@ -450,7 +550,8 @@ FlyToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 UpBtn.MouseButton1Down:Connect(function()
-    tis = UpBtn.MouseEnter:Connect(function()
+    tis = true
+    task.spawn(function()
         while tis do
             task.wait()
             if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -459,10 +560,12 @@ UpBtn.MouseButton1Down:Connect(function()
         end
     end)
 end)
-UpBtn.MouseLeave:Connect(function() if tis then tis:Disconnect(); tis = nil end end)
+UpBtn.MouseButton1Up:Connect(function() tis = false end)
+UpBtn.MouseLeave:Connect(function() tis = false end)
 
 DownBtn.MouseButton1Down:Connect(function()
-    dis = DownBtn.MouseEnter:Connect(function()
+    dis = true
+    task.spawn(function()
         while dis do
             task.wait()
             if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -471,82 +574,14 @@ DownBtn.MouseButton1Down:Connect(function()
         end
     end)
 end)
-DownBtn.MouseLeave:Connect(function() if dis then dis:Disconnect(); dis = nil end end)
+DownBtn.MouseButton1Up:Connect(function() dis = false end)
+DownBtn.MouseLeave:Connect(function() dis = false end)
 
 startJumpControl()
 
 -- ==========================================
--- 設定、關閉、最小化與彈窗子系統 (高度重組)
+-- 設定與關閉微調控制邏輯
 -- ==========================================
-local SettingsFrame = Instance.new("Frame", Frame)
-SettingsFrame.Size = UDim2.new(1, 0, 1, 0); SettingsFrame.BackgroundColor3 = Themes.Dark.Background; SettingsFrame.BorderSizePixel = 0; SettingsFrame.Visible = false; SettingsFrame.ZIndex = 20
-Instance.new("UICorner", SettingsFrame).CornerRadius = UDim.new(0, 10)
-
-local SettingsTitle = Instance.new("TextLabel", SettingsFrame)
-SettingsTitle.Size = UDim2.new(1, 0, 0, 35); SettingsTitle.Position = UDim2.new(0, 0, 0, 10); SettingsTitle.Text = "SETTINGS"
-SettingsTitle.TextColor3 = Themes.Dark.Text; SettingsTitle.BackgroundTransparency = 1; SettingsTitle.Font = Enum.Font.GothamBold; SettingsTitle.TextSize = 13; SettingsTitle.ZIndex = 21
-
-local ThemeLabel = Instance.new("TextLabel", SettingsFrame)
-ThemeLabel.Size = UDim2.new(1, -20, 0, 20); ThemeLabel.Position = UDim2.new(0, 15, 0, 50); ThemeLabel.Text = "THEME:"
-ThemeLabel.TextColor3 = Themes.Dark.Text; ThemeLabel.BackgroundTransparency = 1; ThemeLabel.Font = Enum.Font.GothamBold; ThemeLabel.TextSize = 11; ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left; ThemeLabel.ZIndex = 21
-
-local DarkThemeBtn = Instance.new("TextButton", SettingsFrame)
-DarkThemeBtn.Size = UDim2.new(0.42, 0, 0, 28); DarkThemeBtn.Position = UDim2.new(0, 15, 0, 75); DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); DarkThemeBtn.Text = "DARK"; DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1); DarkThemeBtn.Font = Enum.Font.GothamBold; DarkThemeBtn.TextSize = 11; DarkThemeBtn.BorderSizePixel = 0; DarkThemeBtn.ZIndex = 21
-Instance.new("UICorner", DarkThemeBtn).CornerRadius = UDim.new(0, 5)
-
-local LightThemeBtn = Instance.new("TextButton", SettingsFrame)
-LightThemeBtn.Size = UDim2.new(0.42, 0, 0, 28); LightThemeBtn.Position = UDim2.new(1, -15 - 88, 0, 75); LightThemeBtn.BackgroundColor3 = Themes.Dark.Button; LightThemeBtn.Text = "LIGHT"; LightThemeBtn.TextColor3 = Themes.Dark.Text; LightThemeBtn.Font = Enum.Font.GothamBold; LightThemeBtn.TextSize = 11; LightThemeBtn.BorderSizePixel = 0; LightThemeBtn.ZIndex = 21
-Instance.new("UICorner", LightThemeBtn).CornerRadius = UDim.new(0, 5)
-
-local BackBtn = Instance.new("TextButton", SettingsFrame)
-BackBtn.Size = UDim2.new(0.86, 0, 0, 30); BackBtn.Position = UDim2.new(0.07, 0, 1, -45); BackBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); BackBtn.Text = "BACK"; BackBtn.TextColor3 = Color3.new(1, 1, 1); BackBtn.Font = Enum.Font.GothamBold; BackBtn.TextSize = 12; BackBtn.BorderSizePixel = 0; BackBtn.ZIndex = 21
-Instance.new("UICorner", BackBtn).CornerRadius = UDim.new(0, 5)
-
-local function ApplyTheme(theme)
-    local colors = Themes[theme]
-    CurrentTheme = theme
-    Frame.BackgroundColor3 = colors.Background; TitleBar.BackgroundColor3 = colors.TitleBar; TitleFix.BackgroundColor3 = colors.TitleBar
-    Title.TextColor3 = colors.Text; FrameStroke.Color = colors.Border
-    SettingsBtn.BackgroundColor3 = colors.TopButtons; SettingsBtn.TextColor3 = colors.Text
-    MinimizeBtn.BackgroundColor3 = colors.TopButtons; MinimizeBtn.TextColor3 = colors.Text
-    CloseBtn.BackgroundColor3= colors.TopButtons; CloseBtn.TextColor3 = colors.Text
-    for _, btn in pairs(buttonReferences) do
-        if btn:IsA("TextButton") or btn:IsA("TextBox") then
-            btn.BackgroundColor3 = colors.Button
-            btn.TextColor3 = colors.Text
-        end
-    end
-    SettingsFrame.BackgroundColor3 = colors.Background; SettingsTitle.TextColor3 = colors.Text; ThemeLabel.TextColor3 = colors.Text
-    ConfirmFrame.BackgroundColor3 = colors.Background; ConfirmStroke.Color = colors.Border; ConfirmText.TextColor3 = colors.Text
-    if theme == "Dark" then
-        DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1)
-        LightThemeBtn.BackgroundColor3 = colors.Button; LightThemeBtn.TextColor3 = colors.Text
-    else
-        LightThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); LightThemeBtn.TextColor3 = Color3.new(1, 1, 1)
-        DarkThemeBtn.BackgroundColor3 = colors.Button; DarkThemeBtn.TextColor3 = colors.Text
-    end
-end
-
-local ConfirmFrame = Instance.new("Frame", Frame)
-ConfirmFrame.Size = UDim2.new(1, 0, 1, 0); ConfirmFrame.BackgroundColor3 = Themes.Dark.Background; ConfirmFrame.BorderSizePixel = 0; ConfirmFrame.Visible = false; ConfirmFrame.ZIndex = 25; ConfirmFrame.BackgroundTransparency = 0.05
-Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 10)
-local ConfirmStroke = Instance.new("UIStroke", ConfirmFrame)
-ConfirmStroke.Thickness = 2; ConfirmStroke.Color = Themes.Dark.Border
-
-local ConfirmText = Instance.new("TextLabel", ConfirmFrame)
-ConfirmText.Size = UDim2.new(1, -20, 0, 50); ConfirmText.Position = UDim2.new(0, 10, 0, 75); ConfirmText.Text = "確定要關閉選單嗎？"
-ConfirmText.TextColor3 = Themes.Dark.Text; ConfirmText.BackgroundTransparency = 1; ConfirmText.Font = Enum.Font.GothamBold; ConfirmText.TextSize = 12; ConfirmText.ZIndex = 26
-
-local YesBtn = Instance.new("TextButton", ConfirmFrame)
-YesBtn.Size = UDim2.new(0, 75, 0, 28); YesBtn.Position = UDim2.new(0, 20, 1, -45); YesBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100); YesBtn.Text = "確定"; YesBtn.TextColor3 = Color3.fromRGB(255, 255, 255); YesBtn.Font = Enum.Font.GothamBold; YesBtn.TextSize = 12; YesBtn.BorderSizePixel = 0; YesBtn.ZIndex = 26
-Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 5)
-
-local NoBtn = Instance.new("TextButton", ConfirmFrame)
-NoBtn.Size = UDim2.new(0, 75, 0, 28); NoBtn.Position = UDim2.new(1, -95, 1, -45); NoBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); NoBtn.Text = "取消"; NoBtn.TextColor3 = Color3.fromRGB(255, 255, 255); NoBtn.Font = Enum.Font.GothamBold; NoBtn.TextSize = 12; NoBtn.BorderSizePixel = 0; NoBtn.ZIndex = 26
-Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 5)
-
-local isMinimized, isClosing, minimizeCooldown, closeCooldown, confirmDialogOpen, settingsOpen = false, false, false, false, false, false
-
 DarkThemeBtn.MouseButton1Click:Connect(function() ApplyTheme("Dark") end)
 LightThemeBtn.MouseButton1Click:Connect(function() ApplyTheme("Light") end)
 BackBtn.MouseButton1Click:Connect(function() SettingsFrame.Visible = false; settingsOpen = false end)
@@ -634,7 +669,6 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
--- 修改後的作者與通知標題樣式
 game:GetService("StarterGui"):SetCore("SendNotification", { 
     Title = "Baiyan MOVE SYSTEM";
     Text = "極簡移動選單已載入，by: Baiyan";
