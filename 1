@@ -7,16 +7,16 @@ local player = Players.LocalPlayer
 
 -- 系統狀態變數
 local CurrentTheme = "Dark"
-local MaxJumps = 5          -- 預設跳躍次數設為 5
+local MaxJumps = 5          
 local JumpCount = 0
 local CurrentSpeed = 16
 
 -- 飛行系統狀態（完整對應 FlyGuiV3）
-local FlyActive = false     -- 對應原腳本的 nowe
-local FlySpeedValueNum = 1  -- 對應原腳本的 speeds
+local FlyActive = false     
+local FlySpeedValueNum = 1  
 local tpwalking = false
-local tis = nil            -- 向上循環連線
-local dis = nil            -- 向下循環連線
+local tis = nil            
+local dis = nil            
 local bg = nil
 local bv = nil
 
@@ -168,70 +168,70 @@ end
 -- ==========================================
 local Themes = {
     Dark = {
-        Background = Color3.fromRGB(10, 10, 10),
-        TitleBar = Color3.fromRGB(15, 15, 15),
-        Button = Color3.fromRGB(25, 25, 25),
-        ButtonHover = Color3.fromRGB(35, 35, 35),
-        Text = Color3.fromRGB(220, 220, 220),
-        Border = Color3.fromRGB(60, 60, 60),
-        TopButtons = Color3.fromRGB(40, 40, 40)
+        Background = Color3.fromRGB(12, 12, 12),
+        TitleBar = Color3.fromRGB(18, 18, 18),
+        Button = Color3.fromRGB(28, 28, 28),
+        ButtonHover = Color3.fromRGB(38, 38, 38),
+        Text = Color3.fromRGB(225, 225, 225),
+        Border = Color3.fromRGB(55, 55, 55),
+        TopButtons = Color3.fromRGB(35, 35, 35)
     },
     Light = {
-        Background = Color3.fromRGB(240, 240, 240),
-        TitleBar = Color3.fromRGB(220, 220, 220),
+        Background = Color3.fromRGB(242, 242, 242),
+        TitleBar = Color3.fromRGB(225, 225, 225),
         Button = Color3.fromRGB(255, 255, 255),
-        ButtonHover = Color3.fromRGB(230, 230, 230),
-        Text = Color3.fromRGB(20, 20, 20),
-        Border = Color3.fromRGB(180, 180, 180),
-        TopButtons = Color3.fromRGB(200, 200, 200)
+        ButtonHover = Color3.fromRGB(235, 235, 235),
+        Text = Color3.fromRGB(25, 25, 25),
+        Border = Color3.fromRGB(175, 175, 175),
+        TopButtons = Color3.fromRGB(205, 205, 205)
     }
 }
 
 -- ==========================================
--- UI 元件建構與排版 (極致縮減：210 x 290)
+-- UI 元件優化重組 (精簡緊湊比例：210 x 250)
 -- ==========================================
 local MainGui = Instance.new("ScreenGui", CoreGui)
 MainGui.Name = "MovementHackGui"
 MainGui.ResetOnSpawn = false
 
 local Frame = Instance.new("Frame", MainGui)
-Frame.Size = UDim2.new(0, 210, 0, 290)
-Frame.Position = UDim2.new(0.5, -105, 0.5, -145)
+Frame.Size = UDim2.new(0, 210, 0, 250)
+Frame.Position = UDim2.new(0.5, -105, 0.5, -125)
 Frame.BackgroundColor3 = Themes.Dark.Background
 Frame.BorderSizePixel = 0
 Frame.Active = true
 Frame.ClipsDescendants = true
 
 local FrameCorner = Instance.new("UICorner", Frame)
-FrameCorner.CornerRadius = UDim.new(0, 12)
+FrameCorner.CornerRadius = UDim.new(0, 10)
 
 local FrameStroke = Instance.new("UIStroke", Frame)
-FrameStroke.Thickness = 2
+FrameStroke.Thickness = 1.5
 FrameStroke.Color = Themes.Dark.Border
-FrameStroke.Transparency = 0.2
+FrameStroke.Transparency = 0.1
 
 local TitleBar = Instance.new("Frame", Frame)
-TitleBar.Size = UDim2.new(1, 0, 0, 35)
+TitleBar.Size = UDim2.new(1, 0, 0, 32)
 TitleBar.BackgroundColor3 = Themes.Dark.TitleBar
 TitleBar.BorderSizePixel = 0
 
 local TitleCorner = Instance.new("UICorner", TitleBar)
-TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.CornerRadius = UDim.new(0, 10)
 
 local TitleFix = Instance.new("Frame", TitleBar)
-TitleFix.Size = UDim2.new(1, 0, 0, 15)
-TitleFix.Position = UDim2.new(0, 0, 1, -15)
+TitleFix.Size = UDim2.new(1, 0, 0, 10)
+TitleFix.Position = UDim2.new(0, 0, 1, -10)
 TitleFix.BackgroundColor3 = Themes.Dark.TitleBar
 TitleFix.BorderSizePixel = 0
 
 local Title = Instance.new("TextLabel", TitleBar)
 Title.Size = UDim2.new(1, -95, 1, 0)
 Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "MOVE SYSTEM"
+Title.Text = "MOVE SYSTEM V3"
 Title.TextColor3 = Themes.Dark.Text
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 12
+Title.TextSize = 11
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 -- 視窗拖拽功能
@@ -256,133 +256,137 @@ end)
 
 -- 頂部功能鍵
 local SettingsBtn = Instance.new("TextButton", TitleBar)
-SettingsBtn.Size = UDim2.new(0, 26, 0, 26); SettingsBtn.Position = UDim2.new(1, -86, 0.5, -13)
+SettingsBtn.Size = UDim2.new(0, 22, 0, 22); SettingsBtn.Position = UDim2.new(1, -78, 0.5, -11)
 SettingsBtn.BackgroundColor3 = Themes.Dark.TopButtons; SettingsBtn.Text = "⚙"; SettingsBtn.TextColor3 = Themes.Dark.Text
-SettingsBtn.Font = Enum.Font.GothamBold; SettingsBtn.TextSize = 14; SettingsBtn.BorderSizePixel = 0
-Instance.new("UICorner", SettingsBtn).CornerRadius = UDim.new(0, 6)
+SettingsBtn.Font = Enum.Font.GothamBold; SettingsBtn.TextSize = 13; SettingsBtn.BorderSizePixel = 0
+Instance.new("UICorner", SettingsBtn).CornerRadius = UDim.new(0, 5)
 
 local MinimizeBtn = Instance.new("TextButton", TitleBar)
-MinimizeBtn.Size = UDim2.new(0, 26, 0, 26); MinimizeBtn.Position = UDim2.new(1, -57, 0.5, -13)
+MinimizeBtn.Size = UDim2.new(0, 22, 0, 22); MinimizeBtn.Position = UDim2.new(1, -52, 0.5, -11)
 MinimizeBtn.BackgroundColor3 = Themes.Dark.TopButtons; MinimizeBtn.Text = "−"; MinimizeBtn.TextColor3 = Themes.Dark.Text
-MinimizeBtn.Font = Enum.Font.GothamBold; MinimizeBtn.TextSize = 14; MinimizeBtn.BorderSizePixel = 0
-Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 6)
+MinimizeBtn.Font = Enum.Font.GothamBold; MinimizeBtn.TextSize = 13; MinimizeBtn.BorderSizePixel = 0
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 5)
 
 local CloseBtn = Instance.new("TextButton", TitleBar)
-CloseBtn.Size = UDim2.new(0, 26, 0, 26); CloseBtn.Position = UDim2.new(1, -28, 0.5, -13)
+CloseBtn.Size = UDim2.new(0, 22, 0, 22); CloseBtn.Position = UDim2.new(1, -26, 0.5, -11)
 CloseBtn.BackgroundColor3 = Themes.Dark.TopButtons; CloseBtn.Text = "×"; CloseBtn.TextColor3 = Themes.Dark.Text
-CloseBtn.Font = Enum.Font.GothamBold; CloseBtn.TextSize = 18; CloseBtn.BorderSizePixel = 0
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+CloseBtn.Font = Enum.Font.GothamBold; CloseBtn.TextSize = 16; CloseBtn.BorderSizePixel = 0
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 5)
 
 -- 內容量
 local Content = Instance.new("Frame", Frame)
-Content.Size = UDim2.new(1, -14, 1, -48); Content.Position = UDim2.new(0, 7, 0, 41)
+Content.Size = UDim2.new(1, -14, 1, -42); Content.Position = UDim2.new(0, 7, 0, 36)
 Content.BackgroundTransparency = 1
 
 local buttonReferences = {}
 
--- 1. 速度調整組合框
+-- 1. 速度調整組合框 (高度優化為 28)
 local SpeedFrame = Instance.new("Frame", Content)
-SpeedFrame.Size = UDim2.new(1, 0, 0, 34); SpeedFrame.Position = UDim2.new(0, 0, 0, 8)
+SpeedFrame.Size = UDim2.new(1, 0, 0, 28); SpeedFrame.Position = UDim2.new(0, 0, 0, 6)
 SpeedFrame.BackgroundTransparency = 1
 
 local DecSpeed = Instance.new("TextButton", SpeedFrame)
-DecSpeed.Size = UDim2.new(0, 32, 1, 0); DecSpeed.Text = "−"; DecSpeed.Font = Enum.Font.GothamBold; DecSpeed.TextSize = 15
+DecSpeed.Size = UDim2.new(0, 28, 1, 0); DecSpeed.Text = "−"; DecSpeed.Font = Enum.Font.GothamBold; DecSpeed.TextSize = 14
 DecSpeed.BackgroundColor3 = Themes.Dark.Button; DecSpeed.TextColor3 = Themes.Dark.Text; DecSpeed.BorderSizePixel = 0
-Instance.new("UICorner", DecSpeed).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", DecSpeed).CornerRadius = UDim.new(0, 5)
 
 local SpeedInput = Instance.new("TextBox", SpeedFrame)
-SpeedInput.Size = UDim2.new(1, -72, 1, 0); SpeedInput.Position = UDim2.new(0, 36, 0, 0)
-SpeedInput.Text = "速度: 16"; SpeedInput.Font = Enum.Font.GothamBold; SpeedInput.TextSize = 12
+SpeedInput.Size = UDim2.new(1, -64, 1, 0); SpeedInput.Position = UDim2.new(0, 32, 0, 0)
+SpeedInput.Text = "速度: 16"; SpeedInput.Font = Enum.Font.GothamBold; SpeedInput.TextSize = 11
 SpeedInput.BackgroundColor3 = Themes.Dark.Button; SpeedInput.TextColor3 = Themes.Dark.Text; SpeedInput.BorderSizePixel = 0
-Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 5)
 
 local IncSpeed = Instance.new("TextButton", SpeedFrame)
-IncSpeed.Size = UDim2.new(0, 32, 1, 0); IncSpeed.Position = UDim2.new(1, -32, 0, 0); IncSpeed.Text = "+"; IncSpeed.Font = Enum.Font.GothamBold; IncSpeed.TextSize = 15
+IncSpeed.Size = UDim2.new(0, 28, 1, 0); IncSpeed.Position = UDim2.new(1, -28, 0, 0); IncSpeed.Text = "+"; IncSpeed.Font = Enum.Font.GothamBold; IncSpeed.TextSize = 14
 IncSpeed.BackgroundColor3 = Themes.Dark.Button; IncSpeed.TextColor3 = Themes.Dark.Text; IncSpeed.BorderSizePixel = 0
-Instance.new("UICorner", IncSpeed).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", IncSpeed).CornerRadius = UDim.new(0, 5)
 
--- 2. 跳躍次數組合框
+-- 2. 跳躍次數組合框 (高度優化為 28)
 local JumpFrame = Instance.new("Frame", Content)
-JumpFrame.Size = UDim2.new(1, 0, 0, 34); JumpFrame.Position = UDim2.new(0, 0, 0, 50)
+JumpFrame.Size = UDim2.new(1, 0, 0, 28); JumpFrame.Position = UDim2.new(0, 0, 0, 40)
 JumpFrame.BackgroundTransparency = 1
 
 local DecJump = Instance.new("TextButton", JumpFrame)
-DecJump.Size = UDim2.new(0, 32, 1, 0); DecJump.Text = "−"; DecJump.Font = Enum.Font.GothamBold; DecJump.TextSize = 15
+DecJump.Size = UDim2.new(0, 28, 1, 0); DecJump.Text = "−"; DecJump.Font = Enum.Font.GothamBold; DecJump.TextSize = 14
 DecJump.BackgroundColor3 = Themes.Dark.Button; DecJump.TextColor3 = Themes.Dark.Text; DecJump.BorderSizePixel = 0
-Instance.new("UICorner", DecJump).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", DecJump).CornerRadius = UDim.new(0, 5)
 
 local JumpInput = Instance.new("TextBox", JumpFrame)
-JumpInput.Size = UDim2.new(1, -72, 1, 0); JumpInput.Position = UDim2.new(0, 36, 0, 0)
-JumpInput.Text = "跳躍: 5"; JumpInput.Font = Enum.Font.GothamBold; JumpInput.TextSize = 12
+JumpInput.Size = UDim2.new(1, -64, 1, 0); JumpInput.Position = UDim2.new(0, 32, 0, 0)
+JumpInput.Text = "跳躍: 5"; JumpInput.Font = Enum.Font.GothamBold; JumpInput.TextSize = 11
 JumpInput.BackgroundColor3 = Themes.Dark.Button; JumpInput.TextColor3 = Themes.Dark.Text; JumpInput.BorderSizePixel = 0
-Instance.new("UICorner", JumpInput).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", JumpInput).CornerRadius = UDim.new(0, 5)
 
 local IncJump = Instance.new("TextButton", JumpFrame)
-IncJump.Size = UDim2.new(0, 32, 1, 0); IncJump.Position = UDim2.new(1, -32, 0, 0); IncJump.Text = "+"; IncJump.Font = Enum.Font.GothamBold; IncJump.TextSize = 15
+IncJump.Size = UDim2.new(0, 28, 1, 0); IncJump.Position = UDim2.new(1, -28, 0, 0); IncJump.Text = "+"; IncJump.Font = Enum.Font.GothamBold; IncJump.TextSize = 14
 IncJump.BackgroundColor3 = Themes.Dark.Button; IncJump.TextColor3 = Themes.Dark.Text; IncJump.BorderSizePixel = 0
-Instance.new("UICorner", IncJump).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", IncJump).CornerRadius = UDim.new(0, 5)
 
--- 3. 飛行控制組合框 (已全面整合 TextBox 打字輸入與加減按鈕)
+-- 3. 飛行速度組合框 (高度優化為 28)
 local FlyFrame = Instance.new("Frame", Content)
-FlyFrame.Size = UDim2.new(1, 0, 0, 34); FlyFrame.Position = UDim2.new(0, 0, 0, 92)
+FlyFrame.Size = UDim2.new(1, 0, 0, 28); FlyFrame.Position = UDim2.new(0, 0, 0, 74)
 FlyFrame.BackgroundTransparency = 1
 
 local DecFly = Instance.new("TextButton", FlyFrame)
-DecFly.Size = UDim2.new(0, 32, 1, 0); DecFly.Text = "−"; DecFly.Font = Enum.Font.GothamBold; DecFly.TextSize = 15
+DecFly.Size = UDim2.new(0, 28, 1, 0); DecFly.Text = "−"; DecFly.Font = Enum.Font.GothamBold; DecFly.TextSize = 14
 DecFly.BackgroundColor3 = Themes.Dark.Button; DecFly.TextColor3 = Themes.Dark.Text; DecFly.BorderSizePixel = 0
-Instance.new("UICorner", DecFly).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", DecFly).CornerRadius = UDim.new(0, 5)
 
 local FlySpeedInput = Instance.new("TextBox", FlyFrame)
-FlySpeedInput.Size = UDim2.new(1, -72, 1, 0); FlySpeedInput.Position = UDim2.new(0, 36, 0, 0)
-FlySpeedInput.Text = "飛速: 1"; FlySpeedInput.Font = Enum.Font.GothamBold; FlySpeedInput.TextSize = 12
+FlySpeedInput.Size = UDim2.new(1, -64, 1, 0); FlySpeedInput.Position = UDim2.new(0, 32, 0, 0)
+FlySpeedInput.Text = "飛速: 1"; FlySpeedInput.Font = Enum.Font.GothamBold; FlySpeedInput.TextSize = 11
 FlySpeedInput.BackgroundColor3 = Themes.Dark.Button; FlySpeedInput.TextColor3 = Themes.Dark.Text; FlySpeedInput.BorderSizePixel = 0
-Instance.new("UICorner", FlySpeedInput).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", FlySpeedInput).CornerRadius = UDim.new(0, 5)
 
 local IncFly = Instance.new("TextButton", FlyFrame)
-IncFly.Size = UDim2.new(0, 32, 1, 0); IncFly.Position = UDim2.new(1, -32, 0, 0); IncFly.Text = "+"; IncFly.Font = Enum.Font.GothamBold; IncFly.TextSize = 15
+IncFly.Size = UDim2.new(0, 28, 1, 0); IncFly.Position = UDim2.new(1, -28, 0, 0); IncFly.Text = "+"; IncFly.Font = Enum.Font.GothamBold; IncFly.TextSize = 14
 IncFly.BackgroundColor3 = Themes.Dark.Button; IncFly.TextColor3 = Themes.Dark.Text; IncFly.BorderSizePixel = 0
-Instance.new("UICorner", IncFly).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", IncFly).CornerRadius = UDim.new(0, 5)
 
--- 4. 飛行開關按鈕
+-- 4. 飛行狀態開關 (高度優化為 28)
 local FlyToggleFrame = Instance.new("Frame", Content)
-FlyToggleFrame.Size = UDim2.new(1, 0, 0, 34); FlyToggleFrame.Position = UDim2.new(0, 0, 0, 134)
+FlyToggleFrame.Size = UDim2.new(1, 0, 0, 28); FlyToggleFrame.Position = UDim2.new(0, 0, 0, 108)
 FlyToggleFrame.BackgroundTransparency = 1
 
 local FlyToggleBtn = Instance.new("TextButton", FlyToggleFrame)
-FlyToggleBtn.Size = UDim2.new(1, 0, 1, 0); FlyToggleBtn.Text = "飛行狀態: 關閉"; FlyToggleBtn.Font = Enum.Font.GothamBold; FlyToggleBtn.TextSize = 12
+FlyToggleBtn.Size = UDim2.new(1, 0, 1, 0); FlyToggleBtn.Text = "飛行狀態: 關閉"; FlyToggleBtn.Font = Enum.Font.GothamBold; FlyToggleBtn.TextSize = 11
 FlyToggleBtn.BackgroundColor3 = Themes.Dark.Button; FlyToggleBtn.TextColor3 = Themes.Dark.Text; FlyToggleBtn.BorderSizePixel = 0
-Instance.new("UICorner", FlyToggleBtn).CornerRadius = UDim.new(0, 7)
+Instance.new("UICorner", FlyToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- 5. 高度調整微調鈕
+-- 5. 高度調整微調鈕 (高度優化為 28)
 local HeightFrame = Instance.new("Frame", Content)
-HeightFrame.Size = UDim2.new(1, 0, 0, 34); HeightFrame.Position = UDim2.new(0, 0, 0, 176)
+HeightFrame.Size = UDim2.new(1, 0, 0, 28); HeightFrame.Position = UDim2.new(0, 0, 0, 142)
 HeightFrame.BackgroundTransparency = 1
 
 local UpBtn = Instance.new("TextButton", HeightFrame)
 UpBtn.Size = UDim2.new(0.48, 0, 1, 0); UpBtn.Text = "向上微調"; UpBtn.Font = Enum.Font.GothamBold; UpBtn.TextSize = 11
 UpBtn.BackgroundColor3 = Themes.Dark.Button; UpBtn.TextColor3 = Themes.Dark.Text; UpBtn.BorderSizePixel = 0
-Instance.new("UICorner", UpBtn).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", UpBtn).CornerRadius = UDim.new(0, 5)
 
 local DownBtn = Instance.new("TextButton", HeightFrame)
 DownBtn.Size = UDim2.new(0.48, 0, 1, 0); DownBtn.Position = UDim2.new(0.52, 0, 0, 0); DownBtn.Text = "向下微調"; DownBtn.Font = Enum.Font.GothamBold; DownBtn.TextSize = 11
 DownBtn.BackgroundColor3 = Themes.Dark.Button; DownBtn.TextColor3 = Themes.Dark.Text; DownBtn.BorderSizePixel = 0
-Instance.new("UICorner", DownBtn).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", DownBtn).CornerRadius = UDim.new(0, 5)
 
 table.insert(buttonReferences, DecSpeed); table.insert(buttonReferences, SpeedInput); table.insert(buttonReferences, IncSpeed)
 table.insert(buttonReferences, DecJump); table.insert(buttonReferences, JumpInput); table.insert(buttonReferences, IncJump)
 table.insert(buttonReferences, DecFly); table.insert(buttonReferences, FlySpeedInput); table.insert(buttonReferences, IncFly)
 table.insert(buttonReferences, FlyToggleBtn); table.insert(buttonReferences, UpBtn); table.insert(buttonReferences, DownBtn)
 
+-- 製作人員標籤 (精確固定於最底部)
 local Credit = Instance.new("TextLabel", Content)
-Credit.Size = UDim2.new(1, 0, 0, 20); Credit.Position = UDim2.new(0, 0, 1, -2)
-Credit.Text = "by: romokaso & Baiyan"; Credit.TextColor3 = Color3.fromRGB(110, 110, 110)
-Credit.BackgroundTransparency = 1; Credit.Font = Enum.Font.GothamBold; Credit.TextSize = 9
+Credit.Size = UDim2.new(1, 0, 0, 18)
+Credit.Position = UDim2.new(0, 0, 1, -18)
+Credit.Text = "by: romokaso & Baiyan"
+Credit.TextColor3 = Color3.fromRGB(110, 110, 110)
+Credit.BackgroundTransparency = 1
+Credit.Font = Enum.Font.GothamBold
+Credit.TextSize = 9
 
 -- ==========================================
 -- 系統的交互事件綁定
 -- ==========================================
 
--- 速度微調事件
 SpeedInput.FocusLost:Connect(function()
     local num = tonumber(SpeedInput.Text:match("%d+")) or tonumber(SpeedInput.Text)
     if num then CurrentSpeed = math.clamp(math.floor(num), 0, 1000) else CurrentSpeed = 16 end
@@ -400,7 +404,6 @@ DecSpeed.MouseButton1Click:Connect(function()
     updateCharacterSpeed()
 end)
 
--- 跳躍調整事件
 JumpInput.FocusLost:Connect(function()
     local text = JumpInput.Text:lower()
     local num = tonumber(text:match("%d+")) or tonumber(text)
@@ -422,7 +425,6 @@ DecJump.MouseButton1Click:Connect(function()
     startJumpControl()
 end)
 
--- 飛行速度打字輸入與加減綁定
 FlySpeedInput.FocusLost:Connect(function()
     local num = tonumber(FlySpeedInput.Text:match("%d+")) or tonumber(FlySpeedInput.Text)
     if num then FlySpeedValueNum = math.max(1, math.floor(num)) else FlySpeedValueNum = 1 end
@@ -442,13 +444,11 @@ DecFly.MouseButton1Click:Connect(function()
     end
 end)
 
--- 飛行主按鈕開關
 FlyToggleBtn.MouseButton1Click:Connect(function()
     toggleFly()
     FlyToggleBtn.Text = "飛行狀態: " .. (FlyActive and "開啟" or "關閉")
 end)
 
--- 高度平滑向上微調 (原始 Baiyan 邏輯)
 UpBtn.MouseButton1Down:Connect(function()
     tis = UpBtn.MouseEnter:Connect(function()
         while tis do
@@ -461,7 +461,6 @@ UpBtn.MouseButton1Down:Connect(function()
 end)
 UpBtn.MouseLeave:Connect(function() if tis then tis:Disconnect(); tis = nil end end)
 
--- 高度平滑向下微調 (原始 Baiyan 邏輯)
 DownBtn.MouseButton1Down:Connect(function()
     dis = DownBtn.MouseEnter:Connect(function()
         while dis do
@@ -474,35 +473,34 @@ DownBtn.MouseButton1Down:Connect(function()
 end)
 DownBtn.MouseLeave:Connect(function() if dis then dis:Disconnect(); dis = nil end end)
 
--- 啟動跳躍控制
 startJumpControl()
 
 -- ==========================================
--- 設定、關閉、最小化與主題切換系統
+-- 設定、關閉、最小化與彈窗子系統 (高度重組)
 -- ==========================================
 local SettingsFrame = Instance.new("Frame", Frame)
 SettingsFrame.Size = UDim2.new(1, 0, 1, 0); SettingsFrame.BackgroundColor3 = Themes.Dark.Background; SettingsFrame.BorderSizePixel = 0; SettingsFrame.Visible = false; SettingsFrame.ZIndex = 20
-Instance.new("UICorner", SettingsFrame).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", SettingsFrame).CornerRadius = UDim.new(0, 10)
 
 local SettingsTitle = Instance.new("TextLabel", SettingsFrame)
-SettingsTitle.Size = UDim2.new(1, 0, 0, 40); SettingsTitle.Position = UDim2.new(0, 0, 0, 10); SettingsTitle.Text = "SETTINGS"
-SettingsTitle.TextColor3 = Themes.Dark.Text; SettingsTitle.BackgroundTransparency = 1; SettingsTitle.Font = Enum.Font.GothamBold; SettingsTitle.TextSize = 14; SettingsTitle.ZIndex = 21
+SettingsTitle.Size = UDim2.new(1, 0, 0, 35); SettingsTitle.Position = UDim2.new(0, 0, 0, 10); SettingsTitle.Text = "SETTINGS"
+SettingsTitle.TextColor3 = Themes.Dark.Text; SettingsTitle.BackgroundTransparency = 1; SettingsTitle.Font = Enum.Font.GothamBold; SettingsTitle.TextSize = 13; SettingsTitle.ZIndex = 21
 
 local ThemeLabel = Instance.new("TextLabel", SettingsFrame)
-ThemeLabel.Size = UDim2.new(1, -20, 0, 25); ThemeLabel.Position = UDim2.new(0, 10, 0, 60); ThemeLabel.Text = "THEME:"
-ThemeLabel.TextColor3 = Themes.Dark.Text; ThemeLabel.BackgroundTransparency = 1; ThemeLabel.Font = Enum.Font.GothamBold; ThemeLabel.TextSize = 12; ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left; ThemeLabel.ZIndex = 21
+ThemeLabel.Size = UDim2.new(1, -20, 0, 20); ThemeLabel.Position = UDim2.new(0, 15, 0, 50); ThemeLabel.Text = "THEME:"
+ThemeLabel.TextColor3 = Themes.Dark.Text; ThemeLabel.BackgroundTransparency = 1; ThemeLabel.Font = Enum.Font.GothamBold; ThemeLabel.TextSize = 11; ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left; ThemeLabel.ZIndex = 21
 
 local DarkThemeBtn = Instance.new("TextButton", SettingsFrame)
-DarkThemeBtn.Size = UDim2.new(0.45, -5, 0, 32); DarkThemeBtn.Position = UDim2.new(0, 10, 0, 90); DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); DarkThemeBtn.Text = "DARK"; DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1); DarkThemeBtn.Font = Enum.Font.GothamBold; DarkThemeBtn.TextSize = 12; DarkThemeBtn.BorderSizePixel = 0; DarkThemeBtn.ZIndex = 21
-Instance.new("UICorner", DarkThemeBtn).CornerRadius = UDim.new(0, 7)
+DarkThemeBtn.Size = UDim2.new(0.42, 0, 0, 28); DarkThemeBtn.Position = UDim2.new(0, 15, 0, 75); DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); DarkThemeBtn.Text = "DARK"; DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1); DarkThemeBtn.Font = Enum.Font.GothamBold; DarkThemeBtn.TextSize = 11; DarkThemeBtn.BorderSizePixel = 0; DarkThemeBtn.ZIndex = 21
+Instance.new("UICorner", DarkThemeBtn).CornerRadius = UDim.new(0, 5)
 
 local LightThemeBtn = Instance.new("TextButton", SettingsFrame)
-LightThemeBtn.Size = UDim2.new(0.45, -5, 0, 32); LightThemeBtn.Position = UDim2.new(0.55, 0, 0, 90); LightThemeBtn.BackgroundColor3 = Themes.Dark.Button; LightThemeBtn.Text = "LIGHT"; LightThemeBtn.TextColor3 = Themes.Dark.Text; LightThemeBtn.Font = Enum.Font.GothamBold; LightThemeBtn.TextSize = 12; LightThemeBtn.BorderSizePixel = 0; LightThemeBtn.ZIndex = 21
-Instance.new("UICorner", LightThemeBtn).CornerRadius = UDim.new(0, 7)
+LightThemeBtn.Size = UDim2.new(0.42, 0, 0, 28); LightThemeBtn.Position = UDim2.new(1, -15 - 88, 0, 75); LightThemeBtn.BackgroundColor3 = Themes.Dark.Button; LightThemeBtn.Text = "LIGHT"; LightThemeBtn.TextColor3 = Themes.Dark.Text; LightThemeBtn.Font = Enum.Font.GothamBold; LightThemeBtn.TextSize = 11; LightThemeBtn.BorderSizePixel = 0; LightThemeBtn.ZIndex = 21
+Instance.new("UICorner", LightThemeBtn).CornerRadius = UDim.new(0, 5)
 
 local BackBtn = Instance.new("TextButton", SettingsFrame)
-BackBtn.Size = UDim2.new(0.9, 0, 0, 32); BackBtn.Position = UDim2.new(0.05, 0, 1, -45); BackBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); BackBtn.Text = "BACK"; BackBtn.TextColor3 = Color3.new(1, 1, 1); BackBtn.Font = Enum.Font.GothamBold; BackBtn.TextSize = 13; BackBtn.BorderSizePixel = 0; BackBtn.ZIndex = 21
-Instance.new("UICorner", BackBtn).CornerRadius = UDim.new(0, 7)
+BackBtn.Size = UDim2.new(0.86, 0, 0, 30); BackBtn.Position = UDim2.new(0.07, 0, 1, -45); BackBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); BackBtn.Text = "BACK"; BackBtn.TextColor3 = Color3.new(1, 1, 1); BackBtn.Font = Enum.Font.GothamBold; BackBtn.TextSize = 12; BackBtn.BorderSizePixel = 0; BackBtn.ZIndex = 21
+Instance.new("UICorner", BackBtn).CornerRadius = UDim.new(0, 5)
 
 local function ApplyTheme(theme)
     local colors = Themes[theme]
@@ -531,21 +529,21 @@ end
 
 local ConfirmFrame = Instance.new("Frame", Frame)
 ConfirmFrame.Size = UDim2.new(1, 0, 1, 0); ConfirmFrame.BackgroundColor3 = Themes.Dark.Background; ConfirmFrame.BorderSizePixel = 0; ConfirmFrame.Visible = false; ConfirmFrame.ZIndex = 25; ConfirmFrame.BackgroundTransparency = 0.05
-Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 10)
 local ConfirmStroke = Instance.new("UIStroke", ConfirmFrame)
-ConfirmStroke.Thickness = 3; ConfirmStroke.Color = Themes.Dark.Border
+ConfirmStroke.Thickness = 2; ConfirmStroke.Color = Themes.Dark.Border
 
 local ConfirmText = Instance.new("TextLabel", ConfirmFrame)
-ConfirmText.Size = UDim2.new(1, -20, 0, 60); ConfirmText.Position = UDim2.new(0, 10, 0, 90); ConfirmText.Text = "Are you sure you want\nto close the GUI?"
-ConfirmText.TextColor3 = Themes.Dark.Text; ConfirmText.BackgroundTransparency = 1; ConfirmText.Font = Enum.Font.GothamBold; ConfirmText.TextSize = 13; ConfirmText.ZIndex = 26
+ConfirmText.Size = UDim2.new(1, -20, 0, 50); ConfirmText.Position = UDim2.new(0, 10, 0, 75); ConfirmText.Text = "確定要關閉選單嗎？"
+ConfirmText.TextColor3 = Themes.Dark.Text; ConfirmText.BackgroundTransparency = 1; ConfirmText.Font = Enum.Font.GothamBold; ConfirmText.TextSize = 12; ConfirmText.ZIndex = 26
 
 local YesBtn = Instance.new("TextButton", ConfirmFrame)
-YesBtn.Size = UDim2.new(0, 80, 0, 32); YesBtn.Position = UDim2.new(0, 15, 1, -45); YesBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100); YesBtn.Text = "YES"; YesBtn.TextColor3 = Color3.fromRGB(255, 255, 255); YesBtn.Font = Enum.Font.GothamBold; YesBtn.TextSize = 13; YesBtn.BorderSizePixel = 0; YesBtn.ZIndex = 26
-Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 7)
+YesBtn.Size = UDim2.new(0, 75, 0, 28); YesBtn.Position = UDim2.new(0, 20, 1, -45); YesBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100); YesBtn.Text = "確定"; YesBtn.TextColor3 = Color3.fromRGB(255, 255, 255); YesBtn.Font = Enum.Font.GothamBold; YesBtn.TextSize = 12; YesBtn.BorderSizePixel = 0; YesBtn.ZIndex = 26
+Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 5)
 
 local NoBtn = Instance.new("TextButton", ConfirmFrame)
-NoBtn.Size = UDim2.new(0, 80, 0, 32); NoBtn.Position = UDim2.new(1, -95, 1, -45); NoBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); NoBtn.Text = "NO"; NoBtn.TextColor3 = Color3.fromRGB(255, 255, 255); NoBtn.Font = Enum.Font.GothamBold; NoBtn.TextSize = 13; NoBtn.BorderSizePixel = 0; NoBtn.ZIndex = 26
-Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 7)
+NoBtn.Size = UDim2.new(0, 75, 0, 28); NoBtn.Position = UDim2.new(1, -95, 1, -45); NoBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); NoBtn.Text = "取消"; NoBtn.TextColor3 = Color3.fromRGB(255, 255, 255); NoBtn.Font = Enum.Font.GothamBold; NoBtn.TextSize = 12; NoBtn.BorderSizePixel = 0; NoBtn.ZIndex = 26
+Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 5)
 
 local isMinimized, isClosing, minimizeCooldown, closeCooldown, confirmDialogOpen, settingsOpen = false, false, false, false, false, false
 
@@ -557,23 +555,22 @@ SettingsBtn.MouseButton1Click:Connect(function()
     if confirmDialogOpen then return end
     if isMinimized then
         isMinimized = false
-        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 290)}):Play()
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 250)}):Play()
         MinimizeBtn.Text = "−"; task.wait(0.1)
     end
     SettingsFrame.Visible = not SettingsFrame.Visible; settingsOpen = SettingsFrame.Visible
 end)
 
-[[降低重疊干擾最小化點擊]]
 MinimizeBtn.MouseButton1Click:Connect(function()
     if minimizeCooldown or confirmDialogOpen then return end
     minimizeCooldown = true
     if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
     isMinimized = not isMinimized
     if isMinimized then
-        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 35)}):Play()
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 32)}):Play()
         MinimizeBtn.Text = "+"
     else
-        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 290)}):Play()
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 250)}):Play()
         MinimizeBtn.Text = "−"
     end
     task.wait(0.1); minimizeCooldown = false
@@ -585,7 +582,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
     if isMinimized then
         isMinimized = false
-        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 290)}):Play()
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 250)}):Play()
         MinimizeBtn.Text = "−"; task.wait(0.1)
     end
     ConfirmFrame.Visible = true; ConfirmFrame.BackgroundTransparency = 1
@@ -616,12 +613,12 @@ end)
 Frame.Size = UDim2.new(0, 0, 0, 0)
 Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 210, 0, 290),
-    Position = UDim2.new(0.5, -105, 0.5, -145)
+    Size = UDim2.new(0, 210, 0, 250),
+    Position = UDim2.new(0.5, -105, 0.5, -125)
 }):Play()
 
 -- ==========================================
--- 🔄 玩家重生自動重新掛載所有狀態
+-- 重生掛載與提示
 -- ==========================================
 player.CharacterAdded:Connect(function()
     task.wait(0.7)
@@ -637,9 +634,8 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
--- 發送提示訊息
 game:GetService("StarterGui"):SetCore("SendNotification", { 
-    Title = "極簡移動系統 V3";
-    Text = "完美整合，飛速支援自訂輸入！";
+    Title = "極簡移動系統 V3.1";
+    Text = "排版比例修正完畢，功能解鎖！";
     Duration = 4
 })
