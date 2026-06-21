@@ -27,8 +27,7 @@ local Themes = {
         ButtonHover = Color3.fromRGB(35, 35, 35),
         Text = Color3.fromRGB(220, 220, 220),
         Border = Color3.fromRGB(60, 60, 60),
-        TopButtons = Color3.fromRGB(40, 40, 40),
-        AuthorBar = Color3.fromRGB(15, 15, 15)
+        TopButtons = Color3.fromRGB(40, 40, 40)
     },
     Light = {
         Background = Color3.fromRGB(240, 240, 240),
@@ -37,15 +36,14 @@ local Themes = {
         ButtonHover = Color3.fromRGB(230, 230, 230),
         Text = Color3.fromRGB(20, 20, 20),
         Border = Color3.fromRGB(180, 180, 180),
-        TopButtons = Color3.fromRGB(200, 200, 200),
-        AuthorBar = Color3.fromRGB(220, 220, 220)
+        TopButtons = Color3.fromRGB(200, 200, 200)
     }
 }
 
--- 縮小整體選單尺寸
-local UIWidth = 210
-local UIHeight = 300
-local MinimizedHeight = 46 -- 調整最小化高度，確保能完整容納標題列與作者列
+-- 【極致縮減體積】
+local UIWidth = 200
+local UIHeight = 210        -- 整體高度從 300 大幅縮減至 210
+local MinimizedHeight = 30  -- 最小化只保留一條標題列 (30)
 
 --// MAIN SCREEN GUI
 local MainGui = Instance.new("ScreenGui", CoreGui)
@@ -62,21 +60,21 @@ Frame.Active = true
 Frame.ClipsDescendants = true 
 
 local FrameCorner = Instance.new("UICorner", Frame)
-FrameCorner.CornerRadius = UDim.new(0, 10)
+FrameCorner.CornerRadius = UDim.new(0, 8)
 
 local FrameStroke = Instance.new("UIStroke", Frame)
 FrameStroke.Thickness = 1.5
 FrameStroke.Color = Themes.Dark.Border
 FrameStroke.Transparency = 0.2
 
--- 標題欄 (高度縮減)
+-- 標題欄 (高度 30)
 local TitleBar = Instance.new("Frame", Frame)
 TitleBar.Size = UDim2.new(1, 0, 0, 30)
 TitleBar.BackgroundColor3 = Themes.Dark.TitleBar
 TitleBar.BorderSizePixel = 0
 
 local TitleCorner = Instance.new("UICorner", TitleBar)
-TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.CornerRadius = UDim.new(0, 8)
 
 local TitleFix = Instance.new("Frame", TitleBar)
 TitleFix.Size = UDim2.new(1, 0, 0, 10)
@@ -86,43 +84,24 @@ TitleFix.BorderSizePixel = 0
 
 local Title = Instance.new("TextLabel", TitleBar)
 Title.Size = UDim2.new(1, -90, 1, 0)
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "Baiyan Hub || Multi Fling"
+Title.Position = UDim2.new(0, 8, 0, 0)
+Title.Text = "Baiyan Multi Fling" -- 簡化名稱
 Title.TextColor3 = Themes.Dark.Text
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 11
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- 【作者署名列】移入至 Frame 頂部（緊貼標題列下方），防範因 ClipsDescendants 導致最小化時被裁切
-local AuthorBar = Instance.new("Frame", Frame)
-AuthorBar.Size = UDim2.new(1, -12, 0, 16)
-AuthorBar.Position = UDim2.new(0, 6, 0, 30) -- 緊接在 TitleBar (高30) 的正下方
-AuthorBar.BackgroundColor3 = Themes.Dark.AuthorBar
-AuthorBar.BorderSizePixel = 0
-
-local AuthorBarCorner = Instance.new("UICorner", AuthorBar)
-AuthorBarCorner.CornerRadius = UDim.new(0, 4)
-
-local AuthorLabel = Instance.new("TextLabel", AuthorBar)
-AuthorLabel.Size = UDim2.new(1, 0, 1, 0)
-AuthorLabel.BackgroundTransparency = 1
-AuthorLabel.Text = "by: Baiyan Multi Fling"
-AuthorLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
-AuthorLabel.Font = Enum.Font.GothamBold
-AuthorLabel.TextSize = 9
-AuthorLabel.TextXAlignment = Enum.TextXAlignment.Center
-
--- 狀態提示列 (因應作者列位置上移，順延往下排列)
-local StatusLabel = Instance.new("TextLabel", Frame)
-StatusLabel.Size = UDim2.new(1, -20, 0, 18)
-StatusLabel.Position = UDim2.new(0, 10, 0, 48) -- 從 34 下移到 48
+-- 狀態提示字（直接縮小放進標題列右邊空隙，不再單獨佔用一行空間）
+local StatusLabel = Instance.new("TextLabel", TitleBar)
+StatusLabel.Size = UDim2.new(0, 80, 1, 0)
+StatusLabel.Position = UDim2.new(1, -165, 0, 0)
 StatusLabel.BackgroundTransparency = 1
-StatusLabel.Text = "0 target(s) selected"
-StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+StatusLabel.Text = "[0]"
+StatusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 StatusLabel.Font = Enum.Font.GothamSemibold
 StatusLabel.TextSize = 10
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
 
 -- 拖曳機制
 local dragging, dragInput, dragStart, startPos
@@ -135,42 +114,42 @@ end)
 TitleBar.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end end)
 UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
 
--- 頂部功能按鈕 (縮小尺寸)
+-- 頂部功能按鈕
 local SettingsBtn = Instance.new("TextButton", TitleBar)
-SettingsBtn.Size = UDim2.new(0, 22, 0, 22)
-SettingsBtn.Position = UDim2.new(1, -76, 0.5, -11)
+SettingsBtn.Size = UDim2.new(0, 20, 0, 20)
+SettingsBtn.Position = UDim2.new(1, -72, 0.5, -10)
 SettingsBtn.BackgroundColor3 = Themes.Dark.TopButtons
 SettingsBtn.Text = "⚙"
 SettingsBtn.TextColor3 = Themes.Dark.Text
 SettingsBtn.Font = Enum.Font.GothamBold
-SettingsBtn.TextSize = 12
+SettingsBtn.TextSize = 11
 
 local MinimizeBtn = Instance.new("TextButton", TitleBar)
-MinimizeBtn.Size = UDim2.new(0, 22, 0, 22)
-MinimizeBtn.Position = UDim2.new(1, -50, 0.5, -11)
+MinimizeBtn.Size = UDim2.new(0, 20, 0, 20)
+MinimizeBtn.Position = UDim2.new(1, -48, 0.5, -10)
 MinimizeBtn.BackgroundColor3 = Themes.Dark.TopButtons
 MinimizeBtn.Text = "−"
 MinimizeBtn.TextColor3 = Themes.Dark.Text
 MinimizeBtn.Font = Enum.Font.GothamBold
-MinimizeBtn.TextSize = 12
+MinimizeBtn.TextSize = 11
 
 local CloseBtn = Instance.new("TextButton", TitleBar)
-CloseBtn.Size = UDim2.new(0, 22, 0, 22)
-CloseBtn.Position = UDim2.new(1, -24, 0.5, -11)
+CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+CloseBtn.Position = UDim2.new(1, -24, 0.5, -10)
 CloseBtn.BackgroundColor3 = Themes.Dark.TopButtons
 CloseBtn.Text = "×"
 CloseBtn.TextColor3 = Themes.Dark.Text
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 14
+CloseBtn.TextSize = 13
 
-Instance.new("UICorner", SettingsBtn).CornerRadius = UDim.new(0, 6)
-Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 6)
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", SettingsBtn).CornerRadius = UDim.new(0, 5)
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 5)
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 5)
 
--- 玩家清單滾動框架 (配合排版動態微調高度)
+-- 玩家清單滾動框架 (位置往上提，緊貼標題列下方)
 local PlayerListScroll = Instance.new("ScrollingFrame", Frame)
-PlayerListScroll.Size = UDim2.new(1, -12, 0, 116) -- 高度從 130 微調到 116，留空給狀態與按鈕
-PlayerListScroll.Position = UDim2.new(0, 6, 0, 68) -- 從 54 下移到 68
+PlayerListScroll.Size = UDim2.new(1, -10, 0, 110) -- 緊湊高度
+PlayerListScroll.Position = UDim2.new(0, 5, 0, 35) -- 從 68 移到 35
 PlayerListScroll.BackgroundTransparency = 1
 PlayerListScroll.BorderSizePixel = 0
 PlayerListScroll.ScrollBarThickness = 2
@@ -178,8 +157,8 @@ PlayerListScroll.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 
 -- 底部按鈕區與作者容器
 local ControlsFrame = Instance.new("Frame", Frame)
-ControlsFrame.Size = UDim2.new(1, -12, 0, 102)
-ControlsFrame.Position = UDim2.new(0, 6, 1, -108)
+ControlsFrame.Size = UDim2.new(1, -10, 0, 56) -- 高度從 102 縮減到 56
+ControlsFrame.Position = UDim2.new(0, 5, 1, -60)
 ControlsFrame.BackgroundTransparency = 1
 
 --// HELPER FUNCTIONS
@@ -192,10 +171,10 @@ end
 local function UpdateStatus()
     local count = CountSelectedTargets()
     if FlingActive then
-        StatusLabel.Text = "🔥 Flinging " .. count .. " target(s)..."
+        StatusLabel.Text = "🔥 Flinging [" .. count .. "]"
         StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
     else
-        StatusLabel.Text = "👤 " .. count .. " target(s) selected"
+        StatusLabel.Text = "👤 Sel [" .. count .. "]"
         StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     end
 end
@@ -225,11 +204,11 @@ local function RefreshPlayerList()
         if p == LocalPlayer then continue end
 
         local row = Instance.new("Frame", PlayerListScroll)
-        row.Size = UDim2.new(1, -4, 0, 28)
+        row.Size = UDim2.new(1, -4, 0, 24) -- 每一列高度從 28 減到 24 節省空間
         row.Position = UDim2.new(0, 2, 0, yOffset)
         row.BackgroundColor3 = Themes[CurrentTheme].Button
         row.BorderSizePixel = 0
-        Instance.new("UICorner", row).CornerRadius = UDim.new(0, 5)
+        Instance.new("UICorner", row).CornerRadius = UDim.new(0, 4)
 
         local checkIndicator = Instance.new("Frame", row)
         checkIndicator.Size = UDim2.new(0, 3, 1, 0)
@@ -237,11 +216,11 @@ local function RefreshPlayerList()
         checkIndicator.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
         checkIndicator.BorderSizePixel = 0
         checkIndicator.Visible = (SelectedTargets[p.Name] ~= nil)
-        Instance.new("UICorner", checkIndicator).CornerRadius = UDim.new(0, 5)
+        Instance.new("UICorner", checkIndicator).CornerRadius = UDim.new(0, 4)
 
         local nameLabel = Instance.new("TextLabel", row)
         nameLabel.Size = UDim2.new(1, -20, 1, 0)
-        nameLabel.Position = UDim2.new(0, 10, 0, 0)
+        nameLabel.Position = UDim2.new(0, 8, 0, 0)
         nameLabel.BackgroundTransparency = 1
         nameLabel.Text = p.Name
         nameLabel.TextColor3 = Themes[CurrentTheme].Text
@@ -266,7 +245,7 @@ local function RefreshPlayerList()
         end)
 
         PlayerCheckboxes[p.Name] = { Indicator = checkIndicator }
-        yOffset = yOffset + 32
+        yOffset = yOffset + 27 -- 行距隨之縮小
     end
     PlayerListScroll.CanvasSize = UDim2.new(0, 0, 0, yOffset)
 end
@@ -372,8 +351,8 @@ end
 local function StartFling()
     if FlingActive then return end
     if CountSelectedTargets() == 0 then
-        StatusLabel.Text = "❌ No targets selected!"
-        task.wait(1.5) UpdateStatus() return
+        StatusLabel.Text = "❌ Empty!"
+        task.wait(1.2) UpdateStatus() return
     end
     FlingActive = true
     UpdateStatus()
@@ -395,8 +374,7 @@ local function StartFling()
     end)
 end
 
---// UI BUTTON GENERATOR (微調高度與間距)
-local buttonReferences = {}
+--// UI BUTTON GENERATOR
 local function CreateControlBtn(text, size, pos, bgCol, callback)
     local btn = Instance.new("TextButton", ControlsFrame)
     btn.Size = size
@@ -405,20 +383,19 @@ local function CreateControlBtn(text, size, pos, bgCol, callback)
     btn.Text = text
     btn.TextColor3 = Color3.new(1,1,1)
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 10 -- 字型小一點
+    btn.TextSize = 9
     btn.BorderSizePixel = 0
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
 
     btn.MouseButton1Click:Connect(callback)
-    table.insert(buttonReferences, btn)
     return btn
 end
 
--- 生成核心控制按鈕 (縮小各按鈕的尺寸)
-local StartBtn = CreateControlBtn("START FLING", UDim2.new(0.5, -3, 0, 32), UDim2.new(0, 0, 0, 0), Color3.fromRGB(0, 160, 90), StartFling)
-local StopBtn = CreateControlBtn("STOP FLING", UDim2.new(0.5, -3, 0, 32), UDim2.new(0.5, 3, 0, 0), Color3.fromRGB(200, 60, 60), function() FlingActive = false UpdateStatus() Message("Stopped", "Fling process killed", 2) end)
-local AllBtn = CreateControlBtn("SELECT ALL", UDim2.new(0.5, -3, 0, 24), UDim2.new(0, 0, 0, 36), Color3.fromRGB(50, 50, 50), function() ToggleAllPlayers(true) end)
-local NoneBtn = CreateControlBtn("DESELECT ALL", UDim2.new(0.5, -3, 0, 24), UDim2.new(0.5, 3, 0, 36), Color3.fromRGB(50, 50, 50), function() ToggleAllPlayers(false) end)
+-- 【緊湊排版控制按鈕】高度降到 24 像素
+local StartBtn = CreateControlBtn("START FLING", UDim2.new(0.5, -2, 0, 24), UDim2.new(0, 0, 0, 0), Color3.fromRGB(0, 160, 90), StartFling)
+local StopBtn = CreateControlBtn("STOP FLING", UDim2.new(0.5, -2, 0, 24), UDim2.new(0.5, 2, 0, 0), Color3.fromRGB(200, 60, 60), function() FlingActive = false UpdateStatus() Message("Stopped", "Fling process killed", 2) end)
+local AllBtn = CreateControlBtn("ALL", UDim2.new(0.5, -2, 0, 22), UDim2.new(0, 0, 0, 28), Color3.fromRGB(50, 50, 50), function() ToggleAllPlayers(true) end)
+local NoneBtn = CreateControlBtn("NONE", UDim2.new(0.5, -2, 0, 22), UDim2.new(0.5, 2, 0, 28), Color3.fromRGB(50, 50, 50), function() ToggleAllPlayers(false) end)
 
 --// SETTINGS & CONFIRM SUB PANELS
 local SettingsFrame = Instance.new("Frame", Frame)
@@ -426,62 +403,62 @@ SettingsFrame.Size = UDim2.new(1, 0, 1, 0)
 SettingsFrame.BackgroundColor3 = Themes.Dark.Background
 SettingsFrame.Visible = false
 SettingsFrame.ZIndex = 20
-Instance.new("UICorner", SettingsFrame).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", SettingsFrame).CornerRadius = UDim.new(0, 8)
 
 local SettingsTitle = Instance.new("TextLabel", SettingsFrame)
-SettingsTitle.Size = UDim2.new(1, 0, 0, 35)
+SettingsTitle.Size = UDim2.new(1, 0, 0, 30)
 SettingsTitle.Position = UDim2.new(0, 0, 0, 5)
 SettingsTitle.Text = "SETTINGS"
 SettingsTitle.TextColor3 = Themes.Dark.Text
 SettingsTitle.Font = Enum.Font.GothamBold
-SettingsTitle.TextSize = 12
+SettingsTitle.TextSize = 11
 SettingsTitle.BackgroundTransparency = 1
 SettingsTitle.ZIndex = 21
 
 local ThemeLabel = Instance.new("TextLabel", SettingsFrame)
 ThemeLabel.Size = UDim2.new(1, -20, 0, 20)
-ThemeLabel.Position = UDim2.new(0, 12, 0, 40)
+ThemeLabel.Position = UDim2.new(0, 12, 0, 35)
 ThemeLabel.Text = "THEME:"
 ThemeLabel.TextColor3 = Themes.Dark.Text
 ThemeLabel.Font = Enum.Font.GothamBold
-ThemeLabel.TextSize = 10
+ThemeLabel.TextSize = 9
 ThemeLabel.BackgroundTransparency = 1
 ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left
 ThemeLabel.ZIndex = 21
 
 local DarkThemeBtn = Instance.new("TextButton", SettingsFrame)
-DarkThemeBtn.Size = UDim2.new(0.45, -5, 0, 28)
-DarkThemeBtn.Position = UDim2.new(0, 12, 0, 65)
+DarkThemeBtn.Size = UDim2.new(0.45, -5, 0, 24)
+DarkThemeBtn.Position = UDim2.new(0, 12, 0, 55)
 DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100)
 DarkThemeBtn.Text = "DARK"
 DarkThemeBtn.TextColor3 = Color3.new(1,1,1)
 DarkThemeBtn.Font = Enum.Font.GothamBold
-DarkThemeBtn.TextSize = 10
+DarkThemeBtn.TextSize = 9
 DarkThemeBtn.ZIndex = 21
 
 local LightThemeBtn = Instance.new("TextButton", SettingsFrame)
-LightThemeBtn.Size = UDim2.new(0.45, -5, 0, 28)
-LightThemeBtn.Position = UDim2.new(0.55, -2, 0, 65)
+LightThemeBtn.Size = UDim2.new(0.45, -5, 0, 24)
+LightThemeBtn.Position = UDim2.new(0.55, -2, 0, 55)
 LightThemeBtn.BackgroundColor3 = Themes.Dark.Button
 LightThemeBtn.Text = "LIGHT"
 LightThemeBtn.TextColor3 = Themes.Dark.Text
 LightThemeBtn.Font = Enum.Font.GothamBold
-LightThemeBtn.TextSize = 10
+LightThemeBtn.TextSize = 9
 LightThemeBtn.ZIndex = 21
 
 local BackBtn = Instance.new("TextButton", SettingsFrame)
-BackBtn.Size = UDim2.new(0.9, 0, 0, 28)
-BackBtn.Position = UDim2.new(0.05, 0, 1, -40)
+BackBtn.Size = UDim2.new(0.9, 0, 0, 24)
+BackBtn.Position = UDim2.new(0.05, 0, 1, -32)
 BackBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
 BackBtn.Text = "BACK"
 BackBtn.TextColor3 = Color3.new(1,1,1)
 BackBtn.Font = Enum.Font.GothamBold
-BackBtn.TextSize = 10
+BackBtn.TextSize = 9
 BackBtn.ZIndex = 21
 
-Instance.new("UICorner", DarkThemeBtn).CornerRadius = UDim.new(0, 6)
-Instance.new("UICorner", LightThemeBtn).CornerRadius = UDim.new(0, 6)
-Instance.new("UICorner", BackBtn).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", DarkThemeBtn).CornerRadius = UDim.new(0, 5)
+Instance.new("UICorner", LightThemeBtn).CornerRadius = UDim.new(0, 5)
+Instance.new("UICorner", BackBtn).CornerRadius = UDim.new(0, 5)
 
 local ConfirmFrame = Instance.new("Frame", Frame)
 ConfirmFrame.Size = UDim2.new(1, 0, 1, 0)
@@ -489,12 +466,12 @@ ConfirmFrame.BackgroundColor3 = Themes.Dark.Background
 ConfirmFrame.Visible = false
 ConfirmFrame.ZIndex = 25
 ConfirmFrame.BackgroundTransparency = 0.05
-Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 8)
 
 local ConfirmText = Instance.new("TextLabel", ConfirmFrame)
-ConfirmText.Size = UDim2.new(1, -20, 0, 50)
-ConfirmText.Position = UDim2.new(0, 10, 0, 70)
-ConfirmText.Text = "Are you sure you want\nto close the GUI?"
+ConfirmText.Size = UDim2.new(1, -20, 0, 40)
+ConfirmText.Position = UDim2.new(0, 10, 0, 45)
+ConfirmText.Text = "Close GUI?"
 ConfirmText.TextColor3 = Themes.Dark.Text
 ConfirmText.Font = Enum.Font.GothamBold
 ConfirmText.TextSize = 11
@@ -502,27 +479,27 @@ ConfirmText.BackgroundTransparency = 1
 ConfirmText.ZIndex = 26
 
 local YesBtn = Instance.new("TextButton", ConfirmFrame)
-YesBtn.Size = UDim2.new(0, 80, 0, 28)
-YesBtn.Position = UDim2.new(0, 16, 1, -50)
+YesBtn.Size = UDim2.new(0, 70, 0, 24)
+YesBtn.Position = UDim2.new(0, 20, 1, -40)
 YesBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100)
 YesBtn.Text = "YES"
 YesBtn.TextColor3 = Color3.new(1,1,1)
 YesBtn.Font = Enum.Font.GothamBold
-YesBtn.TextSize = 10
+YesBtn.TextSize = 9
 YesBtn.ZIndex = 26
 
 local NoBtn = Instance.new("TextButton", ConfirmFrame)
-NoBtn.Size = UDim2.new(0, 80, 0, 28)
-NoBtn.Position = UDim2.new(1, -96, 1, -50)
+NoBtn.Size = UDim2.new(0, 70, 0, 24)
+NoBtn.Position = UDim2.new(1, -90, 1, -40)
 NoBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
 NoBtn.Text = "NO"
 NoBtn.TextColor3 = Color3.new(1,1,1)
 NoBtn.Font = Enum.Font.GothamBold
-NoBtn.TextSize = 10
+NoBtn.TextSize = 9
 NoBtn.ZIndex = 26
 
-Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 6)
-Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 5)
+Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 5)
 
 --// THEME ENGINE IMPLEMENTATION
 local function ApplyTheme(theme)
@@ -538,7 +515,6 @@ local function ApplyTheme(theme)
     MinimizeBtn.TextColor3 = colors.Text
     CloseBtn.BackgroundColor3= colors.TopButtons
     CloseBtn.TextColor3 = colors.Text
-    AuthorBar.BackgroundColor3 = colors.AuthorBar
 
     SettingsFrame.BackgroundColor3 = colors.Background
     SettingsTitle.TextColor3 = colors.Text
@@ -550,12 +526,10 @@ local function ApplyTheme(theme)
         DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100)
         LightThemeBtn.BackgroundColor3 = colors.Button
         LightThemeBtn.TextColor3 = colors.Text
-        AuthorLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
     else
         LightThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100)
         DarkThemeBtn.BackgroundColor3 = colors.Button
         DarkThemeBtn.TextColor3 = colors.Text
-        AuthorLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
     end
     RefreshPlayerList()
 end
@@ -585,7 +559,7 @@ MinimizeBtn.MouseButton1Click:Connect(function()
     if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
     isMinimized = not isMinimized
     if isMinimized then
-        -- 最小化時縮小到 MinimizedHeight (46)，剛好完整呈現標題列與作者署名
+        -- 最小化後極致高度 30
         TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.new(0, UIWidth, 0, MinimizedHeight)}):Play()
         MinimizeBtn.Text = "+"
     else
@@ -647,5 +621,5 @@ TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.Easing
     Position = UDim2.new(0.5, -(UIWidth/2), 0.5, -(UIHeight/2))
 }):Play()
 
-task.wait(0.5) -- 稍微延遲一下，確保系統通知組件已準備就緒
-Message("Loaded", "Baiyan Hub Multi-Fling Active!", 3)
+task.wait(0.5)
+Message("Loaded", "Baiyan Hub Active!", 2)
