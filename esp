@@ -5,6 +5,7 @@ local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
+local StarterGui = game:GetService("StarterGui") -- 新增 StarterGui 用於系統通知
 
 local player = Players.LocalPlayer
 local LocalPlayer = player
@@ -40,6 +41,17 @@ end
 
 local function getRoot(model)
     return model:FindFirstChild("HumanoidRootPart") or (model:FindFirstChildOfClass("Humanoid") and model:FindFirstChildOfClass("Humanoid").RootPart)
+end
+
+--// NOTIFICATION HELPER (修復最後一行所需的通知函數)
+local function Notify(title, text, duration)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = title,
+            Text = text,
+            Duration = duration or 3
+        })
+    end)
 end
 
 --// DRAWING HELPERS
@@ -729,4 +741,5 @@ TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.Easing
     Position = UDim2.new(0.5, -(UIWidth/2), 0.5, -(UIHeight/2))
 }):Play()
 
-Message("Loaded", "Baiyan Hub Pure ESP Active!", 3)
+--// 呼叫修復後的通知函數 (最後一行)
+Notify("Loaded", "Baiyan Hub Pure ESP Active!", 3)
