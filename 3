@@ -45,7 +45,7 @@ local Themes = {
 -- 保持原本的整體選單尺寸
 local UIWidth = 210
 local UIHeight = 300
-local MinimizedHeight = 30 -- 修正縮小時的高度，使其剛好等於 TitleBar 高度
+local MinimizedHeight = 30 
 
 --// MAIN SCREEN GUI
 local MainGui = Instance.new("ScreenGui", CoreGui)
@@ -69,7 +69,7 @@ FrameStroke.Thickness = 1.5
 FrameStroke.Color = Themes.Dark.Border
 FrameStroke.Transparency = 0.2
 
--- 標題欄 (維持原本高度)
+-- 標題欄
 local TitleBar = Instance.new("Frame", Frame)
 TitleBar.Size = UDim2.new(1, 0, 0, 30)
 TitleBar.BackgroundColor3 = Themes.Dark.TitleBar
@@ -94,10 +94,36 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 11
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- 作者署名列 (確保一開始是可見的)
+-- 狀態提示列 (上移至原作者列位置，騰出下方空間)
+local StatusLabel = Instance.new("TextLabel", Frame)
+StatusLabel.Size = UDim2.new(1, -20, 0, 18)
+StatusLabel.Position = UDim2.new(0, 10, 0, 34) 
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "0 target(s) selected"
+StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+StatusLabel.Font = Enum.Font.GothamSemibold
+StatusLabel.TextSize = 10
+StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- 玩家清單滾動框架 (重新配比高度與位置)
+local PlayerListScroll = Instance.new("ScrollingFrame", Frame)
+PlayerListScroll.Size = UDim2.new(1, -12, 0, 162) 
+PlayerListScroll.Position = UDim2.new(0, 6, 0, 56) 
+PlayerListScroll.BackgroundTransparency = 1
+PlayerListScroll.BorderSizePixel = 0
+PlayerListScroll.ScrollBarThickness = 2
+PlayerListScroll.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+
+-- 控制按鈕區 (向上挪動以避開最底部的作者列)
+local ControlsFrame = Instance.new("Frame", Frame)
+ControlsFrame.Size = UDim2.new(1, -12, 0, 56)
+ControlsFrame.Position = UDim2.new(0, 6, 1, -80) 
+ControlsFrame.BackgroundTransparency = 1
+
+-- 作者署名列 (【已修改】置於主面板最底部)
 local AuthorBar = Instance.new("Frame", Frame)
 AuthorBar.Size = UDim2.new(1, -12, 0, 16)
-AuthorBar.Position = UDim2.new(0, 6, 0, 30) 
+AuthorBar.Position = UDim2.new(0, 6, 1, -22) 
 AuthorBar.BackgroundColor3 = Themes.Dark.AuthorBar
 AuthorBar.BorderSizePixel = 0
 AuthorBar.Visible = true
@@ -115,17 +141,6 @@ AuthorLabel.TextSize = 9
 AuthorLabel.TextXAlignment = Enum.TextXAlignment.Center
 AuthorLabel.Visible = true
 
--- 狀態提示列 (維持原本位置)
-local StatusLabel = Instance.new("TextLabel", Frame)
-StatusLabel.Size = UDim2.new(1, -20, 0, 18)
-StatusLabel.Position = UDim2.new(0, 10, 0, 48) 
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Text = "0 target(s) selected"
-StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-StatusLabel.Font = Enum.Font.GothamSemibold
-StatusLabel.TextSize = 10
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
-
 -- 拖曳機制
 local dragging, dragInput, dragStart, startPos
 TitleBar.InputBegan:Connect(function(input)
@@ -137,7 +152,7 @@ end)
 TitleBar.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end end)
 UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
 
--- 頂部功能按鈕 (維持原本尺寸)
+-- 頂部功能按鈕
 local SettingsBtn = Instance.new("TextButton", TitleBar)
 SettingsBtn.Size = UDim2.new(0, 22, 0, 22)
 SettingsBtn.Position = UDim2.new(1, -76, 0.5, -11)
@@ -168,21 +183,6 @@ CloseBtn.TextSize = 14
 Instance.new("UICorner", SettingsBtn).CornerRadius = UDim.new(0, 6)
 Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 6)
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
-
--- 玩家清單滾動框架 (擴大滾動範圍)
-local PlayerListScroll = Instance.new("ScrollingFrame", Frame)
-PlayerListScroll.Size = UDim2.new(1, -12, 0, 162) 
-PlayerListScroll.Position = UDim2.new(0, 6, 0, 68) 
-PlayerListScroll.BackgroundTransparency = 1
-PlayerListScroll.BorderSizePixel = 0
-PlayerListScroll.ScrollBarThickness = 2
-PlayerListScroll.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-
--- 控制按鈕區（縮小版高度 56）
-local ControlsFrame = Instance.new("Frame", Frame)
-ControlsFrame.Size = UDim2.new(1, -12, 0, 56)
-ControlsFrame.Position = UDim2.new(0, 6, 1, -62) 
-ControlsFrame.BackgroundTransparency = 1
 
 --// HELPER FUNCTIONS
 local function CountSelectedTargets()
@@ -582,7 +582,6 @@ SettingsBtn.MouseButton1Click:Connect(function()
     settingsOpen = SettingsFrame.Visible
 end)
 
--- 修正縮小按鈕邏輯
 MinimizeBtn.MouseButton1Click:Connect(function()
     if minimizeCooldown or confirmDialogOpen then return end
     minimizeCooldown = true
@@ -590,18 +589,16 @@ MinimizeBtn.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
     
     if isMinimized then
-        -- 縮小時，先強行隱藏下方元件，防元件溢出外框
         AuthorBar.Visible = false
         StatusLabel.Visible = false
         PlayerListScroll.Visible = false
         ControlsFrame.Visible = false
-        TitleFix.Visible = false -- 隱藏修正銜接塊，讓圓角外框正確閉合
+        TitleFix.Visible = false 
         
         local tween = TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, UIWidth, 0, MinimizedHeight)})
         tween:Play()
         MinimizeBtn.Text = "+"
     else
-        -- 展開時，先執行完動畫再恢復內容顯示，視覺效果最乾淨
         TitleFix.Visible = true
         local tween = TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, UIWidth, 0, UIHeight)})
         tween:Play()
@@ -669,7 +666,6 @@ UpdateStatus()
 Frame.Size = UDim2.new(0, 0, 0, 0)
 Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 
--- 確保加載與開頭動畫播完時，AuthorBar 也是強行顯示的
 AuthorBar.Visible = true
 AuthorLabel.Visible = true
 
