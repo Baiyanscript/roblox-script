@@ -647,4 +647,5 @@ TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.Easing
     Position = UDim2.new(0.5, -(UIWidth/2), 0.5, -(UIHeight/2))
 }):Play()
 
+task.wait(0.5) -- 稍微延遲一下，確保系統通知組件已準備就緒
 Message("Loaded", "Baiyan Hub Multi-Fling Active!", 3)
