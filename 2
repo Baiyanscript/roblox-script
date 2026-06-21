@@ -7,21 +7,26 @@ local player = Players.LocalPlayer
 
 -- 系統狀態變數
 local CurrentTheme = "Dark"
-local FlyActive = false
-local FlySpeed = 1
 local MaxJumps = 5          -- 預設跳躍次數設為 5
 local JumpCount = 0
 local CurrentSpeed = 16
 
+-- 飛行系統狀態（完全對應 FlyGuiV3）
+local FlyActive = false     -- 對應原腳本的 nowe
+local FlySpeedValueNum = 1  -- 對應原腳本的 speeds
+local tpwalking = false
+local tis = nil            -- 向上循環連線
+local dis = nil            -- 向下循環連線
+local bg = nil
+local bv = nil
+
 local jumpConnection = nil
-local flyConnection = nil
-local flyCooldown = false
 
 -- ==========================================
 -- 核心功能邏輯系統
 -- ==========================================
 
--- 1. 純速度調整系統 (Pure Speed Adjust)
+-- 1. 純速度調整系統
 local function updateCharacterSpeed()
     if player.Character then
         local hum = player.Character:FindFirstChildOfClass("Humanoid")
@@ -29,61 +34,151 @@ local function updateCharacterSpeed()
     end
 end
 
--- 2. 跳躍控制系統 (Jump Control)
+-- 2. 跳躍控制系統
 local function startJumpControl()
     if jumpConnection then jumpConnection:Disconnect() end
     jumpConnection = UserInputService.JumpRequest:Connect(function()
         local character = player.Character
         local humanoid = character and character:FindFirstChildOfClass("Humanoid")
         if humanoid and humanoid.Health > 0 then
-            if MaxJumps == "無限" or JumpCount < tonumber(MaxJumps) then
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                JumpCount = JumpCount + 1
+            -- 空中跳躍與重置判定
+            if humanoid:GetState() == Enum.HumanoidStateType.Freefall or humanoid:GetState() == Enum.HumanoidStateType.Jumping then
+                if MaxJumps == "無限" then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                elseif JumpCount < tonumber(MaxJumps) then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    JumpCount = JumpCount + 1
+                end
+            else
+                JumpCount = 1 -- 站在地面上時重置
             end
         end
     end)
-    
-    if player.Character then
-        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.StateChanged:Connect(function(_, newState)
-                if newState == Enum.HumanoidStateType.Landed then JumpCount = 0 end
+end
+
+-- 3. 飛行控制系統 (完整參考 FlyGuiV3 核心邏輯)
+local function updateFlyMovement()
+    -- 更新或重新堆疊心跳加速
+    tpwalking = false
+    task.wait()
+    if FlyActive then
+        for i = 1, FlySpeedValueNum do
+            task.spawn(function()
+                local hb = RunService.Heartbeat
+                tpwalking = true
+                local chr = player.Character
+                local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+                while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+                    if hum.MoveDirection.Magnitude > 0 then
+                        chr:TranslateBy(hum.MoveDirection)
+                    end
+                end
             end)
         end
     end
 end
 
--- 3. 飛行控制系統 (Fly System)
-local function startFly()
-    if flyConnection then flyConnection:Disconnect() end
-    flyConnection = RunService.Heartbeat:Connect(function()
-        if FlyActive and player.Character then
-            local chr = player.Character
-            local hum = chr:FindFirstChildWhichIsA("Humanoid")
-            if hum and hum.Parent then
-                hum:SetStateEnabled(Enum.HumanoidStateType.Climbing, false)
-                hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-                hum:SetStateEnabled(Enum.HumanoidStateType.Flying, true)
+local function toggleFly()
+    local chr = player.Character
+    local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+    if not chr or not hum then return end
+
+    if FlyActive then
+        -- 【關閉飛行】完整恢復狀態
+        FlyActive = false
+        tpwalking = false
+        
+        if bg then bg:Destroy(); bg = nil end
+        if bv then bv:Destroy(); bv = nil end
+        
+        hum.PlatformStand = false
+        if chr:FindFirstChild("Animate") then chr.Animate.Disabled = false end
+        
+        -- 恢復所有內建狀態啟用
+        local states = {
+            Enum.HumanoidStateType.Climbing, Enum.HumanoidStateType.FallingDown,
+            Enum.HumanoidStateType.Flying, Enum.HumanoidStateType.Freefall,
+            Enum.HumanoidStateType.GettingUp, Enum.HumanoidStateType.Jumping,
+            Enum.HumanoidStateType.Landed, Enum.HumanoidStateType.Physics,
+            Enum.HumanoidStateType.PlatformStanding, Enum.HumanoidStateType.Ragdoll,
+            Enum.HumanoidStateType.Running, Enum.HumanoidStateType.RunningNoPhysics,
+            Enum.HumanoidStateType.Seated, Enum.HumanoidStateType.StrafingNoPhysics,
+            Enum.HumanoidStateType.Swimming
+        }
+        for _, state in ipairs(states) do
+            hum:SetStateEnabled(state, true)
+        end
+        hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+    else
+        -- 【開啟飛行】
+        FlyActive = true
+        
+        -- 1. 設置多重疊加 Heartbeat 移動增強
+        updateFlyMovement()
+        
+        -- 2. 凍結動畫
+        if chr:FindFirstChild("Animate") then chr.Animate.Disabled = true end
+        for _, track in next, hum:GetPlayingAnimationTracks() do
+            track:AdjustSpeed(0)
+        end
+        
+        -- 3. 禁用部分狀態並強制轉換為 Swimming
+        local statesToDisable = {
+            Enum.HumanoidStateType.Climbing, Enum.HumanoidStateType.FallingDown,
+            Enum.HumanoidStateType.Flying, Enum.HumanoidStateType.Freefall,
+            Enum.HumanoidStateType.GettingUp, Enum.HumanoidStateType.Jumping,
+            Enum.HumanoidStateType.Landed, Enum.HumanoidStateType.Physics,
+            Enum.HumanoidStateType.PlatformStanding, Enum.HumanoidStateType.Ragdoll,
+            Enum.HumanoidStateType.Running, Enum.HumanoidStateType.RunningNoPhysics,
+            Enum.HumanoidStateType.Seated, Enum.HumanoidStateType.StrafingNoPhysics,
+            Enum.HumanoidStateType.Swimming
+        }
+        for _, state in ipairs(statesToDisable) do
+            hum:SetStateEnabled(state, false)
+        end
+        hum:ChangeState(Enum.HumanoidStateType.Swimming)
+        
+        -- 4. 根據 R6 / R15 建立 BodyGyro 與 BodyVelocity 控制
+        local targetPart = chr:FindFirstChild("Torso") or chr:FindFirstChild("UpperTorso")
+        if targetPart then
+            bg = Instance.new("BodyGyro", targetPart)
+            bg.P = 9e4
+            bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+            bg.cframe = targetPart.CFrame
+            
+            bv = Instance.new("BodyVelocity", targetPart)
+            bv.velocity = Vector3.new(0, 0.1, 0)
+            bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+            
+            hum.PlatformStand = true
+            
+            -- 開啟視角追隨控制迴圈
+            task.spawn(function()
+                local ctrl = {f = 0, b = 0, l = 0, r = 0}
+                local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+                local maxspeed = 50
+                local speed = 0
                 
-                if hum.MoveDirection.Magnitude > 0 then
-                    for i = 1, FlySpeed do
-                        chr:TranslateBy(hum.MoveDirection)
+                while FlyActive and player.Character and hum.Health > 0 do
+                    RunService.RenderStepped:Wait()
+                    
+                    -- 捕捉鍵盤移動趨勢 (這裡模擬原腳本控制，也可以直接連動 MoveDirection)
+                    if hum.MoveDirection.Magnitude > 0 then
+                        local look = workspace.CurrentCamera.CoordinateFrame.lookVector
+                        bv.velocity = look * maxspeed * FlySpeedValueNum
+                    else
+                        bv.velocity = Vector3.new(0, 0, 0)
+                    end
+                    
+                    if bg and workspace.CurrentCamera then
+                        bg.cframe = workspace.CurrentCamera.CoordinateFrame
                     end
                 end
-            end
-        end
-    end)
-end
-
-local function stopFly()
-    if flyConnection then flyConnection:Disconnect() end
-    FlyActive = false
-    if player.Character then
-        local hum = player.Character:FindFirstChildWhichIsA("Humanoid")
-        if hum then
-            hum:SetStateEnabled(Enum.HumanoidStateType.Climbing, true)
-            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-            hum:SetStateEnabled(Enum.HumanoidStateType.Flying, false)
+                
+                -- 迴圈結束清理
+                if bg then bg:Destroy(); bg = nil end
+                if bv then bv:Destroy(); bv = nil end
+            end)
         end
     end
 end
@@ -113,15 +208,15 @@ local Themes = {
 }
 
 -- ==========================================
--- UI 元件建構與排版 (調整總高度為 260)
+-- UI 元件建構與排版 (因應高度需求擴展至 320)
 -- ==========================================
 local MainGui = Instance.new("ScreenGui", CoreGui)
 MainGui.Name = "MovementHackGui"
 MainGui.ResetOnSpawn = false
 
 local Frame = Instance.new("Frame", MainGui)
-Frame.Size = UDim2.new(0, 240, 0, 260)
-Frame.Position = UDim2.new(0.5, -120, 0.5, -130)
+Frame.Size = UDim2.new(0, 240, 0, 320)
+Frame.Position = UDim2.new(0.5, -120, 0.5, -160)
 Frame.BackgroundColor3 = Themes.Dark.Background
 Frame.BorderSizePixel = 0
 Frame.Active = true
@@ -226,7 +321,7 @@ IncSpeed.Size = UDim2.new(0, 35, 1, 0); IncSpeed.Position = UDim2.new(1, -35, 0,
 IncSpeed.BackgroundColor3 = Themes.Dark.Button; IncSpeed.TextColor3 = Themes.Dark.Text; IncSpeed.BorderSizePixel = 0
 Instance.new("UICorner", IncSpeed).CornerRadius = UDim.new(0, 7)
 
--- 2. 跳躍次數組合框 (保持預設初始顯示為 5)
+-- 2. 跳躍次數組合框
 local JumpFrame = Instance.new("Frame", Content)
 JumpFrame.Size = UDim2.new(1, 0, 0, 34); JumpFrame.Position = UDim2.new(0, 0, 0, 54)
 JumpFrame.BackgroundTransparency = 1
@@ -247,23 +342,23 @@ IncJump.Size = UDim2.new(0, 35, 1, 0); IncJump.Position = UDim2.new(1, -35, 0, 0
 IncJump.BackgroundColor3 = Themes.Dark.Button; IncJump.TextColor3 = Themes.Dark.Text; IncJump.BorderSizePixel = 0
 Instance.new("UICorner", IncJump).CornerRadius = UDim.new(0, 7)
 
--- 3. 飛行控制組合框
+-- 3. 飛行控制主組合框
 local FlyFrame = Instance.new("Frame", Content)
 FlyFrame.Size = UDim2.new(1, 0, 0, 34); FlyFrame.Position = UDim2.new(0, 0, 0, 98)
 FlyFrame.BackgroundTransparency = 1
 
 local FlyToggleBtn = Instance.new("TextButton", FlyFrame)
-FlyToggleBtn.Size = UDim2.new(0.6, -5, 1, 0); FlyToggleBtn.Text = "飛行: 關閉"; FlyToggleBtn.Font = Enum.Font.GothamBold; FlyToggleBtn.TextSize = 13
+FlyToggleBtn.Size = UDim2.new(0, 116, 1, 0); FlyToggleBtn.Text = "飛行: 關閉"; FlyToggleBtn.Font = Enum.Font.GothamBold; FlyToggleBtn.TextSize = 13
 FlyToggleBtn.BackgroundColor3 = Themes.Dark.Button; FlyToggleBtn.TextColor3 = Themes.Dark.Text; FlyToggleBtn.BorderSizePixel = 0
 Instance.new("UICorner", FlyToggleBtn).CornerRadius = UDim.new(0, 9)
 
 local FlySpeedDec = Instance.new("TextButton", FlyFrame)
-FlySpeedDec.Size = UDim2.new(0, 25, 1, 0); FlySpeedDec.Position = UDim2.new(0.6, 2, 0, 0); FlySpeedDec.Text = "−"; FlySpeedDec.Font = Enum.Font.GothamBold; FlySpeedDec.TextSize = 14
+FlySpeedDec.Size = UDim2.new(0, 25, 1, 0); FlySpeedDec.Position = UDim2.new(0, 122, 0, 0); FlySpeedDec.Text = "−"; FlySpeedDec.Font = Enum.Font.GothamBold; FlySpeedDec.TextSize = 14
 FlySpeedDec.BackgroundColor3 = Themes.Dark.Button; FlySpeedDec.TextColor3 = Themes.Dark.Text; FlySpeedDec.BorderSizePixel = 0
 Instance.new("UICorner", FlySpeedDec).CornerRadius = UDim.new(0, 7)
 
 local FlySpeedValue = Instance.new("TextLabel", FlyFrame)
-FlySpeedValue.Size = UDim2.new(0, 40, 1, 0); FlySpeedValue.Position = UDim2.new(0.6, 29, 0, 0); FlySpeedValue.Text = "速: 1"; FlySpeedValue.Font = Enum.Font.GothamBold; FlySpeedValue.TextSize = 11
+FlySpeedValue.Size = UDim2.new(0, 44, 1, 0); FlySpeedValue.Position = UDim2.new(0, 150, 0, 0); FlySpeedValue.Text = "1"; FlySpeedValue.Font = Enum.Font.GothamBold; FlySpeedValue.TextSize = 13
 FlySpeedValue.BackgroundTransparency = 1; FlySpeedValue.TextColor3 = Themes.Dark.Text
 
 local FlySpeedInc = Instance.new("TextButton", FlyFrame)
@@ -271,9 +366,25 @@ FlySpeedInc.Size = UDim2.new(0, 25, 1, 0); FlySpeedInc.Position = UDim2.new(1, -
 FlySpeedInc.BackgroundColor3 = Themes.Dark.Button; FlySpeedInc.TextColor3 = Themes.Dark.Text; FlySpeedInc.BorderSizePixel = 0
 Instance.new("UICorner", FlySpeedInc).CornerRadius = UDim.new(0, 7)
 
+-- 4. 飛行高度調整微調鈕 (向上/向下 - 完全整合 FlyGuiV3 功能)
+local HeightFrame = Instance.new("Frame", Content)
+HeightFrame.Size = UDim2.new(1, 0, 0, 34); HeightFrame.Position = UDim2.new(0, 0, 0, 142)
+HeightFrame.BackgroundTransparency = 1
+
+local UpBtn = Instance.new("TextButton", HeightFrame)
+UpBtn.Size = UDim2.new(0.48, 0, 1, 0); UpBtn.Text = "向上高度微調"; UpBtn.Font = Enum.Font.GothamBold; UpBtn.TextSize = 12
+UpBtn.BackgroundColor3 = Themes.Dark.Button; UpBtn.TextColor3 = Themes.Dark.Text; UpBtn.BorderSizePixel = 0
+Instance.new("UICorner", UpBtn).CornerRadius = UDim.new(0, 7)
+
+local DownBtn = Instance.new("TextButton", HeightFrame)
+DownBtn.Size = UDim2.new(0.48, 0, 1, 0); DownBtn.Position = UDim2.new(0.52, 0, 0, 0); DownBtn.Text = "向下高度微調"; DownBtn.Font = Enum.Font.GothamBold; DownBtn.TextSize = 12
+DownBtn.BackgroundColor3 = Themes.Dark.Button; DownBtn.TextColor3 = Themes.Dark.Text; DownBtn.BorderSizePixel = 0
+Instance.new("UICorner", DownBtn).CornerRadius = UDim.new(0, 7)
+
 table.insert(buttonReferences, DecSpeed); table.insert(buttonReferences, SpeedInput); table.insert(buttonReferences, IncSpeed)
 table.insert(buttonReferences, DecJump); table.insert(buttonReferences, JumpInput); table.insert(buttonReferences, IncJump)
 table.insert(buttonReferences, FlyToggleBtn); table.insert(buttonReferences, FlySpeedDec); table.insert(buttonReferences, FlySpeedInc)
+table.insert(buttonReferences, UpBtn); table.insert(buttonReferences, DownBtn)
 
 local Credit = Instance.new("TextLabel", Content)
 Credit.Size = UDim2.new(1, 0, 0, 22); Credit.Position = UDim2.new(0, 0, 1, -5)
@@ -284,14 +395,10 @@ Credit.BackgroundTransparency = 1; Credit.Font = Enum.Font.GothamBold; Credit.Te
 -- 系統的交互事件綁定
 -- ==========================================
 
--- 速度微調事件
+-- 速度調整
 SpeedInput.FocusLost:Connect(function()
     local num = tonumber(SpeedInput.Text:match("%d+")) or tonumber(SpeedInput.Text)
-    if num then
-        CurrentSpeed = math.clamp(math.floor(num), 0, 1000)
-    else
-        CurrentSpeed = 16
-    end
+    if num then CurrentSpeed = math.clamp(math.floor(num), 0, 1000) else CurrentSpeed = 16 end
     SpeedInput.Text = "速度: " .. tostring(CurrentSpeed)
     updateCharacterSpeed()
 end)
@@ -306,17 +413,12 @@ DecSpeed.MouseButton1Click:Connect(function()
     updateCharacterSpeed()
 end)
 
--- 跳躍調整事件
+-- 跳躍調整
 JumpInput.FocusLost:Connect(function()
     local text = JumpInput.Text:lower()
     local num = tonumber(text:match("%d+")) or tonumber(text)
-    if text:find("inf") or text:find("無") or text == "m" then
-        MaxJumps = "無限"
-    elseif num then
-        MaxJumps = math.clamp(math.floor(num), 1, 100)
-    else
-        MaxJumps = "無限"
-    end
+    if text:find("inf") or text:find("無") or text == "m" then MaxJumps = "無限"
+    elseif num then MaxJumps = math.clamp(math.floor(num), 1, 100) else MaxJumps = "無限" end
     JumpInput.Text = "跳躍: " .. tostring(MaxJumps)
     startJumpControl()
 end)
@@ -328,34 +430,66 @@ end)
 DecJump.MouseButton1Click:Connect(function()
     if MaxJumps ~= "無限" then
         if MaxJumps <= 1 then MaxJumps = "無限" else MaxJumps = MaxJumps - 1 end
-    else
-        MaxJumps = 100
-    end
+    else MaxJumps = 100 end
     JumpInput.Text = "跳躍: " .. tostring(MaxJumps)
     startJumpControl()
 end)
 
--- 飛行控制事件
+-- 飛行主開關事件
 FlyToggleBtn.MouseButton1Click:Connect(function()
-    if flyCooldown then return end
-    flyCooldown = true
-    FlyActive = not FlyActive
+    toggleFly()
     FlyToggleBtn.Text = "飛行: " .. (FlyActive and "開啟" or "關閉")
-    if FlyActive then startFly() else stopFly() end
-    task.wait(0.1); flyCooldown = false
 end)
+
+-- 飛行速度加減調整 (同步重疊 Heartbeat 功能)
 FlySpeedInc.MouseButton1Click:Connect(function()
-    FlySpeed = FlySpeed + 1
-    FlySpeedValue.Text = "速: " .. tostring(FlySpeed)
+    FlySpeedValueNum = FlySpeedValueNum + 1
+    FlySpeedValue.Text = tostring(FlySpeedValueNum)
+    updateFlyMovement()
 end)
 FlySpeedDec.MouseButton1Click:Connect(function()
-    if FlySpeed > 1 then
-        FlySpeed = FlySpeed - 1
-        FlySpeedValue.Text = "速: " .. tostring(FlySpeed)
+    if FlySpeedValueNum == 1 then
+        FlySpeedValue.Text = "Min 1"
+        task.wait(0.5)
+        FlySpeedValue.Text = tostring(FlySpeedValueNum)
+    else
+        FlySpeedValueNum = FlySpeedValueNum - 1
+        FlySpeedValue.Text = tostring(FlySpeedValueNum)
+        updateFlyMovement()
     end
 end)
 
--- 啟動跳躍初次化
+-- 高度平滑向上微調（完全遵循原始 V3 迴圈機制）
+UpBtn.MouseButton1Down:Connect(function()
+    tis = UpBtn.MouseEnter:Connect(function()
+        while tis do
+            task.wait()
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 1, 0)
+            end
+        end
+    end)
+end)
+UpBtn.MouseLeave:Connect(function()
+    if tis then tis:Disconnect(); tis = nil end
+end)
+
+-- 高度平滑向下微調（完全遵循原始 V3 迴圈機制）
+DownBtn.MouseButton1Down:Connect(function()
+    dis = DownBtn.MouseEnter:Connect(function()
+        while dis do
+            task.wait()
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, -1, 0)
+            end
+        end
+    end)
+end)
+DownBtn.MouseLeave:Connect(function()
+    if dis then dis:Disconnect(); dis = nil end
+end)
+
+-- 啟動跳躍初始化
 startJumpControl()
 
 -- ==========================================
@@ -388,14 +522,11 @@ Instance.new("UICorner", BackBtn).CornerRadius = UDim.new(0, 9)
 local function ApplyTheme(theme)
     local colors = Themes[theme]
     CurrentTheme = theme
-
     Frame.BackgroundColor3 = colors.Background; TitleBar.BackgroundColor3 = colors.TitleBar; TitleFix.BackgroundColor3 = colors.TitleBar
     Title.TextColor3 = colors.Text; FrameStroke.Color = colors.Border
-
     SettingsBtn.BackgroundColor3 = colors.TopButtons; SettingsBtn.TextColor3 = colors.Text
     MinimizeBtn.BackgroundColor3 = colors.TopButtons; MinimizeBtn.TextColor3 = colors.Text
     CloseBtn.BackgroundColor3= colors.TopButtons; CloseBtn.TextColor3 = colors.Text
-
     for _, btn in pairs(buttonReferences) do
         if btn:IsA("TextButton") or btn:IsA("TextBox") then
             btn.BackgroundColor3 = colors.Button
@@ -403,10 +534,8 @@ local function ApplyTheme(theme)
         end
     end
     FlySpeedValue.TextColor3 = colors.Text
-
     SettingsFrame.BackgroundColor3 = colors.Background; SettingsTitle.TextColor3 = colors.Text; ThemeLabel.TextColor3 = colors.Text
     ConfirmFrame.BackgroundColor3 = colors.Background; ConfirmStroke.Color = colors.Border; ConfirmText.TextColor3 = colors.Text
-
     if theme == "Dark" then
         DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1)
         LightThemeBtn.BackgroundColor3 = colors.Button; LightThemeBtn.TextColor3 = colors.Text
@@ -423,7 +552,7 @@ local ConfirmStroke = Instance.new("UIStroke", ConfirmFrame)
 ConfirmStroke.Thickness = 3; ConfirmStroke.Color = Themes.Dark.Border
 
 local ConfirmText = Instance.new("TextLabel", ConfirmFrame)
-ConfirmText.Size = UDim2.new(1, -20, 0, 60); ConfirmText.Position = UDim2.new(0, 10, 0, 80); ConfirmText.Text = "Are you sure you want\nto close the GUI?"
+ConfirmText.Size = UDim2.new(1, -20, 0, 60); ConfirmText.Position = UDim2.new(0, 10, 0, 110); ConfirmText.Text = "Are you sure you want\nto close the GUI?"
 ConfirmText.TextColor3 = Themes.Dark.Text; ConfirmText.BackgroundTransparency = 1; ConfirmText.Font = Enum.Font.GothamBold; ConfirmText.TextSize = 14; ConfirmText.ZIndex = 26
 
 local YesBtn = Instance.new("TextButton", ConfirmFrame)
@@ -444,7 +573,7 @@ SettingsBtn.MouseButton1Click:Connect(function()
     if confirmDialogOpen then return end
     if isMinimized then
         isMinimized = false
-        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 240, 0, 260)}):Play()
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 240, 0, 320)}):Play()
         MinimizeBtn.Text = "−"; task.wait(0.1)
     end
     SettingsFrame.Visible = not SettingsFrame.Visible; settingsOpen = SettingsFrame.Visible
@@ -459,7 +588,7 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 240, 0, 35)}):Play()
         MinimizeBtn.Text = "+"
     else
-        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 240, 0, 260)}):Play()
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 240, 0, 320)}):Play()
         MinimizeBtn.Text = "−"
     end
     task.wait(0.1); minimizeCooldown = false
@@ -471,7 +600,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
     if isMinimized then
         isMinimized = false
-        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 240, 0, 260)}):Play()
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 240, 0, 320)}):Play()
         MinimizeBtn.Text = "−"; task.wait(0.1)
     end
     ConfirmFrame.Visible = true; ConfirmFrame.BackgroundTransparency = 1
@@ -487,8 +616,14 @@ end)
 YesBtn.MouseButton1Click:Connect(function()
     if isClosing then return end
     isClosing = true
-    stopFly()
+    
+    -- 關閉飛行清空實例
+    FlyActive = false
+    tpwalking = false
+    if bg then bg:Destroy() end
+    if bv then bv:Destroy() end
     if jumpConnection then jumpConnection:Disconnect() end
+    
     TweenService:Create(ConfirmFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
     task.wait(0.1)
     TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
@@ -499,23 +634,32 @@ end)
 Frame.Size = UDim2.new(0, 0, 0, 0)
 Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 240, 0, 260),
-    Position = UDim2.new(0.5, -120, 0.5, -130)
+    Size = UDim2.new(0, 240, 0, 320),
+    Position = UDim2.new(0.5, -120, 0.5, -160)
 }):Play()
 
 -- ==========================================
--- 🔄 玩家重生自動重新掛載所有外掛狀態
+-- 🔄 玩家重生自動重新掛載所有狀態
 -- ==========================================
-player.CharacterAdded:Connect(function()
-    task.wait(0.2)
+player.CharacterAdded:Connect(function(char)
+    task.wait(0.7)
     updateCharacterSpeed()
     startJumpControl()
-    if FlyActive then startFly() end
+    
+    -- 重生重置飛行基礎狀態
+    if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+        player.Character.Humanoid.PlatformStand = false
+        player.Character.Animate.Disabled = false
+    end
+    if FlyActive then 
+        FlyActive = false -- 強制關閉以便重新啟用
+        toggleFly() 
+    end
 end)
 
 -- 發送提示訊息
 game:GetService("StarterGui"):SetCore("SendNotification", { 
-    Title = "移動控制系統 UI";
-    Text = "載入成功，跳躍預設為 5！";
-    Duration = 4
+    Title = "移動控制系統 V3";
+    Text = "融合 Baiyan 飛行邏輯成功！";
+    Duration = 5
 })
