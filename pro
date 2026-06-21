@@ -634,8 +634,9 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
+-- 修改後的作者與通知標題樣式
 game:GetService("StarterGui"):SetCore("SendNotification", { 
-    Title = "極簡移動系統";
-    Text = "排版比例修正完畢，功能解鎖！";
+    Title = "Baiyan MOVE SYSTEM";
+    Text = "極簡移動選單已載入，by: Baiyan";
     Duration = 4
 })
