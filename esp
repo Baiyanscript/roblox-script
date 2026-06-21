@@ -503,7 +503,7 @@ end)
 local Credit = Instance.new("TextLabel", Content)
 Credit.Size = UDim2.new(1, -6, 0, 20)
 Credit.Position = UDim2.new(0, 3, 0, 265) -- 完美緊跟底端
-Credit.Text = "by: Baiyan pure visual"
+Credit.Text = "by: Baiyan Pure ESP"
 Credit.TextColor3 = Color3.fromRGB(120, 120, 120)
 Credit.BackgroundTransparency = 1
 Credit.Font = Enum.Font.GothamBold
@@ -728,3 +728,5 @@ TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.Easing
     Size = UDim2.new(0, UIWidth, 0, UIHeight),
     Position = UDim2.new(0.5, -(UIWidth/2), 0.5, -(UIHeight/2))
 }):Play()
+
+Message("Loaded", "Baiyan Hub Pure ESP Active!", 3)
