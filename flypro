@@ -1,0 +1,179 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "DeltaControlGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = PlayerGui
+
+local toggleButton = Instance.new("ImageButton")
+toggleButton.Name = "FlyToggle"
+toggleButton.Size = UDim2.new(0, 100, 0, 100)
+toggleButton.Position = UDim2.new(0.5, -50, 0.5, -50)
+toggleButton.Image = "rbxassetid://76316158972959"
+toggleButton.BackgroundTransparency = 1
+toggleButton.Draggable = true
+toggleButton.Active = true
+toggleButton.Parent = screenGui
+
+local brakeButton = Instance.new("ImageButton")
+brakeButton.Name = "BrakeButton"
+brakeButton.Size = UDim2.new(0, 80, 0, 80)
+brakeButton.Position = UDim2.new(0.5, -40, 0.5, 60)
+brakeButton.Image = "rbxassetid://132411019634629"
+brakeButton.BackgroundTransparency = 1
+brakeButton.Visible = false
+brakeButton.Active = true
+brakeButton.Parent = screenGui
+
+local active = false
+local braking = false
+local rotConn, flyConn, animTrack
+local bodyVelocity
+
+local function getCharacter()
+    return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+end
+
+local function getRoot()
+    return getCharacter():WaitForChild("HumanoidRootPart")
+end
+
+local function getHumanoid()
+    return getCharacter():FindFirstChildWhichIsA("Humanoid")
+end
+
+local function setTPWalk(state)
+    if syn or getgenv then
+        pcall(function()
+            setfflag("tpwalk", state and "1" or "0")
+        end)
+    end
+end
+
+local function playFlyAnimation()
+    local hum = getHumanoid()
+    if hum then
+        local anim = Instance.new("Animation")
+        anim.AnimationId = "rbxassetid://282574440"
+        animTrack = hum:LoadAnimation(anim)
+        animTrack.Looped = true
+        animTrack:Play()
+    end
+end
+
+local function playBrakeAnimation()
+    local hum = getHumanoid()
+    if hum then
+        local anim = Instance.new("Animation")
+        anim.AnimationId = "rbxassetid://69427277"
+        animTrack = hum:LoadAnimation(anim)
+        animTrack.Looped = true
+        animTrack:Play()
+    end
+end
+
+local function stopAnimation()
+    if animTrack then
+        animTrack:Stop()
+        animTrack = nil
+    end
+end
+
+local function startFlying()
+    local root = getRoot()
+    bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = Vector3.zero
+    bodyVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+    bodyVelocity.P = 1250
+    bodyVelocity.Parent = root
+
+    flyConn = RunService.RenderStepped:Connect(function()
+        if not braking then
+            local camLook = Camera.CFrame.LookVector
+            bodyVelocity.Velocity = camLook * 50
+        else
+            bodyVelocity.Velocity = Vector3.zero
+        end
+    end)
+end
+
+local function stopFlying()
+    if flyConn then
+        flyConn:Disconnect()
+        flyConn = nil
+    end
+    if bodyVelocity then
+        bodyVelocity:Destroy()
+        bodyVelocity = nil
+    end
+end
+
+local function startRotation()
+    rotConn = RunService.RenderStepped:Connect(function()
+        local root = getRoot()
+        if root then
+            root.CFrame = CFrame.new(root.Position, root.Position + Camera.CFrame.LookVector)
+        end
+    end)
+end
+
+local function stopRotation()
+    if rotConn then
+        rotConn:Disconnect()
+        rotConn = nil
+    end
+end
+
+local function activate()
+    active = true
+    braking = false
+    setTPWalk(true)
+    playFlyAnimation()
+    startFlying()
+    startRotation()
+    brakeButton.Visible = true
+end
+
+local function deactivate()
+    active = false
+    stopAnimation()
+    stopFlying()
+    stopRotation()
+    setTPWalk(false)
+    brakeButton.Visible = false
+end
+
+local function toggleBrake()
+    braking = not braking
+    stopAnimation()
+    if braking then
+        playBrakeAnimation()
+    else
+        playFlyAnimation()
+    end
+end
+
+toggleButton.MouseButton1Click:Connect(function()
+    if active then
+        deactivate()
+    else
+        activate()
+    end
+end)
+
+brakeButton.MouseButton1Click:Connect(toggleBrake)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if active then
+        task.wait(1)
+        activate()
+        if braking then
+            toggleBrake()
+        end
+    end
+end)
