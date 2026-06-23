@@ -1,0 +1,24 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local RunService = game:GetService("RunService")
+	local Players = game:GetService("Players")
+	
+	local function fling()
+		local Player1 = Players.LocalPlayer
+		local character, hrp, velo, movel = nil, nil, nil, 0.1
+	
+		while true do
+			RunService.Heartbeat:Wait()
+			character = Player1.Character
+			hrp = character and character:FindFirstChild("HumanoidRootPart")
+	
+			if hrp then
+				velo = hrp.Velocity -- saves current 
+				hrp.Velocity = velo * 10000 + Vector3.new(0, 10000, 0) -- ur orginal velocity times 10000 and adds 10000 to the y axis
+				RunService.RenderStepped:Wait() 
+				hrp.Velocity = velo -- sets it back cus you fly with them
+				RunService.Stepped:Wait()
+			end
+		end
+	end
+	
+	fling()
