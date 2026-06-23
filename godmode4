@@ -1,0 +1,127 @@
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "GodModeGUI"
+gui.ResetOnSpawn = false
+gui.Parent = game:GetService("CoreGui")
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 220, 0, 150) -- 縮小了框架高度，因為不需要密碼框了
+frame.Position = UDim2.new(0.3, 0, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.Active = true
+frame.Draggable = true
+
+-- GOD MODE V1 按鈕
+local godBtn = Instance.new("TextButton", frame)
+godBtn.Size = UDim2.new(0, 200, 0, 30)
+godBtn.Position = UDim2.new(0, 10, 0, 10)
+godBtn.Text = "God Mode: OFF"
+godBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+godBtn.TextColor3 = Color3.new(1, 1, 1)
+
+local godOn = false
+godBtn.MouseButton1Click:Connect(function()
+    godOn = not godOn
+    if godOn then
+        godBtn.Text = "God Mode: ON"
+        godBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        local char = player.Character
+        if char then
+            char.Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+                char.Humanoid.Health = char.Humanoid.MaxHealth
+            end)
+        end
+    else
+        godBtn.Text = "God Mode: OFF"
+        godBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end)
+
+-- GOD MODE V2 按鈕 (已修正類別並改為預設顯示)
+local god2Btn = Instance.new("TextButton", frame)
+god2Btn.Size = UDim2.new(0, 200, 0, 30)
+god2Btn.Position = UDim2.new(0, 10, 0, 50) -- 往上遞補位置
+god2Btn.Text = "God Mode V2: OFF"
+god2Btn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+god2Btn.TextColor3 = Color3.new(1, 1, 1)
+god2Btn.Visible = true
+
+-- GOD MODE V3 按鈕 (已修正類別並改為預設顯示)
+local god3Btn = Instance.new("TextButton", frame)
+god3Btn.Size = UDim2.new(0, 200, 0, 30)
+god3Btn.Position = UDim2.new(0, 10, 0, 90) -- 往上遞補位置
+god3Btn.Text = "God Mode V3: OFF"
+god3Btn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+god3Btn.TextColor3 = Color3.new(1, 1, 1)
+god3Btn.Visible = true
+
+-- GOD MODE V2 邏輯
+local god2On = false
+local deathPos
+god2Btn.MouseButton1Click:Connect(function()
+    god2On = not god2On
+    if god2On then
+        god2Btn.Text = "God Mode V2: ON"
+        god2Btn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+
+        player.CharacterAdded:Connect(function(char)
+            repeat task.wait() until char:FindFirstChild("HumanoidRootPart")
+            if deathPos then
+                char.HumanoidRootPart.CFrame = CFrame.new(deathPos)
+            end
+        end)
+
+        player.Character:WaitForChild("Humanoid").Died:Connect(function()
+            deathPos = player.Character.HumanoidRootPart.Position
+        end)
+    else
+        god2Btn.Text = "God Mode V2: OFF"
+        god2Btn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end)
+
+-- GOD MODE V3 邏輯
+local god3On = false
+god3Btn.MouseButton1Click:Connect(function()
+    god3On = not god3On
+    if god3On then
+        god3Btn.Text = "God Mode V3: ON"
+        god3Btn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+
+        local function onCharacterAdded(character)
+            local humanoid = character:WaitForChild("Humanoid")
+            humanoid.Died:Connect(function()
+                deathPos = character:FindFirstChild("HumanoidRootPart") and character.HumanoidRootPart.Position
+                task.wait(0.05)
+                player:LoadCharacter()
+            end)
+            humanoid.HealthChanged:Connect(function(health)
+                if health <= 0 then
+                    humanoid.Health = humanoid.MaxHealth
+                end
+            end)
+            humanoid.Health = humanoid.MaxHealth
+        end
+
+        player.CharacterAdded:Connect(function(char)
+            if deathPos then
+                repeat task.wait() until char:FindFirstChild("HumanoidRootPart")
+                char.HumanoidRootPart.CFrame = CFrame.new(deathPos)
+            end
+            onCharacterAdded(char)
+        end)
+
+        if player.Character then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.Died:Connect(function()
+                    deathPos = player.Character.HumanoidRootPart.Position
+                end)
+            end
+            onCharacterAdded(player.Character)
+        end
+    else
+        god3Btn.Text = "God Mode V3: OFF"
+        god3Btn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end)
