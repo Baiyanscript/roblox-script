@@ -1,0 +1,464 @@
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SoxcyHub"
+ScreenGui.Parent = game.CoreGui
+
+local colors = {
+    Color3.fromRGB(255, 0, 255),
+    Color3.fromRGB(0, 255, 255),
+    Color3.fromRGB(255, 255, 0),
+    Color3.fromRGB(255, 128, 0),
+    Color3.fromRGB(0, 255, 0),
+    Color3.fromRGB(255, 0, 0)
+}
+
+-- Drag function
+local function makeDraggable(guiObject)
+    local dragging, dragInput, dragStart, startPos
+    guiObject.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = guiObject.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    guiObject.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            guiObject.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+-- Toggle Circle
+local toggleCircle = Instance.new("ImageButton")
+toggleCircle.Name = "ToggleCircle"
+toggleCircle.Parent = ScreenGui
+toggleCircle.Size = UDim2.new(0, 60, 0, 60)
+toggleCircle.Position = UDim2.new(0.5, -30, 0.5, -30)
+toggleCircle.BackgroundColor3 = colors[1]
+toggleCircle.BorderSizePixel = 0
+toggleCircle.AutoButtonColor = true
+toggleCircle.ZIndex = 50
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 0)
+toggleCorner.Parent = toggleCircle
+
+-- Tween for toggleCircle background color
+local toggleTweenRunning = true
+spawn(function()
+    local i = 1
+    while toggleCircle.Parent and toggleTweenRunning do
+        local tween = TweenService:Create(toggleCircle, TweenInfo.new(1.5), {BackgroundColor3 = colors[i]})
+        tween:Play()
+        tween.Completed:Wait()
+        i = i + 1
+        if i > #colors then i = 1 end
+    end
+end)
+
+makeDraggable(toggleCircle)
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Parent = ScreenGui
+mainFrame.Size = UDim2.new(0, 320, 0, 280)
+mainFrame.Position = UDim2.new(0.5, -160, 0.5, -140)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.Visible = false
+mainFrame.ZIndex = 49
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 20)
+mainCorner.Parent = mainFrame
+
+makeDraggable(mainFrame)
+
+-- Label by soxcy
+local bySoxcyLabel = Instance.new("TextLabel")
+bySoxcyLabel.Parent = mainFrame
+bySoxcyLabel.Size = UDim2.new(1, -20, 0, 30)
+bySoxcyLabel.Position = UDim2.new(0, 10, 0, 10)
+bySoxcyLabel.BackgroundTransparency = 1
+bySoxcyLabel.Font = Enum.Font.SourceSansBold
+bySoxcyLabel.TextSize = 22
+bySoxcyLabel.Text = "by soxcy"
+bySoxcyLabel.ZIndex = 50
+
+-- Close button "x"
+local closeButton = Instance.new("TextButton")
+closeButton.Parent = mainFrame
+closeButton.Size = UDim2.new(0, 40, 0, 30)
+closeButton.Position = UDim2.new(1, -50, 0, 10)
+closeButton.BackgroundTransparency = 1
+closeButton.TextColor3 = colors[1]
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.TextSize = 24
+closeButton.Text = "x"
+closeButton.ZIndex = 51
+closeButton.AutoButtonColor = true
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 10)
+closeCorner.Parent = closeButton
+
+-- Tween text color function
+local function tweenTextColor(guiText)
+    spawn(function()
+        local i = 1
+        while guiText.Parent do
+            local tween = TweenService:Create(guiText, TweenInfo.new(1.5), {TextColor3 = colors[i]})
+            tween:Play()
+            tween.Completed:Wait()
+            i = i + 1
+            if i > #colors then i = 1 end
+        end
+    end)
+end
+
+tweenTextColor(bySoxcyLabel)
+tweenTextColor(closeButton)
+
+-- Confirm Frame
+local confirmFrame = Instance.new("Frame")
+confirmFrame.Parent = mainFrame
+confirmFrame.Size = UDim2.new(1, 0, 1, 0)
+confirmFrame.Position = UDim2.new(0, 0, 0, 0)
+confirmFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+confirmFrame.BackgroundTransparency = 0.7
+confirmFrame.Visible = false
+confirmFrame.ZIndex = 60
+
+local confirmText = Instance.new("TextLabel")
+confirmText.Parent = confirmFrame
+confirmText.Size = UDim2.new(1, 0, 0, 50)
+confirmText.Position = UDim2.new(0, 0, 0, 40)
+confirmText.BackgroundTransparency = 1
+confirmText.Text = "Close GUI?"
+confirmText.Font = Enum.Font.SourceSansBold
+confirmText.TextSize = 24
+confirmText.TextColor3 = Color3.fromRGB(255,255,255)
+confirmText.ZIndex = 61
+
+local yesButton = Instance.new("TextButton")
+yesButton.Parent = confirmFrame
+yesButton.Size = UDim2.new(0, 100, 0, 40)
+yesButton.Position = UDim2.new(0.25, -50, 0, 110)
+yesButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+yesButton.TextColor3 = Color3.fromRGB(0,0,0)
+yesButton.Font = Enum.Font.SourceSansBold
+yesButton.TextSize = 22
+yesButton.Text = "Yes"
+yesButton.ZIndex = 61
+local yesCorner = Instance.new("UICorner")
+yesCorner.CornerRadius = UDim.new(0, 12)
+yesCorner.Parent = yesButton
+
+local noButton = Instance.new("TextButton")
+noButton.Parent = confirmFrame
+noButton.Size = UDim2.new(0, 100, 0, 40)
+noButton.Position = UDim2.new(0.75, -50, 0, 110)
+noButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+noButton.TextColor3 = Color3.fromRGB(255,255,255)
+noButton.Font = Enum.Font.SourceSansBold
+noButton.TextSize = 22
+noButton.Text = "No"
+noButton.ZIndex = 61
+local noCorner = Instance.new("UICorner")
+noCorner.CornerRadius = UDim.new(0, 12)
+noCorner.Parent = noButton
+
+-- Open / Close GUI functions
+local function openGUI()
+    mainFrame.Visible = true
+    mainFrame.Position = toggleCircle.Position
+    mainFrame.Size = toggleCircle.Size
+    local tweenPos = TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -160, 0.5, -140)})
+    local tweenSize = TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 320, 0, 280)})
+    tweenPos:Play()
+    tweenSize:Play()
+end
+
+local function closeGUI()
+    local tweenPos = TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = toggleCircle.Position})
+    local tweenSize = TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = toggleCircle.Size})
+    tweenPos:Play()
+    tweenSize:Play()
+    tweenSize.Completed:Wait()
+    mainFrame.Visible = false
+    confirmFrame.Visible = false
+end
+
+local guiOpen = false
+local stopped = false
+
+local function stopScript()
+    stopped = true
+    toggleTweenRunning = false
+    toggleCircle:Destroy()
+    mainFrame:Destroy()
+    ScreenGui:Destroy()
+end
+
+toggleCircle.MouseButton1Click:Connect(function()
+    if stopped or confirmFrame.Visible then return end
+    if guiOpen then
+        closeGUI()
+        guiOpen = false
+    else
+        openGUI()
+        guiOpen = true
+    end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    if stopped then return end
+    confirmFrame.Visible = true
+end)
+
+yesButton.MouseButton1Click:Connect(function()
+    if stopped then return end
+    closeGUI()
+    guiOpen = false
+    stopScript()
+end)
+
+noButton.MouseButton1Click:Connect(function()
+    if stopped then return end
+    confirmFrame.Visible = false
+end)
+
+-- Main Button (dropdown)
+local mainButton = Instance.new("TextButton")
+mainButton.Parent = mainFrame
+mainButton.Size = UDim2.new(0, 100, 0, 35)
+mainButton.Position = UDim2.new(0, 20, 0, 50)
+mainButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+mainButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainButton.Font = Enum.Font.SourceSansBold
+mainButton.TextSize = 18
+mainButton.Text = "Main ▼"
+mainButton.ZIndex = 51
+local mainButtonCorner = Instance.new("UICorner")
+mainButtonCorner.CornerRadius = UDim.new(0, 8)
+mainButtonCorner.Parent = mainButton
+
+-- Dropdown frame
+local dropdownFrame = Instance.new("Frame")
+dropdownFrame.Parent = mainFrame
+dropdownFrame.Size = UDim2.new(0, 140, 0, 0)
+dropdownFrame.Position = UDim2.new(0, 20, 0, 85)
+dropdownFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+dropdownFrame.Visible = false
+dropdownFrame.ZIndex = 52
+local dropdownCorner = Instance.new("UICorner")
+dropdownCorner.CornerRadius = UDim.new(0, 8)
+dropdownCorner.Parent = dropdownFrame
+
+local dropdownLayout = Instance.new("UIListLayout")
+dropdownLayout.Parent = dropdownFrame
+dropdownLayout.SortOrder = Enum.SortOrder.LayoutOrder
+dropdownLayout.Padding = UDim.new(0, 4)
+
+local options = {"Godmode", "Speedboost", "Infjump", "Fly"}
+
+local optionButtons = {}
+
+-- States for toggles
+local states = {
+    Godmode = false,
+    Speedboost = false,
+    Infjump = false,
+    Fly = false,
+}
+
+for i, option in ipairs(options) do
+    local btn = Instance.new("TextButton")
+    btn.Parent = dropdownFrame
+    btn.Size = UDim2.new(1, -10, 0, 30)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 18
+    btn.Text = option
+    btn.ZIndex = 53
+    btn.AutoButtonColor = true
+    btn.LayoutOrder = i
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+    optionButtons[option] = btn
+end
+
+local dropdownOpen = false
+
+-- Toggle dropdown open/close with tween height
+mainButton.MouseButton1Click:Connect(function()
+    if dropdownOpen then
+        local tween = TweenService:Create(dropdownFrame, TweenInfo.new(0.25), {Size = UDim2.new(0, 140, 0, 0)})
+        tween:Play()
+        tween.Completed:Wait()
+        dropdownFrame.Visible = false
+        dropdownOpen = false
+        mainButton.Text = "Main ▼"
+    else
+        dropdownFrame.Visible = true
+        local tween = TweenService:Create(dropdownFrame, TweenInfo.new(0.25), {Size = UDim2.new(0, 140, 0, #options * 34)})
+        tween:Play()
+        dropdownOpen = true
+        mainButton.Text = "Main ▲"
+    end
+end)
+
+-- Godmode implementation (tahan laser tower)
+local function enableGodmode(enable)
+    states.Godmode = enable
+    if enable then
+        -- Connect to Humanoid.Touched or check damage from laser tower
+        -- This is a generic example, adapt to actual tower laser script
+        if not Character or not Character.Parent then return end
+
+        -- Create invisible forcefield to block laser damage
+        if not Character:FindFirstChild("SoxcyGodmodeForcefield") then
+            local forcefield = Instance.new("ForceField")
+            forcefield.Name = "SoxcyGodmodeForcefield"
+            forcefield.Parent = Character
+        end
+    else
+        local ff = Character:FindFirstChild("SoxcyGodmodeForcefield")
+        if ff then ff:Destroy() end
+    end
+end
+
+-- Fly implementation (simple fly)
+local flySpeed = 50
+local flying = false
+local flyConnection
+
+local function enableFly(enable)
+    states.Fly = enable
+    if enable then
+        if not Character or not Character.Parent then return end
+        if flying then return end
+        flying = true
+
+        flyConnection = RunService.RenderStepped:Connect(function()
+            local root = Character:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+            local moveDir = Vector3.new()
+
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                moveDir = moveDir + workspace.CurrentCamera.CFrame.LookVector
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                moveDir = moveDir - workspace.CurrentCamera.CFrame.LookVector
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                moveDir = moveDir - workspace.CurrentCamera.CFrame.RightVector
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                moveDir = moveDir + workspace.CurrentCamera.CFrame.RightVector
+            end
+
+            moveDir = moveDir.Unit * flySpeed
+            root.Velocity = moveDir
+            root.AssemblyLinearVelocity = moveDir
+            Humanoid.PlatformStand = true
+        end)
+    else
+        if flyConnection then
+            flyConnection:Disconnect()
+            flyConnection = nil
+        end
+        if Character and Character.Parent then
+            local root = Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                root.Velocity = Vector3.new(0,0,0)
+                root.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            end
+            Humanoid.PlatformStand = false
+        end
+        flying = false
+    end
+end
+
+-- Speedboost and Infjump simple toggle (placeholders)
+local function enableSpeedboost(enable)
+    states.Speedboost = enable
+    -- Simple speed boost example
+    if Humanoid then
+        if enable then
+            Humanoid.WalkSpeed = 32
+        else
+            Humanoid.WalkSpeed = 16
+        end
+    end
+end
+
+local function enableInfjump(enable)
+    states.Infjump = enable
+end
+
+-- Handle infjump logic
+local jumped = false
+UserInputService.JumpRequest:Connect(function()
+    if states.Infjump then
+        if Character and Humanoid and Humanoid:GetState() ~= Enum.HumanoidStateType.Freefall then
+            Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
+-- Button clicks
+optionButtons["Godmode"].MouseButton1Click:Connect(function()
+    states.Godmode = not states.Godmode
+    enableGodmode(states.Godmode)
+    optionButtons["Godmode"].Text = "Godmode "..(states.Godmode and "✔" or "✘")
+end)
+
+optionButtons["Speedboost"].MouseButton1Click:Connect(function()
+    states.Speedboost = not states.Speedboost
+    enableSpeedboost(states.Speedboost)
+    optionButtons["Speedboost"].Text = "Speedboost "..(states.Speedboost and "✔" or "✘")
+end)
+
+optionButtons["Infjump"].MouseButton1Click:Connect(function()
+    states.Infjump = not states.Infjump
+    enableInfjump(states.Infjump)
+    optionButtons["Infjump"].Text = "Infjump "..(states.Infjump and "✔" or "✘")
+end)
+
+optionButtons["Fly"].MouseButton1Click:Connect(function()
+    states.Fly = not states.Fly
+    enableFly(states.Fly)
+    optionButtons["Fly"].Text = "Fly "..(states.Fly and "✔" or "✘")
+end)
+
+-- Initialize button text
+for _, btn in pairs(optionButtons) do
+    btn.Text = btn.Text .. " ✘"
+end
