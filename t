@@ -12,7 +12,7 @@ local Workspace = game:GetService("Workspace")
 local StarterGui = game:GetService("StarterGui")
 local localPlayer = Players.LocalPlayer
 
--- 原 Antifling2 功能變數
+-- 承襲自 antifling2 的完整全域變數與功能狀態
 local flingActive = false
 local hiddenfling = false
 local AntiFlingEnabled = false
@@ -22,36 +22,8 @@ local currentInput = ""
 local SteppedConnection = nil
 local isNoclipEnabled = false
 local flingMode = 1
-local currentPhase = 1
 
--- 原 Phase 2 & 3 功能變數
-local isStrengthened = false
-local strengthConnections = {}
-local originalProperties = {}
-local spawnpointActive = false
-local savedPosition = nil
-local antiSlapActive = false
-local XenoAntiFlingEnabled = false
-local XenoAntiFlingConnection = nil
-local infinitePositionEnabled = false
-local savedInfinitePosition = nil
-local infinitePositionConnection = nil
-local positionTolerance = 0.1
-local afdEnabled = false
-local afdConnections = {}
-local noSitEnabled = false
-local freeCamEnabled = false
-local movePart = nil
-local currentPos = Vector3.new()
-local joystickGui = nil
-local invisibilityEnabled = false
-local invisibleParts = {}
-local invisibilityConnection = nil
-local invisibilityCooldown = false
-local antiRagdollEnabled = false
-local antiRagdollDisconnectFunc = nil
-
--- UI 主題設定 (承襲自 God Mode)
+-- UI 主題設定 (精緻 God Mode 風格)
 local CurrentTheme = "Dark"
 local Themes = {
     Dark = {
@@ -83,8 +55,8 @@ MainGui.ResetOnSpawn = false
 
 -- 主框架
 local Frame = Instance.new("Frame", MainGui)
-Frame.Size = UDim2.new(0, 250, 0, 360)
-Frame.Position = UDim2.new(0.5, -125, 0.5, -180)
+Frame.Size = UDim2.new(0, 250, 0, 320)
+Frame.Position = UDim2.new(0.5, -125, 0.5, -160)
 Frame.BackgroundColor3 = Themes.Dark.Background
 Frame.BorderSizePixel = 0
 Frame.Active = true
@@ -120,7 +92,7 @@ Title.Text = "FLING GUI MOD"
 Title.TextColor3 = Themes.Dark.Text
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
+Title.TextSize = 13
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 -- 拖曳功能
@@ -179,84 +151,20 @@ CloseBtn.TextSize = 20
 CloseBtn.BorderSizePixel = 0
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 
--- 主要分頁容器
+-- 主要分頁內容容器
 local Content = Instance.new("Frame", Frame)
-Content.Size = UDim2.new(1, -14, 1, -75)
+Content.Size = UDim2.new(0, 236, 0, 250)
 Content.Position = UDim2.new(0, 7, 0, 41)
 Content.BackgroundTransparency = 1
 
--- 分頁下拉選單
-local PhaseMenuBtn = Instance.new("TextButton", Content)
-PhaseMenuBtn.Size = UDim2.new(1, 0, 0, 30)
-PhaseMenuBtn.Position = UDim2.new(0, 0, 0, 0)
-PhaseMenuBtn.BackgroundColor3 = Themes.Dark.Button
-PhaseMenuBtn.Text = "PAGE: 1 (MAIN FLING)"
-PhaseMenuBtn.TextColor3 = Themes.Dark.Text
-PhaseMenuBtn.Font = Enum.Font.GothamBold
-PhaseMenuBtn.TextSize = 11
-Instance.new("UICorner", PhaseMenuBtn).CornerRadius = UDim.new(0, 9)
+local Scroller = Instance.new("ScrollingFrame", Content)
+Scroller.Size = UDim2.new(1, 0, 1, 0)
+Scroller.BackgroundTransparency = 1
+Scroller.ScrollBarThickness = 2
+Scroller.CanvasSize = UDim2.new(0, 0, 0, 280)
 
-local PhaseFrame = Instance.new("Frame", Content)
-PhaseFrame.Size = UDim2.new(1, 0, 0, 105)
-PhaseFrame.Position = UDim2.new(0, 0, 0, 35)
-PhaseFrame.BackgroundColor3 = Themes.Dark.Background
-PhaseFrame.BorderSizePixel = 0
-PhaseFrame.Visible = false
-PhaseFrame.ZIndex = 15
-Instance.new("UICorner", PhaseFrame).CornerRadius = UDim.new(0, 9)
-local PhaseFrameStroke = Instance.new("UIStroke", PhaseFrame)
-PhaseFrameStroke.Thickness = 2
-PhaseFrameStroke.Color = Themes.Dark.Border
-
--- 滾動容器 (容納各分頁元件)
-local PagesContainer = Instance.new("Frame", Content)
-PagesContainer.Size = UDim2.new(1, 0, 1, -35)
-PagesContainer.Position = UDim2.new(0, 0, 0, 35)
-PagesContainer.BackgroundTransparency = 1
-
-local Phase1Container = Instance.new("ScrollingFrame", PagesContainer)
-Phase1Container.Size = UDim2.new(1, 0, 1, 0)
-Phase1Container.BackgroundTransparency = 1
-Phase1Container.ScrollBarThickness = 2
-Phase1Container.CanvasSize = UDim2.new(0, 0, 0, 270)
-
-local Phase2Container = Instance.new("ScrollingFrame", PagesContainer)
-Phase2Container.Size = UDim2.new(1, 0, 1, 0)
-Phase2Container.BackgroundTransparency = 1
-Phase2Container.Visible = false
-Phase2Container.ScrollBarThickness = 2
-Phase2Container.CanvasSize = UDim2.new(0, 0, 0, 260)
-
-local Phase3Container = Instance.new("ScrollingFrame", PagesContainer)
-Phase3Container.Size = UDim2.new(1, 0, 1, 0)
-Phase3Container.BackgroundTransparency = 1
-Phase3Container.Visible = false
-Phase3Container.ScrollBarThickness = 2
-Phase3Container.CanvasSize = UDim2.new(0, 0, 0, 260)
-
--- 狀態欄與作者標籤
-local StatusLabel = Instance.new("TextLabel", Frame)
-StatusLabel.Size = UDim2.new(0.5, 0, 0, 20)
-StatusLabel.Position = UDim2.new(0, 10, 1, -22)
-StatusLabel.Text = "Status: Waiting..."
-StatusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Font = Enum.Font.GothamBold
-StatusLabel.TextSize = 10
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local Credit = Instance.new("TextLabel", Frame)
-Credit.Size = UDim2.new(0.5, 0, 0, 20)
-Credit.Position = UDim2.new(0.5, -10, 1, -22)
-Credit.Text = "by: romokaso & Mod"
-Credit.TextColor3 = Color3.fromRGB(120, 120, 120)
-Credit.BackgroundTransparency = 1
-Credit.Font = Enum.Font.GothamBold
-Credit.TextSize = 10
-Credit.TextXAlignment = Enum.TextXAlignment.Right
-
--- 輸入框 (Phase 1)
-local InputBox = Instance.new("TextBox", Phase1Container)
+-- 輸入框 (Target 選擇器)
+local InputBox = Instance.new("TextBox", Scroller)
 InputBox.Size = UDim2.new(1, 0, 0, 32)
 InputBox.Position = UDim2.new(0, 0, 0, 5)
 InputBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
@@ -269,7 +177,7 @@ InputBox.Text = ""
 InputBox.ClearTextOnFocus = false
 Instance.new("UICorner", InputBox).CornerRadius = UDim.new(0, 6)
 
--- 共用按鈕樣式生成器
+-- 共用按鈕生成器
 local buttonReferences = {}
 local function CreateStyledButton(text, position, parent, callback)
     local btn = Instance.new("TextButton", parent)
@@ -311,10 +219,9 @@ local function CreateStyledButton(text, position, parent, callback)
 end
 
 -- ==========================================
--- 原 Antifling2 功能核心邏輯整理與綁定
+-- 完全移植自 antifling2 的核心功能邏輯
 -- ==========================================
 
--- 1. Fling 模式與核心邏輯
 local function sortPlayersAlphabetically(players)
     table.sort(players, function(a, b) return string.lower(a.Name) < string.lower(b.Name) end)
     return players
@@ -436,12 +343,10 @@ local function runFlingLoop()
     while flingActive do
         local targets = getPlayers(currentInput)
         if #targets == 0 then 
-            StatusLabel.Text = "Status: Target not found"
             task.wait(0.5)
         else
             for _, p in ipairs(targets) do
                 if not flingActive then break end
-                StatusLabel.Text = "Status: Flinging " .. p.Name
                 if flingMode == 1 then SkidFling(p, 1.5)
                 elseif flingMode == 2 then shhhlol(p)
                 elseif flingMode == 3 then yeet(p) end
@@ -449,21 +354,19 @@ local function runFlingLoop()
         end
         task.wait(0.1)
     end
-    StatusLabel.Text = "Status: Idle"
 end
 
--- InputBox 數據連動
 InputBox:GetPropertyChangedSignal("Text"):Connect(function()
     currentInput = InputBox.Text
 end)
 
--- Phase 1 按鈕配置
-local ModeBtn = CreateStyledButton("FLING MODE: 1", UDim2.new(0, 0, 0, 45), Phase1Container, function(btn)
+-- 按鈕功能排布與配置
+local ModeBtn = CreateStyledButton("FLING MODE: 1", UDim2.new(0, 0, 0, 45), Scroller, function(btn)
     flingMode = flingMode >= 3 and 1 or flingMode + 1
     btn.Text = "FLING MODE: " .. flingMode
 end)
 
-local MainFlingBtn = CreateStyledButton("FLING PLAYERS: OFF", UDim2.new(0, 0, 0, 85), Phase1Container, function(btn)
+local MainFlingBtn = CreateStyledButton("FLING PLAYERS: OFF", UDim2.new(0, 0, 0, 85), Scroller, function(btn)
     flingActive = not flingActive
     if flingActive then
         btn.Text = "FLING PLAYERS: ON"
@@ -475,7 +378,7 @@ local MainFlingBtn = CreateStyledButton("FLING PLAYERS: OFF", UDim2.new(0, 0, 0,
     end
 end)
 
-local TouchFlingBtn = CreateStyledButton("TOUCH FLING: OFF", UDim2.new(0, 0, 0, 125), Phase1Container, function(btn)
+local TouchFlingBtn = CreateStyledButton("TOUCH FLING: OFF", UDim2.new(0, 0, 0, 125), Scroller, function(btn)
     hiddenfling = not hiddenfling
     if hiddenfling then
         btn.Text = "TOUCH FLING: ON"
@@ -505,7 +408,7 @@ local function setCanCollideOfModelDescendants(model, bval)
     end
 end
 
-local AntiFlingBtn = CreateStyledButton("ANTI FLING: OFF", UDim2.new(0, 0, 0, 165), Phase1Container, function(btn)
+local AntiFlingBtn = CreateStyledButton("ANTI FLING: OFF", UDim2.new(0, 0, 0, 165), Scroller, function(btn)
     AntiFlingEnabled = not AntiFlingEnabled
     if AntiFlingEnabled then
         btn.Text = "ANTI FLING: ON"
@@ -525,7 +428,7 @@ RunService.Stepped:Connect(function()
     end
 end)
 
-local AntiKillBtn = CreateStyledButton("ANTI KILL PARTS: OFF", UDim2.new(0, 0, 0, 205), Phase1Container, function(btn)
+local AntiKillBtn = CreateStyledButton("ANTI KILL PARTS: OFF", UDim2.new(0, 0, 0, 205), Scroller, function(btn)
     AntiKillPartsEnabled = not AntiKillPartsEnabled
     if AntiKillPartsEnabled then
         btn.Text = "ANTI KILL PARTS: ON"
@@ -545,7 +448,7 @@ local AntiKillBtn = CreateStyledButton("ANTI KILL PARTS: OFF", UDim2.new(0, 0, 0
     end
 end)
 
-local NoclipBtn = CreateStyledButton("NOCLIP: OFF", UDim2.new(0, 0, 0, 245), Phase1Container, function(btn)
+local NoclipBtn = CreateStyledButton("NOCLIP: OFF", UDim2.new(0, 0, 0, 245), Scroller, function(btn)
     isNoclipEnabled = not isNoclipEnabled
     if isNoclipEnabled then
         btn.Text = "NOCLIP: ON"
@@ -562,156 +465,7 @@ local NoclipBtn = CreateStyledButton("NOCLIP: OFF", UDim2.new(0, 0, 0, 245), Pha
     end
 end)
 
--- Phase 2 按鈕配置
-local StrengthBtn = CreateStyledButton("STRENGTH: OFF", UDim2.new(0, 0, 0, 5), Phase2Container, function(btn)
-    isStrengthened = not isStrengthened
-    btn.Text = "STRENGTH: " .. (isStrengthened and "ON" or "OFF")
-    btn.BackgroundColor3 = isStrengthened and Themes[CurrentTheme].ButtonActive or Themes[CurrentTheme].Button
-    if localPlayer.Character then
-        for _, p in pairs(localPlayer.Character:GetDescendants()) do
-            if p:IsA("BasePart") then p.CustomPhysicalProperties = isStrengthened and PhysicalProperties.new(100, 0.3, 0.5) or nil end
-        end
-    end
-end)
-
-local SpawnBtn = CreateStyledButton("SPAWNPOINT: OFF", UDim2.new(0, 0, 0, 45), Phase2Container, function(btn)
-    spawnpointActive = not spawnpointActive
-    btn.Text = "SPAWNPOINT: " .. (spawnpointActive and "ON" or "OFF")
-    btn.BackgroundColor3 = spawnpointActive and Themes[CurrentTheme].ButtonActive or Themes[CurrentTheme].Button
-    if spawnpointActive and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        savedPosition = localPlayer.Character.HumanoidRootPart.CFrame
-    else savedPosition = nil end
-end)
-
-localPlayer.CharacterAdded:Connect(function(char)
-    if spawnpointActive and savedPosition then
-        local hrp = char:WaitForChild("HumanoidRootPart", 5)
-        if hrp then task.wait(0.05) hrp.CFrame = savedPosition end
-    end
-end)
-
-local AntiSlapBtn = CreateStyledButton("ANTI SLAP: OFF", UDim2.new(0, 0, 0, 85), Phase2Container, function(btn)
-    antiSlapActive = not antiSlapActive
-    btn.Text = "ANTI SLAP: " .. (antiSlapActive and "ON" or "OFF")
-    btn.BackgroundColor3 = antiSlapActive and Themes[CurrentTheme].ButtonActive or Themes[CurrentTheme].Button
-end)
-
-local XenoAntiBtn = CreateStyledButton("XENO ANTIFLING: OFF", UDim2.new(0, 0, 0, 125), Phase2Container, function(btn)
-    XenoAntiFlingEnabled = not XenoAntiFlingEnabled
-    btn.Text = "XENO ANTIFLING: " .. (XenoAntiFlingEnabled and "ON" or "OFF")
-    btn.BackgroundColor3 = XenoAntiFlingEnabled and Themes[CurrentTheme].ButtonActive or Themes[CurrentTheme].Button
-    if XenoAntiFlingEnabled then
-        XenoAntiFlingConnection = RunService.Stepped:Connect(function()
-            for _, p in pairs(Players:GetPlayers()) do
-                if p ~= localPlayer and p.Character then
-                    for _, v in pairs(p.Character:GetDescendants()) do
-                        if v:IsA("BasePart") then v.Velocity = Vector3.zero v.RotVelocity = Vector3.zero end
-                    end
-                end
-            end
-        end)
-    else
-        if XenoAntiFlingConnection then XenoAntiFlingConnection:Disconnect() end
-    end
-end)
-
-local InfPosBtn = CreateStyledButton("INFINITE POSITION: OFF", UDim2.new(0, 0, 0, 165), Phase2Container, function(btn)
-    infinitePositionEnabled = not infinitePositionEnabled
-    btn.Text = "INFINITE POSITION: " .. (infinitePositionEnabled and "ON" or "OFF")
-    btn.BackgroundColor3 = infinitePositionEnabled and Themes[CurrentTheme].ButtonActive or Themes[CurrentTheme].Button
-    if infinitePositionEnabled and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        savedInfinitePosition = localPlayer.Character.HumanoidRootPart.CFrame
-    else savedInfinitePosition = nil end
-end)
-
-RunService.Heartbeat:Connect(function()
-    if infinitePositionEnabled and savedInfinitePosition and not flingActive and localPlayer.Character then
-        local hrp = localPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp and (hrp.Position - savedInfinitePosition.Position).Magnitude > positionTolerance then
-            hrp.CFrame = savedInfinitePosition
-            hrp.Velocity = Vector3.zero
-        end
-    end
-end)
-
-local NDSAntiBtn = CreateStyledButton("NDS FALL DAMAGE: OFF", UDim2.new(0, 0, 0, 205), Phase2Container, function(btn)
-    afdEnabled = not afdEnabled
-    btn.Text = "NDS FALL DAMAGE: " .. (afdEnabled and "ON" or "OFF")
-    btn.BackgroundColor3 = afdEnabled and Themes[CurrentTheme].ButtonActive or Themes[CurrentTheme].Button
-end)
-
--- Phase 3 按鈕配置
-local AntiSitBtn = CreateStyledButton("ANTI SIT: OFF", UDim2.new(0, 0, 0, 5), Phase3Container, function(btn)
-    noSitEnabled = not noSitEnabled
-    btn.Text = "ANTI SIT: " .. (noSitEnabled and "ON" or "OFF")
-    btn.BackgroundColor3 = noSitEnabled and Themes[CurrentTheme].ButtonActive or Themes[CurrentTheme].Button
-    if localPlayer.Character and localPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        localPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = false
-    end
-end)
-
-local FirePartsBtn = CreateStyledButton("FIRE PARTS TOOL", UDim2.new(0, 0, 0, 45), Phase3Container, function(btn)
-    loadstring(game:HttpGet("https://glot.io/snippets/h9wgykubaz/raw/FireParts.lua"))()
-end)
-
-local FreeCamBtn = CreateStyledButton("FREECAM: OFF", UDim2.new(0, 0, 0, 85), Phase3Container, function(btn)
-    freeCamEnabled = not freeCamEnabled
-    btn.Text = "FREECAM: " .. (freeCamEnabled and "ON" or "OFF")
-    btn.BackgroundColor3 = freeCamEnabled and Themes[CurrentTheme].ButtonActive or Themes[CurrentTheme].Button
-end)
-
-local InvisBtn = CreateStyledButton("INVIS: OFF", UDim2.new(0, 0, 0, 125), Phase3Container, function(btn)
-    invisibilityEnabled = not invisibilityEnabled
-    btn.Text = "INVIS: " .. (invisibilityEnabled and "ON" or "OFF")
-    btn.BackgroundColor3 = invisibilityEnabled and Themes[CurrentTheme].ButtonActive or Themes[CurrentTheme].Button
-end)
-
-local RagdollBtn = CreateStyledButton("ANTI RAGDOLL: OFF", UDim2.new(0, 0, 0, 165), Phase3Container, function(btn)
-    antiRagdollEnabled = not antiRagdollEnabled
-    btn.Text = "ANTI RAGDOLL: " .. (antiRagdollEnabled and "ON" or "OFF")
-    btn.BackgroundColor3 = antiRagdollEnabled and Themes[CurrentTheme].ButtonActive or Themes[CurrentTheme].Button
-end)
-
-local PunchBtn = CreateStyledButton("PUNCH FLING", UDim2.new(0, 0, 0, 205), Phase3Container, function(btn)
-    loadstring(game:HttpGet("https://glot.io/snippets/hfk7jcu7mz/raw/punch.lua"))()
-end)
-
--- ==========================================
--- 下拉式選單分頁控制動畫 (承襲自 God Mode)
--- ==========================================
-local function CreatePhaseMenuButton(text, index, yPos)
-    local pBtn = Instance.new("TextButton", PhaseFrame)
-    pBtn.Size = UDim2.new(1, -10, 0, 28)
-    pBtn.Position = UDim2.new(0, 5, 0, yPos)
-    pBtn.BackgroundColor3 = Themes.Dark.Button
-    pBtn.Text = text
-    pBtn.TextColor3 = Themes.Dark.Text
-    pBtn.Font = Enum.Font.GothamBold
-    pBtn.TextSize = 10
-    Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 7)
-    pBtn.ZIndex = 16
-
-    pBtn.MouseButton1Click:Connect(function()
-        currentPhase = index
-        PhaseMenuBtn.Text = "PAGE: " .. text
-        PhaseFrame.Visible = false
-        Phase1Container.Visible = (index == 1)
-        Phase2Container.Visible = (index == 2)
-        Phase3Container.Visible = (index == 3)
-    end)
-end
-
-CreatePhaseMenuButton("1 (MAIN FLING)", 1, 5)
-CreatePhaseMenuButton("2 (ADDITIONAL)", 2, 38)
-CreatePhaseMenuButton("3 (MORE CHEATS)", 3, 71)
-
-PhaseMenuBtn.MouseButton1Click:Connect(function()
-    PhaseFrame.Visible = not PhaseFrame.Visible
-end)
-
--- ==========================================
--- 設定功能、縮小、關閉視窗與雙重確認 (承襲自 God Mode)
--- ==========================================
+-- 設定選單架構
 local SettingsFrame = Instance.new("Frame", Frame)
 SettingsFrame.Size = UDim2.new(1, 0, 1, 0)
 SettingsFrame.BackgroundColor3 = Themes.Dark.Background
@@ -773,49 +527,6 @@ BackBtn.TextSize = 14
 BackBtn.ZIndex = 21
 Instance.new("UICorner", BackBtn).CornerRadius = UDim.new(0, 9)
 
-local ConfirmFrame = Instance.new("Frame", Frame)
-ConfirmFrame.Size = UDim2.new(1, 0, 1, 0)
-ConfirmFrame.BackgroundColor3 = Themes.Dark.Background
-ConfirmFrame.Visible = false
-ConfirmFrame.ZIndex = 25
-ConfirmFrame.BackgroundTransparency = 0.05
-Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 12)
-local ConfirmStroke = Instance.new("UIStroke", ConfirmFrame)
-ConfirmStroke.Thickness = 3
-ConfirmStroke.Color = Themes.Dark.Border
-
-local ConfirmText = Instance.new("TextLabel", ConfirmFrame)
-ConfirmText.Size = UDim2.new(1, -20, 0, 60)
-ConfirmText.Position = UDim2.new(0, 10, 0, 70)
-ConfirmText.Text = "Are you sure you want\nto close the GUI?"
-ConfirmText.TextColor3 = Themes.Dark.Text
-ConfirmText.BackgroundTransparency = 1
-ConfirmText.Font = Enum.Font.GothamBold
-ConfirmText.TextSize = 14
-ConfirmText.ZIndex = 26
-
-local YesBtn = Instance.new("TextButton", ConfirmFrame)
-YesBtn.Size = UDim2.new(0, 95, 0, 35)
-YesBtn.Position = UDim2.new(0, 15, 1, -50)
-YesBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100)
-YesBtn.Text = "YES"
-YesBtn.TextColor3 = Color3.new(1, 1, 1)
-YesBtn.Font = Enum.Font.GothamBold
-YesBtn.TextSize = 14
-YesBtn.ZIndex = 26
-Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 9)
-
-local NoBtn = Instance.new("TextButton", ConfirmFrame)
-NoBtn.Size = UDim2.new(0, 95, 0, 35)
-NoBtn.Position = UDim2.new(1, -110, 1, -50)
-NoBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-NoBtn.Text = "NO"
-NoBtn.TextColor3 = Color3.new(1, 1, 1)
-NoBtn.Font = Enum.Font.GothamBold
-NoBtn.TextSize = 14
-NoBtn.ZIndex = 26
-Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 9)
-
 local function ApplyTheme(theme)
     local colors = Themes[theme]
     CurrentTheme = theme
@@ -830,10 +541,6 @@ local function ApplyTheme(theme)
     MinimizeBtn.TextColor3 = colors.Text
     CloseBtn.BackgroundColor3 = colors.TopButtons
     CloseBtn.TextColor3 = colors.Text
-    PhaseMenuBtn.BackgroundColor3 = colors.Button
-    PhaseMenuBtn.TextColor3 = colors.Text
-    PhaseFrame.BackgroundColor3 = colors.Background
-    PhaseFrameStroke.Color = colors.Border
     for _, btn in pairs(buttonReferences) do
         if btn.BackgroundColor3 ~= Themes.Dark.ButtonActive and btn.BackgroundColor3 ~= Themes.Light.ButtonActive then
             btn.BackgroundColor3 = colors.Button
@@ -843,9 +550,6 @@ local function ApplyTheme(theme)
     SettingsFrame.BackgroundColor3 = colors.Background
     SettingsTitle.TextColor3 = colors.Text
     ThemeLabel.TextColor3 = colors.Text
-    ConfirmFrame.BackgroundColor3 = colors.Background
-    ConfirmStroke.Color = colors.Border
-    ConfirmText.TextColor3 = colors.Text
     if theme == "Dark" then
         DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100)
         LightThemeBtn.BackgroundColor3 = colors.Button
@@ -861,40 +565,76 @@ SettingsBtn.MouseButton1Click:Connect(function() SettingsFrame.Visible = not Set
 BackBtn.MouseButton1Click:Connect(function() SettingsFrame.Visible = false end)
 
 -- ==========================================
--- 整合修改：縮小時完全只呈現乾淨的圓角標題列
+-- 縮小控制：只顯示標題 (Fling Gui Mod) 且寬度縮窄為 165
 -- ==========================================
 local isMinimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
     
-    local targetSize = isMinimized and UDim2.new(0, 250, 0, 35) or UDim2.new(0, 250, 0, 360)
+    local targetSize = isMinimized and UDim2.new(0, 165, 0, 35) or UDim2.new(0, 250, 0, 320)
     MinimizeBtn.Text = isMinimized and "+" or "−"
     
     if isMinimized then
         Content.Visible = false
-        StatusLabel.Visible = false
-        Credit.Visible = false
-        TitleFix.Visible = false -- 隱藏直角塊，使其完全圓角化
+        TitleFix.Visible = false
+        SettingsBtn.Visible = false
+        MinimizeBtn.Position = UDim2.new(1, -56, 0.5, -14)
+        CloseBtn.Position = UDim2.new(1, -26, 0.5, -14)
     else
         Content.Visible = true
-        StatusLabel.Visible = true
-        Credit.Visible = true
         TitleFix.Visible = true
+        SettingsBtn.Visible = true
+        SettingsBtn.Position = UDim2.new(1, -92, 0.5, -14)
+        MinimizeBtn.Position = UDim2.new(1, -62, 0.5, -14)
+        CloseBtn.Position = UDim2.new(1, -32, 0.5, -14)
     end
     
     TweenService:Create(Frame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = targetSize}):Play()
 end)
 
-CloseBtn.MouseButton1Click:Connect(function() ConfirmFrame.Visible = true end)
-NoBtn.MouseButton1Click:Connect(function() ConfirmFrame.Visible = false end)
-YesBtn.MouseButton1Click:Connect(function()
+CloseBtn.MouseButton1Click:Connect(function()
     MainGui:Destroy()
 end)
 
--- 初始化載入與彈出效果
+-- ==========================================
+-- 完全移植自 antifling2 的防踢繞過系統 (Bypass)
+-- ==========================================
+local function enableAntiKick()
+    local Hooks = {}
+    local REnv = {
+        debug = {
+            info = debug.info
+        }
+    }
+    local function filtergc(type, query)
+        return {}
+    end
+    
+    local oldhmmi
+    oldhmmi = hookmetamethod(game, "__index", function(self, method)
+        if self == localPlayer and tostring(method):lower() == "kick" then
+            return error("Expected ':' not '.' calling member function Kick", 2)
+        end
+        return oldhmmi(self, method)
+    end)
+    
+    local oldhmmnc
+    oldhmmnc = hookmetamethod(game, "__namecall", function(self, ...)
+        if self == localPlayer and getnamecallmethod():lower() == "kick" then
+            return nil
+        end
+        return oldhmmnc(self, ...)
+    end)
+    
+    return true
+end
+
+pcall(enableAntiKick)
+
+-- 初始化載入彈出效果
 Frame.Size = UDim2.new(0, 0, 0, 0)
 Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 TweenService:Create(Frame, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 250, 0, 360),
-    Position = UDim2.new(0.5, -125, 0.5, -180)
+    Size = UDim2.new(0, 250, 0, 320),
+    Position = UDim2.new(0.5, -125, 0.5, -160)
 }):Play()
