@@ -421,15 +421,15 @@ local ConfirmStroke = Instance.new("UIStroke", ConfirmFrame)
 ConfirmStroke.Thickness = 2; ConfirmStroke.Color = Themes.Dark.Border
 
 local ConfirmText = Instance.new("TextLabel", ConfirmFrame)
-ConfirmText.Size = UDim2.new(1, -20, 0, 50); ConfirmText.Position = UDim2.new(0, 10, 0, 75); ConfirmText.Text = "確定要關閉選單嗎？"
+ConfirmText.Size = UDim2.new(1, -20, 0, 50); ConfirmText.Position = UDim2.new(0, 10, 0, 75); ConfirmText.Text = "Are you sure you want\nto close the GUI?？"
 ConfirmText.TextColor3 = Themes.Dark.Text; ConfirmText.BackgroundTransparency = 1; ConfirmText.Font = Enum.Font.GothamBold; ConfirmText.TextSize = 12; ConfirmText.ZIndex = 26
 
 local YesBtn = Instance.new("TextButton", ConfirmFrame)
-YesBtn.Size = UDim2.new(0, 75, 0, 28); YesBtn.Position = UDim2.new(0, 20, 1, -45); YesBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100); YesBtn.Text = "確定"; YesBtn.TextColor3 = Color3.fromRGB(255, 255, 255); YesBtn.Font = Enum.Font.GothamBold; YesBtn.TextSize = 12; YesBtn.BorderSizePixel = 0; YesBtn.ZIndex = 26
+YesBtn.Size = UDim2.new(0, 75, 0, 28); YesBtn.Position = UDim2.new(0, 20, 1, -45); YesBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100); YesBtn.Text = "YES"; YesBtn.TextColor3 = Color3.fromRGB(255, 255, 255); YesBtn.Font = Enum.Font.GothamBold; YesBtn.TextSize = 12; YesBtn.BorderSizePixel = 0; YesBtn.ZIndex = 26
 Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 5)
 
 local NoBtn = Instance.new("TextButton", ConfirmFrame)
-NoBtn.Size = UDim2.new(0, 75, 0, 28); NoBtn.Position = UDim2.new(1, -95, 1, -45); NoBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); NoBtn.Text = "取消"; NoBtn.TextColor3 = Color3.fromRGB(255, 255, 255); NoBtn.Font = Enum.Font.GothamBold; NoBtn.TextSize = 12; NoBtn.BorderSizePixel = 0; NoBtn.ZIndex = 26
+NoBtn.Size = UDim2.new(0, 75, 0, 28); NoBtn.Position = UDim2.new(1, -95, 1, -45); NoBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); NoBtn.Text = "NO"; NoBtn.TextColor3 = Color3.fromRGB(255, 255, 255); NoBtn.Font = Enum.Font.GothamBold; NoBtn.TextSize = 12; NoBtn.BorderSizePixel = 0; NoBtn.ZIndex = 26
 Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 5)
 
 local isMinimized, isClosing, minimizeCooldown, closeCooldown, confirmDialogOpen, settingsOpen = false, false, false, false, false, false
