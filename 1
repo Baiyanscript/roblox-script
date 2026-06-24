@@ -1,0 +1,533 @@
+if getgenv().MekutaScriptLoaded then return end
+
+getgenv().MekutaScriptLoaded = true
+
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+
+local function sendChatMessage(msg)
+
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+    local chatEvents = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents", 10)
+
+    if chatEvents then
+
+        local say = chatEvents:WaitForChild("SayMessageRequest", 10)
+
+        if say then
+
+            say:FireServer(msg, "All")
+
+        end
+
+    end
+
+end
+
+sendChatMessage("Fling And Anti Slap Factor Script by Mekuta 👑")
+
+local galaxThumb
+
+pcall(function()
+
+    local StarterGui = game:GetService("StarterGui")
+
+    local galaxId = Players:GetUserIdFromNameAsync("galax_gamerXx")
+
+    galaxThumb = Players:GetUserThumbnailAsync(
+
+        galaxId,
+
+        Enum.ThumbnailType.HeadShot,
+
+        Enum.ThumbnailSize.Size100x100
+
+    )
+
+    StarterGui:SetCore("SendNotification", {
+
+        Title = "Made By Galax",
+
+        Text = "Roteiro Carregado Com Sucesso!",
+
+        Icon = galaxThumb,
+
+        Duration = 6
+
+    })
+
+end)
+
+local screenGui = Instance.new("ScreenGui")
+
+screenGui.Name = "FlingProtectionUI"
+
+screenGui.ResetOnSpawn = false
+
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local mainFrame = Instance.new("Frame")
+
+mainFrame.Size = UDim2.new(0, 160, 0, 180)
+
+mainFrame.Position = UDim2.new(0.7, 0, 0.4, 0)
+
+mainFrame.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+
+mainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+
+mainFrame.BorderSizePixel = 3
+
+mainFrame.Active = true
+
+mainFrame.Draggable = true
+
+mainFrame.Parent = screenGui
+
+local title = Instance.new("TextLabel", mainFrame)
+
+title.Size = UDim2.new(1, 0, 0, 25)
+
+title.Position = UDim2.new(0, 0, 0, 0)
+
+title.BackgroundTransparency = 1
+
+title.Text = "Anti-Fling UI | By ChatGPT"
+
+title.TextScaled = true
+
+title.TextColor3 = Color3.fromRGB(0, 0, 0)
+
+local colors = {
+
+    Color3.fromRGB(255, 215, 0),
+
+    Color3.fromRGB(128, 0, 128),
+
+    Color3.fromRGB(0, 255, 0),
+
+    Color3.fromRGB(255, 0, 0),
+
+    Color3.fromRGB(0, 191, 255),
+
+    Color3.fromRGB(255, 140, 0),
+
+    Color3.fromRGB(75, 0, 130),
+
+    Color3.fromRGB(255, 192, 203),
+
+    Color3.fromRGB(64, 224, 208),
+
+    Color3.fromRGB(173, 255, 47),
+
+    Color3.fromRGB(192, 192, 192),
+
+    Color3.fromRGB(139, 69, 19),
+
+    Color3.fromRGB(255, 255, 255),
+
+    Color3.fromRGB(243, 229, 171),
+
+}
+
+local colorNames = {
+
+    "Dourado","Roxo","Verde","Vermelho","Azul","Laranja","Índigo",
+
+    "Rosa","Turquesa","Limão","Prata","Marrom","Branco","Baunilha",
+
+}
+
+local colorIndex = 1
+
+local function notificarMekutakichi(colorName)
+
+    pcall(function()
+
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+
+            Title = "Mudança De Tema",
+
+            Text = "Mudou Tema Para " .. colorName,
+
+            Icon = galaxThumb,
+
+            Duration = 6
+
+        })
+
+    end)
+
+end
+
+local colorBtn = Instance.new("TextButton", mainFrame)
+
+colorBtn.Size = UDim2.new(1, 0, 0, 25)
+
+colorBtn.Position = UDim2.new(0, 0, 0, 145)
+
+colorBtn.Text = "Cor: Dourado"
+
+colorBtn.TextScaled = true
+
+colorBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+
+colorBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+colorBtn.Parent = mainFrame
+
+colorBtn.MouseButton1Click:Connect(function()
+
+    colorIndex = colorIndex + 1
+
+    if colorIndex > #colors then colorIndex = 1 end
+
+    mainFrame.BackgroundColor3 = colors[colorIndex]
+
+    colorBtn.Text = "Cor: " .. colorNames[colorIndex]
+
+    notificarMekutakichi(colorNames[colorIndex])
+
+end)
+
+local AntiSlap = false
+
+local antiBtn = Instance.new("TextButton", mainFrame)
+
+antiBtn.Size = UDim2.new(1, 0, 0, 25)
+
+antiBtn.Position = UDim2.new(0, 0, 0, 25)
+
+antiBtn.Text = "Anti-Fling/Slap: OFF"
+
+antiBtn.TextScaled = true
+
+antiBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+
+antiBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+antiBtn.Parent = mainFrame
+
+local function cleanPart(part, char)
+
+    if not AntiSlap then return end
+
+    if part:IsA("BodyVelocity") or part:IsA("BodyGyro") or part:IsA("BodyAngularVelocity") then
+
+        part:Destroy()
+
+    elseif part:IsA("BasePart") and not part:FindFirstChild("__FlingProtected") then
+
+        local marker = Instance.new("BoolValue")
+
+        marker.Name = "__FlingProtected"
+
+        marker.Parent = part
+
+        part.ChildAdded:Connect(function(child)
+
+            cleanPart(child, char)
+
+        end)
+
+    end
+
+    if char and char:FindFirstChild("Humanoid") then
+
+        char.Humanoid.Sit = false
+
+        char.Humanoid.PlatformStand = false
+
+    end
+
+end
+
+local function monitorChar(char)
+
+    for _, obj in pairs(char:GetDescendants()) do
+
+        cleanPart(obj, char)
+
+    end
+
+    char.ChildAdded:Connect(function(obj)
+
+        cleanPart(obj, char)
+
+    end)
+
+end
+
+antiBtn.MouseButton1Click:Connect(function()
+
+    AntiSlap = not AntiSlap
+
+    antiBtn.Text = AntiSlap and "Anti-Fling/Slap: ON" or "Anti-Fling/Slap: OFF"
+
+    if LocalPlayer.Character then monitorChar(LocalPlayer.Character) end
+
+end)
+
+LocalPlayer.CharacterAdded:Connect(monitorChar)
+
+local function getGlove()
+
+    for _, p in pairs(Players:GetPlayers()) do
+
+        for _, t in pairs(p.Character and p.Character:GetChildren() or {}) do
+
+            if t:IsA("Tool") and t:FindFirstChild("Event") and t:FindFirstChild("Power") then
+
+                return t, t.Event
+
+            end
+
+        end
+
+        for _, t in pairs(p:FindFirstChild("Backpack") and p.Backpack:GetChildren() or {}) do
+
+            if t:IsA("Tool") and t:FindFirstChild("Event") and t:FindFirstChild("Power") then
+
+                return t, t.Event
+
+            end
+
+        end
+
+    end
+
+    return nil, nil
+
+end
+
+local flingAllBtn = Instance.new("TextButton", mainFrame)
+
+flingAllBtn.Size = UDim2.new(1, 0, 0, 25)
+
+flingAllBtn.Position = UDim2.new(0, 0, 0, 55)
+
+flingAllBtn.Text = "FLING ALL"
+
+flingAllBtn.TextScaled = true
+
+flingAllBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+
+flingAllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+flingAllBtn.Parent = mainFrame
+
+flingAllBtn.MouseButton1Click:Connect(function()
+
+    local glove, event = getGlove()
+
+    if not (event and glove and glove:FindFirstChild("Power")) then
+
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+
+            Title = "Aviso",
+
+            Text = "Saia Do Servidor Até Que Alguém Tenha 'Mão De Tapa'",
+
+            Icon = galaxThumb,
+
+            Duration = 4
+
+        })
+
+        return
+
+    end
+
+    if glove.Power.Value <= 0 then
+
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+
+            Title = "Aviso",
+
+            Text = "Saia Do Servidor Até Que Alguém Tenha 'Mão De Tapa'",
+
+            Icon = galaxThumb,
+
+            Duration = 4
+
+        })
+
+        return
+
+    end
+
+    local hitCount = 0
+
+    for _, player in pairs(Players:GetPlayers()) do
+
+        if player ~= LocalPlayer and player.Character then
+
+            event:FireServer("slash", player.Character, Vector3.new(0, math.huge, math.huge))
+
+            hitCount = hitCount + 1
+
+        end
+
+    end
+
+    if hitCount > 1 then
+
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+
+            Title = "Arremesso",
+
+            Text = "Você Atacou Todos!",
+
+            Icon = galaxThumb,
+
+            Duration = 4
+
+        })
+
+    elseif hitCount == 1 then
+
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+
+            Title = "Arremesso",
+
+            Text = "Você Atacou Um Jogador!",
+
+            Icon = galaxThumb,
+
+            Duration = 4
+
+        })
+
+    else
+
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+
+            Title = "Aviso",
+
+            Text = "Nenhum Jogador Para Atingir!",
+
+            Icon = galaxThumb,
+
+            Duration = 4
+
+        })
+
+    end
+
+end)
+
+local nameBox = Instance.new("TextBox", mainFrame)
+
+nameBox.Size = UDim2.new(1, 0, 0, 25)
+
+nameBox.Position = UDim2.new(0, 0, 0, 85)
+
+nameBox.PlaceholderText = "Nome Do Jogador"
+
+nameBox.TextScaled = true
+
+nameBox.Text = ""
+
+nameBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+
+nameBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+
+nameBox.ClearTextOnFocus = false
+
+nameBox.Parent = mainFrame
+
+local suggestedName = ""
+
+nameBox:GetPropertyChangedSignal("Text"):Connect(function()
+
+    local typed = nameBox.Text:lower()
+
+    suggestedName = ""
+
+    if typed == "" then return end
+
+    for _, player in pairs(Players:GetPlayers()) do
+
+        if player ~= LocalPlayer and player.Name:lower():find(typed) == 1 then
+
+            suggestedName = player.Name
+
+            break
+
+        end
+
+    end
+
+end)
+
+local flingBtn = Instance.new("TextButton", mainFrame)
+
+flingBtn.Size = UDim2.new(1, 0, 0, 25)
+
+flingBtn.Position = UDim2.new(0, 0, 0, 115)
+
+flingBtn.Text = "Fling Nome"
+
+flingBtn.TextScaled = true
+
+flingBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+
+flingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+flingBtn.Parent = mainFrame
+
+flingBtn.MouseButton1Click:Connect(function()
+
+    local typedText = nameBox.Text
+
+    local playerName = suggestedName ~= "" and suggestedName or typedText
+
+    local glove, event = getGlove()
+
+    if event and glove and glove:FindFirstChild("Power") and playerName ~= "" then
+
+        if glove.Power.Value > 0 then
+
+            for _, p in pairs(Players:GetPlayers()) do
+
+                if p.Name:lower():find(playerName:lower()) and p ~= LocalPlayer and p.Character then
+
+                    event:FireServer("slash", p.Character, Vector3.new(0, math.huge, math.huge))
+
+                end
+
+            end
+
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+
+                Title = "Arremesso",
+
+                Text = "Você Arremessou Ebaa!",
+
+                Icon = galaxThumb,
+
+                Duration = 4
+
+            })
+
+        else
+
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+
+                Title = "Aviso",
+
+                Text = "Saia Do Servidor Até Que Alguém Tenha 'Mão De Tapa'",
+
+                Icon = galaxThumb,
+
+                Duration = 4
+
+            })
+
+        end
+
+    end
+
+end)
