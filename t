@@ -1,0 +1,716 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+
+-- 系統狀態變數
+local CurrentTheme = "Dark"
+local MaxJumps = 5          
+local JumpCount = 0
+local CurrentSpeed = 16
+
+-- 飛行系統狀態（完整對應 FlyGuiV3）
+local FlyActive = false     
+local FlySpeedValueNum = 1  
+local tpwalking = false
+local tis = nil             
+local dis = nil             
+local bg = nil
+local bv = nil
+
+-- God Mode 狀態變數
+local GodModeActive = false
+
+local jumpConnection = nil
+
+-- ==========================================
+-- 核心功能邏輯系統
+-- ==========================================
+
+-- 1. 純速度調整系統
+local function updateCharacterSpeed()
+    if player.Character then
+        local hum = player.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = CurrentSpeed end
+    end
+end
+
+-- 2. 跳躍控制系統
+local function startJumpControl()
+    if jumpConnection then jumpConnection:Disconnect() end
+    jumpConnection = UserInputService.JumpRequest:Connect(function()
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if humanoid and humanoid.Health > 0 then
+            if humanoid:GetState() == Enum.HumanoidStateType.Freefall or humanoid:GetState() == Enum.HumanoidStateType.Jumping then
+                if MaxJumps == "無限" then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                elseif JumpCount < tonumber(MaxJumps) then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    JumpCount = JumpCount + 1
+                end
+            else
+                JumpCount = 1
+            end
+        end
+    end)
+end
+
+-- 3. 飛行控制系統
+local function updateFlyMovement()
+    tpwalking = false
+    task.wait()
+    if FlyActive then
+        for i = 1, FlySpeedValueNum do
+            task.spawn(function()
+                local hb = RunService.Heartbeat
+                tpwalking = true
+                local chr = player.Character
+                local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+                while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+                    if hum.MoveDirection.Magnitude > 0 then
+                        chr:TranslateBy(hum.MoveDirection)
+                    end
+                end
+            end)
+        end
+    end
+end
+
+local function toggleFly()
+    local chr = player.Character
+    local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+    if not chr or not hum then return end
+
+    if FlyActive then
+        FlyActive = false
+        tpwalking = false
+        
+        if bg then bg:Destroy(); bg = nil end
+        if bv then bv:Destroy(); bv = nil end
+        
+        hum.PlatformStand = false
+        if chr:FindFirstChild("Animate") then chr.Animate.Disabled = false end
+        
+        local states = {
+            Enum.HumanoidStateType.Climbing, Enum.HumanoidStateType.FallingDown,
+            Enum.HumanoidStateType.Flying, Enum.HumanoidStateType.Freefall,
+            Enum.HumanoidStateType.GettingUp, Enum.HumanoidStateType.Jumping,
+            Enum.HumanoidStateType.Landed, Enum.HumanoidStateType.Physics,
+            Enum.HumanoidStateType.PlatformStanding, Enum.HumanoidStateType.Ragdoll,
+            Enum.HumanoidStateType.Running, Enum.HumanoidStateType.RunningNoPhysics,
+            Enum.HumanoidStateType.Seated, Enum.HumanoidStateType.StrafingNoPhysics,
+            Enum.HumanoidStateType.Swimming
+        }
+        for _, state in ipairs(states) do
+            hum:SetStateEnabled(state, true)
+        end
+        hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+    else
+        FlyActive = true
+        updateFlyMovement()
+        
+        if chr:FindFirstChild("Animate") then chr.Animate.Disabled = true end
+        for _, track in next, hum:GetPlayingAnimationTracks() do
+            track:AdjustSpeed(0)
+        end
+        
+        local statesToDisable = {
+            Enum.HumanoidStateType.Climbing, Enum.HumanoidStateType.FallingDown,
+            Enum.HumanoidStateType.Flying, Enum.HumanoidStateType.Freefall,
+            Enum.HumanoidStateType.GettingUp, Enum.HumanoidStateType.Jumping,
+            Enum.HumanoidStateType.Landed, Enum.HumanoidStateType.Physics,
+            Enum.HumanoidStateType.PlatformStanding, Enum.HumanoidStateType.Ragdoll,
+            Enum.HumanoidStateType.Running, Enum.HumanoidStateType.RunningNoPhysics,
+            Enum.HumanoidStateType.Seated, Enum.HumanoidStateType.StrafingNoPhysics,
+            Enum.HumanoidStateType.Swimming
+        }
+        for _, state in ipairs(statesToDisable) do
+            hum:SetStateEnabled(state, false)
+        end
+        hum:ChangeState(Enum.HumanoidStateType.Swimming)
+        
+        local targetPart = chr:FindFirstChild("Torso") or chr:FindFirstChild("UpperTorso")
+        if targetPart then
+            bg = Instance.new("BodyGyro", targetPart)
+            bg.P = 9e4
+            bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+            bg.cframe = targetPart.CFrame
+            
+            bv = Instance.new("BodyVelocity", targetPart)
+            bv.velocity = Vector3.new(0, 0.1, 0)
+            bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+            
+            hum.PlatformStand = true
+            
+            task.spawn(function()
+                local maxspeed = 50
+                while FlyActive and player.Character and hum.Health > 0 do
+                    RunService.RenderStepped:Wait()
+                    if hum.MoveDirection.Magnitude > 0 then
+                        local look = workspace.CurrentCamera.CoordinateFrame.lookVector
+                        bv.velocity = look * maxspeed * FlySpeedValueNum
+                    else
+                        bv.velocity = Vector3.new(0, 0, 0)
+                    end
+                    if bg and workspace.CurrentCamera then
+                        bg.cframe = workspace.CurrentCamera.CoordinateFrame
+                    end
+                end
+                if bg then bg:Destroy(); bg = nil end
+                if bv then bv:Destroy(); bv = nil end
+            end)
+        end
+    end
+end
+
+-- 4. God Mode 控制系統
+local function applyGodModeLoop()
+    task.spawn(function()
+        while true do
+            task.wait()
+            if not player.Character then continue end
+            local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+            if not humanoidRootPart then continue end
+            
+            if GodModeActive then
+                local parts = workspace:GetPartBoundsInRadius(humanoidRootPart.Position, 10)
+                for _, part in ipairs(parts) do
+                    part.CanTouch = false
+                end
+            end
+        end
+    end)
+end
+
+-- ==========================================
+-- UI 主題設定
+-- ==========================================
+local Themes = {
+    Dark = {
+        Background = Color3.fromRGB(12, 12, 12),
+        TitleBar = Color3.fromRGB(18, 18, 18),
+        Button = Color3.fromRGB(28, 28, 28),
+        ButtonHover = Color3.fromRGB(38, 38, 38),
+        Text = Color3.fromRGB(225, 225, 225),
+        Border = Color3.fromRGB(55, 55, 55),
+        TopButtons = Color3.fromRGB(35, 35, 35)
+    },
+    Light = {
+        Background = Color3.fromRGB(242, 242, 242),
+        TitleBar = Color3.fromRGB(225, 225, 225),
+        Button = Color3.fromRGB(255, 255, 255),
+        ButtonHover = Color3.fromRGB(235, 235, 235),
+        Text = Color3.fromRGB(25, 25, 25),
+        Border = Color3.fromRGB(175, 175, 175),
+        TopButtons = Color3.fromRGB(205, 205, 205)
+    }
+}
+
+-- ==========================================
+-- UI 元件結構 (已將 God Mode 按鈕移至速度上方)
+-- ==========================================
+local MainGui = Instance.new("ScreenGui", CoreGui)
+MainGui.Name = "MovementHackGui"
+MainGui.ResetOnSpawn = false
+
+local Frame = Instance.new("Frame", MainGui)
+Frame.Size = UDim2.new(0, 210, 0, 280)
+Frame.Position = UDim2.new(0.5, -105, 0.5, -140)
+Frame.BackgroundColor3 = Themes.Dark.Background
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.ClipsDescendants = true
+
+local FrameCorner = Instance.new("UICorner", Frame)
+FrameCorner.CornerRadius = UDim.new(0, 10)
+
+local FrameStroke = Instance.new("UIStroke", Frame)
+FrameStroke.Thickness = 1.5
+FrameStroke.Color = Themes.Dark.Border
+FrameStroke.Transparency = 0.1
+
+local TitleBar = Instance.new("Frame", Frame)
+TitleBar.Size = UDim2.new(1, 0, 0, 32)
+TitleBar.BackgroundColor3 = Themes.Dark.TitleBar
+TitleBar.BorderSizePixel = 0
+
+local TitleCorner = Instance.new("UICorner", TitleBar)
+TitleCorner.CornerRadius = UDim.new(0, 10)
+
+local TitleFix = Instance.new("Frame", TitleBar)
+TitleFix.Size = UDim2.new(1, 0, 0, 10)
+TitleFix.Position = UDim2.new(0, 0, 1, -10)
+TitleFix.BackgroundColor3 = Themes.Dark.TitleBar
+TitleFix.BorderSizePixel = 0
+
+local Title = Instance.new("TextLabel", TitleBar)
+Title.Size = UDim2.new(1, -95, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.Text = "Baiyan MOVE SYSTEM"
+Title.TextColor3 = Themes.Dark.Text
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 11
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- 視窗拖拽功能
+local dragging, dragInput, dragStart, startPos
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true; dragStart = input.Position; startPos = Frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+TitleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- 頂部功能鍵
+local SettingsBtn = Instance.new("TextButton", TitleBar)
+SettingsBtn.Size = UDim2.new(0, 22, 0, 22); SettingsBtn.Position = UDim2.new(1, -78, 0.5, -11)
+SettingsBtn.BackgroundColor3 = Themes.Dark.TopButtons; SettingsBtn.Text = "⚙"; SettingsBtn.TextColor3 = Themes.Dark.Text
+SettingsBtn.Font = Enum.Font.GothamBold; SettingsBtn.TextSize = 13; SettingsBtn.BorderSizePixel = 0
+Instance.new("UICorner", SettingsBtn).CornerRadius = UDim.new(0, 5)
+
+local MinimizeBtn = Instance.new("TextButton", TitleBar)
+MinimizeBtn.Size = UDim2.new(0, 22, 0, 22); MinimizeBtn.Position = UDim2.new(1, -52, 0.5, -11)
+MinimizeBtn.BackgroundColor3 = Themes.Dark.TopButtons; MinimizeBtn.Text = "−"; MinimizeBtn.TextColor3 = Themes.Dark.Text
+MinimizeBtn.Font = Enum.Font.GothamBold; MinimizeBtn.TextSize = 13; MinimizeBtn.BorderSizePixel = 0
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 5)
+
+local CloseBtn = Instance.new("TextButton", TitleBar)
+CloseBtn.Size = UDim2.new(0, 22, 0, 22); CloseBtn.Position = UDim2.new(1, -26, 0.5, -11)
+CloseBtn.BackgroundColor3 = Themes.Dark.TopButtons; CloseBtn.Text = "×"; CloseBtn.TextColor3 = Themes.Dark.Text
+CloseBtn.Font = Enum.Font.GothamBold; CloseBtn.TextSize = 16; CloseBtn.BorderSizePixel = 0
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 5)
+
+-- 內容框架
+local Content = Instance.new("Frame", Frame)
+Content.Size = UDim2.new(1, -14, 1, -42); Content.Position = UDim2.new(0, 7, 0, 36)
+Content.BackgroundTransparency = 1
+
+local buttonReferences = {}
+
+-- 【1】God Mode 無敵狀態開關 (已移動到最上方)
+local GodToggleFrame = Instance.new("Frame", Content)
+GodToggleFrame.Size = UDim2.new(1, 0, 0, 28); GodToggleFrame.Position = UDim2.new(0, 0, 0, 6)
+GodToggleFrame.BackgroundTransparency = 1
+
+local GodToggleBtn = Instance.new("TextButton", GodToggleFrame)
+GodToggleBtn.Size = UDim2.new(1, 0, 1, 0); GodToggleBtn.Text = "無敵狀態 (God Mode): 關閉"; GodToggleBtn.Font = Enum.Font.GothamBold; GodToggleBtn.TextSize = 11
+GodToggleBtn.BackgroundColor3 = Themes.Dark.Button; GodToggleBtn.TextColor3 = Themes.Dark.Text; GodToggleBtn.BorderSizePixel = 0
+Instance.new("UICorner", GodToggleBtn).CornerRadius = UDim.new(0, 6)
+
+-- 【2】速度調整組合框
+local SpeedFrame = Instance.new("Frame", Content)
+SpeedFrame.Size = UDim2.new(1, 0, 0, 28); SpeedFrame.Position = UDim2.new(0, 0, 0, 40)
+SpeedFrame.BackgroundTransparency = 1
+
+local DecSpeed = Instance.new("TextButton", SpeedFrame)
+DecSpeed.Size = UDim2.new(0, 28, 1, 0); DecSpeed.Text = "−"; DecSpeed.Font = Enum.Font.GothamBold; DecSpeed.TextSize = 14
+DecSpeed.BackgroundColor3 = Themes.Dark.Button; DecSpeed.TextColor3 = Themes.Dark.Text; DecSpeed.BorderSizePixel = 0
+Instance.new("UICorner", DecSpeed).CornerRadius = UDim.new(0, 5)
+
+local SpeedInput = Instance.new("TextBox", SpeedFrame)
+SpeedInput.Size = UDim2.new(1, -64, 1, 0); SpeedInput.Position = UDim2.new(0, 32, 0, 0)
+SpeedInput.Text = "速度: 16"; SpeedInput.Font = Enum.Font.GothamBold; SpeedInput.TextSize = 11
+SpeedInput.BackgroundColor3 = Themes.Dark.Button; SpeedInput.TextColor3 = Themes.Dark.Text; SpeedInput.BorderSizePixel = 0
+Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 5)
+
+local IncSpeed = Instance.new("TextButton", SpeedFrame)
+IncSpeed.Size = UDim2.new(0, 28, 1, 0); IncSpeed.Position = UDim2.new(1, -28, 0, 0); IncSpeed.Text = "+"; IncSpeed.Font = Enum.Font.GothamBold; IncSpeed.TextSize = 14
+IncSpeed.BackgroundColor3 = Themes.Dark.Button; IncSpeed.TextColor3 = Themes.Dark.Text; IncSpeed.BorderSizePixel = 0
+Instance.new("UICorner", IncSpeed).CornerRadius = UDim.new(0, 5)
+
+-- 【3】跳躍次數組合框
+local JumpFrame = Instance.new("Frame", Content)
+JumpFrame.Size = UDim2.new(1, 0, 0, 28); JumpFrame.Position = UDim2.new(0, 0, 0, 74)
+JumpFrame.BackgroundTransparency = 1
+
+local DecJump = Instance.new("TextButton", JumpFrame)
+DecJump.Size = UDim2.new(0, 28, 1, 0); DecJump.Text = "−"; DecJump.Font = Enum.Font.GothamBold; DecJump.TextSize = 14
+DecJump.BackgroundColor3 = Themes.Dark.Button; DecJump.TextColor3 = Themes.Dark.Text; DecJump.BorderSizePixel = 0
+Instance.new("UICorner", DecJump).CornerRadius = UDim.new(0, 5)
+
+local JumpInput = Instance.new("TextBox", JumpFrame)
+JumpInput.Size = UDim2.new(1, -64, 1, 0); JumpInput.Position = UDim2.new(0, 32, 0, 0)
+JumpInput.Text = "跳躍: 5"; JumpInput.Font = Enum.Font.GothamBold; JumpInput.TextSize = 11
+JumpInput.BackgroundColor3 = Themes.Dark.Button; JumpInput.TextColor3 = Themes.Dark.Text; JumpInput.BorderSizePixel = 0
+Instance.new("UICorner", JumpInput).CornerRadius = UDim.new(0, 5)
+
+local IncJump = Instance.new("TextButton", JumpFrame)
+IncJump.Size = UDim2.new(0, 28, 1, 0); IncJump.Position = UDim2.new(1, -28, 0, 0); IncJump.Text = "+"; IncJump.Font = Enum.Font.GothamBold; IncJump.TextSize = 14
+IncJump.BackgroundColor3 = Themes.Dark.Button; IncJump.TextColor3 = Themes.Dark.Text; IncJump.BorderSizePixel = 0
+Instance.new("UICorner", IncJump).CornerRadius = UDim.new(0, 5)
+
+-- 【4】飛行速度組合框
+local FlyFrame = Instance.new("Frame", Content)
+FlyFrame.Size = UDim2.new(1, 0, 0, 28); FlyFrame.Position = UDim2.new(0, 0, 0, 108)
+FlyFrame.BackgroundTransparency = 1
+
+local DecFly = Instance.new("TextButton", FlyFrame)
+DecFly.Size = UDim2.new(0, 28, 1, 0); DecFly.Text = "−"; DecFly.Font = Enum.Font.GothamBold; DecFly.TextSize = 14
+DecFly.BackgroundColor3 = Themes.Dark.Button; DecFly.TextColor3 = Themes.Dark.Text; DecFly.BorderSizePixel = 0
+Instance.new("UICorner", DecFly).CornerRadius = UDim.new(0, 5)
+
+local FlySpeedInput = Instance.new("TextBox", FlyFrame)
+FlySpeedInput.Size = UDim2.new(1, -64, 1, 0); FlySpeedInput.Position = UDim2.new(0, 32, 0, 0)
+FlySpeedInput.Text = "飛速: 1"; FlySpeedInput.Font = Enum.Font.GothamBold; FlySpeedInput.TextSize = 11
+FlySpeedInput.BackgroundColor3 = Themes.Dark.Button; FlySpeedInput.TextColor3 = Themes.Dark.Text; FlySpeedInput.BorderSizePixel = 0
+Instance.new("UICorner", FlySpeedInput).CornerRadius = UDim.new(0, 5)
+
+local IncFly = Instance.new("TextButton", FlyFrame)
+IncFly.Size = UDim2.new(0, 28, 1, 0); IncFly.Position = UDim2.new(1, -28, 0, 0); IncFly.Text = "+"; IncFly.Font = Enum.Font.GothamBold; IncFly.TextSize = 14
+IncFly.BackgroundColor3 = Themes.Dark.Button; IncFly.TextColor3 = Themes.Dark.Text; IncFly.BorderSizePixel = 0
+Instance.new("UICorner", IncFly).CornerRadius = UDim.new(0, 5)
+
+-- 【5】飛行狀態開關
+local FlyToggleFrame = Instance.new("Frame", Content)
+FlyToggleFrame.Size = UDim2.new(1, 0, 0, 28); FlyToggleFrame.Position = UDim2.new(0, 0, 0, 142)
+FlyToggleFrame.BackgroundTransparency = 1
+
+local FlyToggleBtn = Instance.new("TextButton", FlyToggleFrame)
+FlyToggleBtn.Size = UDim2.new(1, 0, 1, 0); FlyToggleBtn.Text = "飛行狀態: 關閉"; FlyToggleBtn.Font = Enum.Font.GothamBold; FlyToggleBtn.TextSize = 11
+FlyToggleBtn.BackgroundColor3 = Themes.Dark.Button; FlyToggleBtn.TextColor3 = Themes.Dark.Text; FlyToggleBtn.BorderSizePixel = 0
+Instance.new("UICorner", FlyToggleBtn).CornerRadius = UDim.new(0, 6)
+
+-- 【6】高度調整微調鈕
+local HeightFrame = Instance.new("Frame", Content)
+HeightFrame.Size = UDim2.new(1, 0, 0, 28); HeightFrame.Position = UDim2.new(0, 0, 0, 176)
+HeightFrame.BackgroundTransparency = 1
+
+local UpBtn = Instance.new("TextButton", HeightFrame)
+UpBtn.Size = UDim2.new(0.48, 0, 1, 0); UpBtn.Text = "向上微調"; UpBtn.Font = Enum.Font.GothamBold; UpBtn.TextSize = 11
+UpBtn.BackgroundColor3 = Themes.Dark.Button; UpBtn.TextColor3 = Themes.Dark.Text; UpBtn.BorderSizePixel = 0
+Instance.new("UICorner", UpBtn).CornerRadius = UDim.new(0, 5)
+
+local DownBtn = Instance.new("TextButton", HeightFrame)
+DownBtn.Size = UDim2.new(0.48, 0, 1, 0); DownBtn.Position = UDim2.new(0.52, 0, 0, 0); DownBtn.Text = "向下微調"; DownBtn.Font = Enum.Font.GothamBold; DownBtn.TextSize = 11
+DownBtn.BackgroundColor3 = Themes.Dark.Button; DownBtn.TextColor3 = Themes.Dark.Text; DownBtn.BorderSizePixel = 0
+Instance.new("UICorner", DownBtn).CornerRadius = UDim.new(0, 5)
+
+-- 註冊按鈕色彩管理
+table.insert(buttonReferences, GodToggleBtn)
+table.insert(buttonReferences, DecSpeed); table.insert(buttonReferences, SpeedInput); table.insert(buttonReferences, IncSpeed)
+table.insert(buttonReferences, DecJump); table.insert(buttonReferences, JumpInput); table.insert(buttonReferences, IncJump)
+table.insert(buttonReferences, DecFly); table.insert(buttonReferences, FlySpeedInput); table.insert(buttonReferences, IncFly)
+table.insert(buttonReferences, FlyToggleBtn); table.insert(buttonReferences, UpBtn); table.insert(buttonReferences, DownBtn)
+
+-- 製作人員標籤
+local Credit = Instance.new("TextLabel", Content)
+Credit.Size = UDim2.new(1, 0, 0, 18)
+Credit.Position = UDim2.new(0, 0, 1, -18)
+Credit.Text = "by: Baiyan MOVE SYSTEM"
+Credit.TextColor3 = Color3.fromRGB(110, 110, 110)
+Credit.BackgroundTransparency = 1
+Credit.Font = Enum.Font.GothamBold
+Credit.TextSize = 9
+
+-- ==========================================
+-- 建立設定（Settings）與關閉子面板
+-- ==========================================
+local SettingsFrame = Instance.new("Frame", Frame)
+SettingsFrame.Size = UDim2.new(1, 0, 1, 0); SettingsFrame.BackgroundColor3 = Themes.Dark.Background; SettingsFrame.BorderSizePixel = 0; SettingsFrame.Visible = false; SettingsFrame.ZIndex = 20
+Instance.new("UICorner", SettingsFrame).CornerRadius = UDim.new(0, 10)
+
+local SettingsTitle = Instance.new("TextLabel", SettingsFrame)
+SettingsTitle.Size = UDim2.new(1, 0, 0, 35); SettingsTitle.Position = UDim2.new(0, 0, 0, 10); SettingsTitle.Text = "SETTINGS"
+SettingsTitle.TextColor3 = Themes.Dark.Text; SettingsTitle.BackgroundTransparency = 1; SettingsTitle.Font = Enum.Font.GothamBold; SettingsTitle.TextSize = 13; SettingsTitle.ZIndex = 21
+
+local ThemeLabel = Instance.new("TextLabel", SettingsFrame)
+ThemeLabel.Size = UDim2.new(1, -20, 0, 20); ThemeLabel.Position = UDim2.new(0, 15, 0, 50); ThemeLabel.Text = "THEME:"
+ThemeLabel.TextColor3 = Themes.Dark.Text; ThemeLabel.BackgroundTransparency = 1; ThemeLabel.Font = Enum.Font.GothamBold; ThemeLabel.TextSize = 11; ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left; ThemeLabel.ZIndex = 21
+
+local DarkThemeBtn = Instance.new("TextButton", SettingsFrame)
+DarkThemeBtn.Size = UDim2.new(0.42, 0, 0, 28); DarkThemeBtn.Position = UDim2.new(0, 15, 0, 75); DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); DarkThemeBtn.Text = "DARK"; DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1); DarkThemeBtn.Font = Enum.Font.GothamBold; DarkThemeBtn.TextSize = 11; DarkThemeBtn.BorderSizePixel = 0; DarkThemeBtn.ZIndex = 21
+Instance.new("UICorner", DarkThemeBtn).CornerRadius = UDim.new(0, 5)
+
+local LightThemeBtn = Instance.new("TextButton", SettingsFrame)
+LightThemeBtn.Size = UDim2.new(0.42, 0, 0, 28); LightThemeBtn.Position = UDim2.new(1, -15 - 88, 0, 75); LightThemeBtn.BackgroundColor3 = Themes.Dark.Button; LightThemeBtn.Text = "LIGHT"; LightThemeBtn.TextColor3 = Themes.Dark.Text; LightThemeBtn.Font = Enum.Font.GothamBold; LightThemeBtn.TextSize = 11; LightThemeBtn.BorderSizePixel = 0; LightThemeBtn.ZIndex = 21
+Instance.new("UICorner", LightThemeBtn).CornerRadius = UDim.new(0, 5)
+
+local BackBtn = Instance.new("TextButton", SettingsFrame)
+BackBtn.Size = UDim2.new(0.86, 0, 0, 30); BackBtn.Position = UDim2.new(0.07, 0, 1, -45); BackBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); BackBtn.Text = "BACK"; BackBtn.TextColor3 = Color3.new(1, 1, 1); BackBtn.Font = Enum.Font.GothamBold; BackBtn.TextSize = 12; BackBtn.BorderSizePixel = 0; BackBtn.ZIndex = 21
+Instance.new("UICorner", BackBtn).CornerRadius = UDim.new(0, 5)
+
+table.insert(buttonReferences, DarkThemeBtn); table.insert(buttonReferences, LightThemeBtn); table.insert(buttonReferences, BackBtn)
+
+local ConfirmFrame = Instance.new("Frame", Frame)
+ConfirmFrame.Size = UDim2.new(1, 0, 1, 0); ConfirmFrame.BackgroundColor3 = Themes.Dark.Background; ConfirmFrame.BorderSizePixel = 0; ConfirmFrame.Visible = false; ConfirmFrame.ZIndex = 25; ConfirmFrame.BackgroundTransparency = 0.05
+Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 10)
+local ConfirmStroke = Instance.new("UIStroke", ConfirmFrame)
+ConfirmStroke.Thickness = 2; ConfirmStroke.Color = Themes.Dark.Border
+
+local ConfirmText = Instance.new("TextLabel", ConfirmFrame)
+ConfirmText.Size = UDim2.new(1, -20, 0, 50); ConfirmText.Position = UDim2.new(0, 10, 0, 75); ConfirmText.Text = "Are you sure you want\nto close the GUI?"
+ConfirmText.TextColor3 = Themes.Dark.Text; ConfirmText.BackgroundTransparency = 1; ConfirmText.Font = Enum.Font.GothamBold; ConfirmText.TextSize = 12; ConfirmText.ZIndex = 26
+
+local YesBtn = Instance.new("TextButton", ConfirmFrame)
+YesBtn.Size = UDim2.new(0, 75, 0, 28); YesBtn.Position = UDim2.new(0, 20, 1, -45); YesBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100); YesBtn.Text = "YES"; YesBtn.TextColor3 = Color3.fromRGB(255, 255, 255); YesBtn.Font = Enum.Font.GothamBold; YesBtn.TextSize = 12; YesBtn.BorderSizePixel = 0; YesBtn.ZIndex = 26
+Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 5)
+
+local NoBtn = Instance.new("TextButton", ConfirmFrame)
+NoBtn.Size = UDim2.new(0, 75, 0, 28); NoBtn.Position = UDim2.new(1, -95, 1, -45); NoBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80); NoBtn.Text = "NO"; NoBtn.TextColor3 = Color3.fromRGB(255, 255, 255); NoBtn.Font = Enum.Font.GothamBold; NoBtn.TextSize = 12; NoBtn.BorderSizePixel = 0; NoBtn.ZIndex = 26
+Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 5)
+
+local isMinimized, isClosing, minimizeCooldown, closeCooldown, confirmDialogOpen, settingsOpen = false, false, false, false, false, false
+
+-- ==========================================
+-- 動態主題切換核心系統
+-- ==========================================
+local function ApplyTheme(theme)
+    local colors = Themes[theme]
+    CurrentTheme = theme
+    Frame.BackgroundColor3 = colors.Background; TitleBar.BackgroundColor3 = colors.TitleBar; TitleFix.BackgroundColor3 = colors.TitleBar
+    Title.TextColor3 = colors.Text; FrameStroke.Color = colors.Border
+    SettingsBtn.BackgroundColor3 = colors.TopButtons; SettingsBtn.TextColor3 = colors.Text
+    MinimizeBtn.BackgroundColor3 = colors.TopButtons; MinimizeBtn.TextColor3 = colors.Text
+    CloseBtn.BackgroundColor3= colors.TopButtons; CloseBtn.TextColor3 = colors.Text
+    
+    for _, btn in pairs(buttonReferences) do
+        if btn:IsA("TextButton") or btn:IsA("TextBox") then
+            if btn ~= DarkThemeBtn and btn ~= LightThemeBtn and btn ~= BackBtn then
+                btn.BackgroundColor3 = colors.Button
+                btn.TextColor3 = colors.Text
+            end
+        end
+    end
+    SettingsFrame.BackgroundColor3 = colors.Background; SettingsTitle.TextColor3 = colors.Text; ThemeLabel.TextColor3 = colors.Text
+    ConfirmFrame.BackgroundColor3 = colors.Background; ConfirmStroke.Color = colors.Border; ConfirmText.TextColor3 = colors.Text
+    
+    if theme == "Dark" then
+        DarkThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1)
+        LightThemeBtn.BackgroundColor3 = colors.Button; LightThemeBtn.TextColor3 = colors.Text
+    else
+        LightThemeBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 100); LightThemeBtn.TextColor3 = Color3.new(1, 1, 1)
+        DarkThemeBtn.BackgroundColor3 = colors.Button; DarkThemeBtn.TextColor3 = colors.Text
+    end
+end
+
+-- 按鈕滑鼠懸停反饋
+for _, btn in pairs(buttonReferences) do
+    if btn:IsA("TextButton") then
+        btn.MouseEnter:Connect(function()
+            if btn ~= DarkThemeBtn and btn ~= LightThemeBtn and btn ~= BackBtn then
+                TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Themes[CurrentTheme].ButtonHover}):Play()
+            end
+        end)
+        btn.MouseLeave:Connect(function()
+            if btn ~= DarkThemeBtn and btn ~= LightThemeBtn and btn ~= BackBtn then
+                TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Themes[CurrentTheme].Button}):Play()
+            end
+        end)
+    end
+end
+
+-- ==========================================
+-- 系統的交互事件綁定
+-- ==========================================
+
+-- God Mode 按鈕點擊
+GodToggleBtn.MouseButton1Click:Connect(function()
+    GodModeActive = not GodModeActive
+    GodToggleBtn.Text = "無敵狀態 (God Mode): " .. (GodModeActive and "開啟" or "關閉")
+end)
+
+SpeedInput.FocusLost:Connect(function()
+    local num = tonumber(SpeedInput.Text:match("%d+")) or tonumber(SpeedInput.Text)
+    if num then CurrentSpeed = math.clamp(math.floor(num), 0, 1000) else CurrentSpeed = 16 end
+    SpeedInput.Text = "速度: " .. tostring(CurrentSpeed)
+    updateCharacterSpeed()
+end)
+IncSpeed.MouseButton1Click:Connect(function()
+    CurrentSpeed = math.min(1000, CurrentSpeed + 10)
+    SpeedInput.Text = "速度: " .. tostring(CurrentSpeed)
+    updateCharacterSpeed()
+end)
+DecSpeed.MouseButton1Click:Connect(function()
+    CurrentSpeed = math.max(0, CurrentSpeed - 10)
+    SpeedInput.Text = "速度: " .. tostring(CurrentSpeed)
+    updateCharacterSpeed()
+end)
+
+JumpInput.FocusLost:Connect(function()
+    local text = JumpInput.Text:lower()
+    local num = tonumber(text:match("%d+")) or tonumber(text)
+    if text:find("inf") or text:find("無") or text == "m" then MaxJumps = "無限"
+    elseif num then MaxJumps = math.clamp(math.floor(num), 1, 100) else MaxJumps = "無限" end
+    JumpInput.Text = "跳躍: " .. tostring(MaxJumps)
+    startJumpControl()
+end)
+IncJump.MouseButton1Click:Connect(function()
+    if MaxJumps == "無限" then MaxJumps = 1 else MaxJumps = math.min(100, MaxJumps + 1) end
+    JumpInput.Text = "跳躍: " .. tostring(MaxJumps)
+    startJumpControl()
+end)
+DecJump.MouseButton1Click:Connect(function()
+    if MaxJumps ~= "無限" then
+        if MaxJumps <= 1 then MaxJumps = "無限" else MaxJumps = MaxJumps - 1 end
+    else MaxJumps = 100 end
+    JumpInput.Text = "跳躍: " .. tostring(MaxJumps)
+    startJumpControl()
+end)
+
+FlySpeedInput.FocusLost:Connect(function()
+    local num = tonumber(FlySpeedInput.Text:match("%d+")) or tonumber(FlySpeedInput.Text)
+    if num then FlySpeedValueNum = math.max(1, math.floor(num)) else FlySpeedValueNum = 1 end
+    FlySpeedInput.Text = "飛速: " .. tostring(FlySpeedValueNum)
+    updateFlyMovement()
+end)
+IncFly.MouseButton1Click:Connect(function()
+    FlySpeedValueNum = FlySpeedValueNum + 1
+    FlySpeedInput.Text = "飛速: " .. tostring(FlySpeedValueNum)
+    updateFlyMovement()
+end)
+DecFly.MouseButton1Click:Connect(function()
+    if FlySpeedValueNum > 1 then
+        FlySpeedValueNum = FlySpeedValueNum - 1
+        FlySpeedInput.Text = "飛速: " .. tostring(FlySpeedValueNum)
+        updateFlyMovement()
+    end
+end)
+
+FlyToggleBtn.MouseButton1Click:Connect(function()
+    toggleFly()
+    FlyToggleBtn.Text = "飛行狀態: " .. (FlyActive and "開啟" or "關閉")
+end)
+
+UpBtn.MouseButton1Down:Connect(function()
+    tis = true
+    task.spawn(function()
+        while tis do
+            task.wait()
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 1, 0)
+            end
+        end
+    end)
+end)
+UpBtn.MouseButton1Up:Connect(function() tis = false end)
+UpBtn.MouseLeave:Connect(function() tis = false end)
+
+DownBtn.MouseButton1Down:Connect(function()
+    dis = true
+    task.spawn(function()
+        while dis do
+            task.wait()
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, -1, 0)
+            end
+        end
+    end)
+end)
+DownBtn.MouseButton1Up:Connect(function() dis = false end)
+DownBtn.MouseLeave:Connect(function() dis = false end)
+
+startJumpControl()
+applyGodModeLoop()
+
+-- ==========================================
+-- 設定與關閉微調控制邏輯
+-- ==========================================
+DarkThemeBtn.MouseButton1Click:Connect(function() ApplyTheme("Dark") end)
+LightThemeBtn.MouseButton1Click:Connect(function() ApplyTheme("Light") end)
+BackBtn.MouseButton1Click:Connect(function() SettingsFrame.Visible = false; settingsOpen = false end)
+
+SettingsBtn.MouseButton1Click:Connect(function()
+    if confirmDialogOpen then return end
+    if isMinimized then
+        isMinimized = false
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 280)}):Play()
+        MinimizeBtn.Text = "−"; task.wait(0.1)
+    end
+    SettingsFrame.Visible = not SettingsFrame.Visible; settingsOpen = SettingsFrame.Visible
+end)
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    if minimizeCooldown or confirmDialogOpen then return end
+    minimizeCooldown = true
+    if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
+    isMinimized = not isMinimized
+    if isMinimized then
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 32)}):Play()
+        MinimizeBtn.Text = "+"
+    else
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 280)}):Play()
+        MinimizeBtn.Text = "−"
+    end
+    task.wait(0.1); minimizeCooldown = false
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    if closeCooldown or isClosing or confirmDialogOpen then return end
+    closeCooldown = true; confirmDialogOpen = true
+    if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
+    if isMinimized then
+        isMinimized = false
+        TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 210, 0, 280)}):Play()
+        MinimizeBtn.Text = "−"; task.wait(0.1)
+    end
+    ConfirmFrame.Visible = true; ConfirmFrame.BackgroundTransparency = 1
+    TweenService:Create(ConfirmFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0.05}):Play()
+    task.wait(0.1); closeCooldown = false
+end)
+
+NoBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(ConfirmFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+    task.wait(0.1); ConfirmFrame.Visible = false; confirmDialogOpen = false
+end)
+
+YesBtn.MouseButton1Click:Connect(function()
+    if isClosing then return end
+    isClosing = true
+    FlyActive = false
+    tpwalking = false
+    GodModeActive = false
+    if bg then bg:Destroy() end
+    if bv then bv:Destroy() end
+    if jumpConnection then jumpConnection:Disconnect() end
+    TweenService:Create(ConfirmFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+    task.wait(0.1)
+    TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
+    task.wait(0.1); MainGui:Destroy()
+end)
+
+-- 出場開場動畫
+Frame.Size = UDim2.new(0, 0, 0, 0)
+Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    Size = UDim2.new(0, 210, 0, 280),
+    Position = UDim2.new(0.5, -105, 0.5, -140)
+}):Play()
+
+-- ==========================================
+-- 重生掛載與提示
+-- ==========================================
+player.CharacterAdded:Connect(function()
+    task.wait(0.7)
+    updateCharacterSpeed()
+    startJumpControl()
+    if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+        player.Character.Humanoid.PlatformStand = false
+        player.Character.Animate.Disabled = false
+    end
+    if FlyActive then 
+        FlyActive = false
+        toggleFly() 
+    end
+    GodToggleBtn.Text = "無敵狀態 (God Mode): " .. (GodModeActive and "開啟" or "關閉")
+end)
+
+game:GetService("StarterGui"):SetCore("SendNotification", { 
+    Title = "Baiyan MOVE SYSTEM";
+    Text = "極簡移動選單已載入，更新佈局，by: Baiyan";
+    Duration = 4
+})
