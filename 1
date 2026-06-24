@@ -860,11 +860,28 @@ LightThemeBtn.MouseButton1Click:Connect(function() ApplyTheme("Light") end)
 SettingsBtn.MouseButton1Click:Connect(function() SettingsFrame.Visible = not SettingsFrame.Visible end)
 BackBtn.MouseButton1Click:Connect(function() SettingsFrame.Visible = false end)
 
+-- ==========================================
+-- 整合修改：縮小時完全只呈現乾淨的圓角標題列
+-- ==========================================
 local isMinimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
+    
     local targetSize = isMinimized and UDim2.new(0, 250, 0, 35) or UDim2.new(0, 250, 0, 360)
     MinimizeBtn.Text = isMinimized and "+" or "−"
+    
+    if isMinimized then
+        Content.Visible = false
+        StatusLabel.Visible = false
+        Credit.Visible = false
+        TitleFix.Visible = false -- 隱藏直角塊，使其完全圓角化
+    else
+        Content.Visible = true
+        StatusLabel.Visible = true
+        Credit.Visible = true
+        TitleFix.Visible = true
+    end
+    
     TweenService:Create(Frame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = targetSize}):Play()
 end)
 
