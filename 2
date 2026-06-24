@@ -1,0 +1,83 @@
+--// CLIENT ANTI-FLING with Toggle + Notification
+--// Put in StarterPlayerScripts
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+
+-- Settings
+local MAX_VELOCITY = 60
+local MAX_ANGULAR_VEL = 30
+
+-- Toggle state
+local AntiFlingEnabled = true
+
+-- Send default Roblox notification
+local function notify(title, text)
+    StarterGui:SetCore("SendNotification", {
+        Title = title;
+        Text = text;
+        Duration = 3;
+    })
+end
+
+-- Toggle anti-fling (Keyboard: F)
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.F then
+        AntiFlingEnabled = not AntiFlingEnabled
+        
+        if AntiFlingEnabled then
+            notify("Anti-Fling", "Anti-Fling has been ENABLED")
+        else
+            notify("Anti-Fling", "Anti-Fling has been DISABLED")
+        end
+    end
+end)
+
+-- Anti-fling behavior
+RunService.RenderStepped:Connect(function()
+    if not AntiFlingEnabled then return end
+    
+    local myChar = LocalPlayer.Character
+    if not myChar then return end
+
+    local myHum = myChar:FindFirstChildOfClass("Humanoid")
+    local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+    if not (myHum and myRoot and myHum.Health > 0) then return end
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            local char = plr.Character
+            if char then
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    -- Block velocity fling
+                    if hrp.Velocity.Magnitude > MAX_VELOCITY then
+                        hrp.Velocity = Vector3.zero
+                    end
+
+                    -- Block rotation fling
+                    if hrp.RotVelocity.Magnitude > MAX_ANGULAR_VEL then
+                        hrp.RotVelocity = Vector3.zero
+                    end
+
+                    -- Prevent fake hitbox / giant HRP fling
+                    if hrp.Size.X > 5 or hrp.Size.Y > 5 or hrp.Size.Z > 5 then
+                        hrp.Size = Vector3.new(2, 2, 1)
+                    end
+
+                    -- Prevent no-collide fling
+                    if hrp.CanCollide == false then
+                        hrp.CanCollide = true
+                    end
+                end
+            end
+        end
+    end
+end)
+
+notify("Anti-Fling", "Anti-Fling is now ACTIVE (Press F to toggle)")
+print("[CLIENT ANTI-FLING] Loaded with toggle key F")
