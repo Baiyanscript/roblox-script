@@ -20,7 +20,7 @@ local dis = nil
 local bg = nil
 local bv = nil
 
--- God Mode 狀態變數
+-- God Mode 狀態變數（確保預設為關閉）
 local GodModeActive = false
 
 local jumpConnection = nil
@@ -166,7 +166,7 @@ local function toggleFly()
     end
 end
 
--- 4. God Mode 控制系統
+-- 4. God Mode 控制系統 (已修正邏輯：只有在開啟時才禁用 CanTouch)
 local function applyGodModeLoop()
     task.spawn(function()
         while true do
@@ -175,10 +175,12 @@ local function applyGodModeLoop()
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             if not humanoidRootPart then continue end
             
-            if GodModeActive then
-                local parts = workspace:GetPartBoundsInRadius(humanoidRootPart.Position, 10)
-                for _, part in ipairs(parts) do
-                    part.CanTouch = false
+            local parts = workspace:GetPartBoundsInRadius(humanoidRootPart.Position, 10)
+            for _, part in ipairs(parts) do
+                if GodModeActive then
+                    part.CanTouch = false -- 開啟無敵：關閉觸碰
+                else
+                    part.CanTouch = true  -- 關閉無敵：還原觸碰
                 end
             end
         end
@@ -210,7 +212,7 @@ local Themes = {
 }
 
 -- ==========================================
--- UI 元件結構 (已將 God Mode 按鈕移至速度上方)
+-- UI 元件結構
 -- ==========================================
 local MainGui = Instance.new("ScreenGui", CoreGui)
 MainGui.Name = "MovementHackGui"
@@ -302,7 +304,7 @@ Content.BackgroundTransparency = 1
 
 local buttonReferences = {}
 
--- 【1】God Mode 無敵狀態開關 (已移動到最上方)
+-- 【1】God Mode 無敵狀態開關 (最上方)
 local GodToggleFrame = Instance.new("Frame", Content)
 GodToggleFrame.Size = UDim2.new(1, 0, 0, 28); GodToggleFrame.Position = UDim2.new(0, 0, 0, 6)
 GodToggleFrame.BackgroundTransparency = 1
@@ -418,7 +420,7 @@ Credit.Font = Enum.Font.GothamBold
 Credit.TextSize = 9
 
 -- ==========================================
--- 建立設定（Settings）與關閉子面板
+-- 設定（Settings）與關閉子面板
 -- ==========================================
 local SettingsFrame = Instance.new("Frame", Frame)
 SettingsFrame.Size = UDim2.new(1, 0, 1, 0); SettingsFrame.BackgroundColor3 = Themes.Dark.Background; SettingsFrame.BorderSizePixel = 0; SettingsFrame.Visible = false; SettingsFrame.ZIndex = 20
@@ -711,6 +713,6 @@ end)
 
 game:GetService("StarterGui"):SetCore("SendNotification", { 
     Title = "Baiyan MOVE SYSTEM";
-    Text = "極簡移動選單已載入，更新佈局，by: Baiyan";
+    Text = "極簡移動選單已載入，已修正預設無敵問題，by: Baiyan";
     Duration = 4
 })
