@@ -1,0 +1,269 @@
+-- Create the main GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MichaelFlyGui"
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Create the main black frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+MainFrame.BorderColor3 = Color3.new(1, 1, 1)
+MainFrame.BorderSizePixel = 2
+MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
+MainFrame.Size = UDim2.new(0.4, 0, 0.5, 0)
+MainFrame.Parent = ScreenGui
+
+-- Create a title label
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Name = "TitleLabel"
+TitleLabel.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+TitleLabel.BorderSizePixel = 0
+TitleLabel.Position = UDim2.new(0, 0, 0, 0)
+TitleLabel.Size = UDim2.new(1, 0, 0.15, 0)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Text = "Michael fly gui v1 - SUBSCRIBE"
+TitleLabel.TextColor3 = Color3.new(1, 1, 1)
+TitleLabel.TextScaled = true
+TitleLabel.Parent = MainFrame
+
+-- Create subscription message
+local SubscribeLabel = Instance.new("TextLabel")
+SubscribeLabel.Name = "SubscribeLabel"
+SubscribeLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+SubscribeLabel.BorderSizePixel = 0
+SubscribeLabel.Position = UDim2.new(0.05, 0, 0.15, 0)
+SubscribeLabel.Size = UDim2.new(0.9, 0, 0.25, 0)
+SubscribeLabel.Font = Enum.Font.Gotham
+SubscribeLabel.Text = "Subscribe to my YouTube channel to use this script!\n\nClick 'Copy Link' then paste it in your browser."
+SubscribeLabel.TextColor3 = Color3.new(1, 1, 1)
+SubscribeLabel.TextScaled = true
+SubscribeLabel.TextWrapped = true
+SubscribeLabel.Parent = MainFrame
+
+-- Create Copy Link button
+local CopyLinkButton = Instance.new("TextButton")
+CopyLinkButton.Name = "CopyLinkButton"
+CopyLinkButton.BackgroundColor3 = Color3.new(0.8, 0.2, 0.2)
+CopyLinkButton.BorderSizePixel = 0
+CopyLinkButton.Position = UDim2.new(0.1, 0, 0.45, 0)
+CopyLinkButton.Size = UDim2.new(0.35, 0, 0.1, 0)
+CopyLinkButton.Font = Enum.Font.GothamBold
+CopyLinkButton.Text = "COPY LINK"
+CopyLinkButton.TextColor3 = Color3.new(1, 1, 1)
+CopyLinkButton.TextScaled = true
+CopyLinkButton.Parent = MainFrame
+
+-- Create verify subscription button (hidden until key entered)
+local VerifyButton = Instance.new("TextButton")
+VerifyButton.Name = "VerifyButton"
+VerifyButton.BackgroundColor3 = Color3.new(0.2, 0.2, 0.8)
+VerifyButton.BorderSizePixel = 0
+VerifyButton.Position = UDim2.new(0.55, 0, 0.45, 0)
+VerifyButton.Size = UDim2.new(0.35, 0, 0.1, 0)
+VerifyButton.Font = Enum.Font.GothamBold
+VerifyButton.Text = "VERIFY"
+VerifyButton.TextColor3 = Color3.new(1, 1, 1)
+VerifyButton.TextScaled = true
+VerifyButton.Visible = false -- hidden until key entered
+VerifyButton.Parent = MainFrame
+
+-- Create execute button (initially hidden)
+local ExecuteButton = Instance.new("TextButton")
+ExecuteButton.Name = "ExecuteButton"
+ExecuteButton.BackgroundColor3 = Color3.new(0.2, 0.7, 0.2)
+ExecuteButton.BorderSizePixel = 0
+ExecuteButton.Position = UDim2.new(0.25, 0, 0.6, 0)
+ExecuteButton.Size = UDim2.new(0.5, 0, 0.15, 0)
+ExecuteButton.Font = Enum.Font.GothamBold
+ExecuteButton.Text = "EXECUTE FLIGHT SCRIPT"
+ExecuteButton.TextColor3 = Color3.new(1, 1, 1)
+ExecuteButton.TextScaled = true
+ExecuteButton.Visible = false
+ExecuteButton.Parent = MainFrame
+
+-- Create status label
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Name = "StatusLabel"
+StatusLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+StatusLabel.BorderSizePixel = 0
+StatusLabel.Position = UDim2.new(0.05, 0, 0.8, 0)
+StatusLabel.Size = UDim2.new(0.9, 0, 0.15, 0)
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.Text = "Please subscribe to continue"
+StatusLabel.TextColor3 = Color3.new(1, 1, 1)
+StatusLabel.TextScaled = true
+StatusLabel.Parent = MainFrame
+
+-- Key input box
+local KeyBox = Instance.new("TextBox")
+KeyBox.Name = "KeyBox"
+KeyBox.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+KeyBox.BorderSizePixel = 0
+KeyBox.Position = UDim2.new(0.1, 0, 0.57, 0)
+KeyBox.Size = UDim2.new(0.8, 0, 0.08, 0)
+KeyBox.Font = Enum.Font.Gotham
+KeyBox.PlaceholderText = "Enter Key Here..."
+KeyBox.Text = ""
+KeyBox.TextColor3 = Color3.new(1, 1, 1)
+KeyBox.TextScaled = true
+KeyBox.Parent = MainFrame
+
+-- Your YouTube channel
+local youtubeChannel = "https://www.youtube.com/@scruffyboy36"
+
+-- Subscription verification system
+local isVerified = false
+
+-- Copy Link button functionality
+CopyLinkButton.MouseButton1Click:Connect(function()
+    local success = pcall(function()
+        if setclipboard then
+            setclipboard(youtubeChannel)
+            StatusLabel.Text = "Link copied to clipboard! Paste it in your browser."
+            StatusLabel.TextColor3 = Color3.new(0, 1, 1)
+        else
+            error("Clipboard function not available")
+        end
+    end)
+    
+    if not success then
+        StatusLabel.Text = "Manual copy: " .. youtubeChannel
+        StatusLabel.TextColor3 = Color3.new(1, 1, 0)
+
+        local TempTextBox = Instance.new("TextBox")
+        TempTextBox.Position = UDim2.new(0.1, 0, 0.77, 0)
+        TempTextBox.Size = UDim2.new(0.8, 0, 0.08, 0)
+        TempTextBox.BackgroundColor3 = Color3.new(1, 1, 1)
+        TempTextBox.TextColor3 = Color3.new(0, 0, 0)
+        TempTextBox.Text = youtubeChannel
+        TempTextBox.Font = Enum.Font.Gotham
+        TempTextBox.TextScaled = true
+        TempTextBox.Parent = MainFrame
+
+        wait(0.1)
+        TempTextBox:CaptureFocus()
+        TempTextBox:SelectAll()
+
+        wait(5)
+        TempTextBox:Destroy()
+    end
+end)
+
+-- Key system: show Verify button only when correct key entered
+KeyBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        if string.lower(KeyBox.Text) == "subscribe" then
+            VerifyButton.Visible = true
+            StatusLabel.Text = "Key accepted! You can now verify."
+            StatusLabel.TextColor3 = Color3.new(0, 1, 0)
+        else
+            StatusLabel.Text = "Invalid key. Try again."
+            StatusLabel.TextColor3 = Color3.new(1, 0, 0)
+        end
+    end
+end)
+
+-- Verify button click event
+VerifyButton.MouseButton1Click:Connect(function()
+    StatusLabel.Text = "Checking subscription..."
+    StatusLabel.TextColor3 = Color3.new(1, 1, 0)
+    
+    wait(2)
+    
+    isVerified = true
+    VerifyButton.Visible = false
+    CopyLinkButton.Visible = false
+    KeyBox.Visible = false
+    ExecuteButton.Visible = true
+    SubscribeLabel.Text = "Thank you for subscribing to @scruffyboy36!\nYou can now use the script."
+    StatusLabel.Text = "Subscription verified! Ready to execute."
+    StatusLabel.TextColor3 = Color3.new(0, 1, 0)
+end)
+
+-- Execute button click event
+ExecuteButton.MouseButton1Click:Connect(function()
+    if not isVerified then
+        StatusLabel.Text = "Please verify subscription first!"
+        StatusLabel.TextColor3 = Color3.new(1, 0, 0)
+        return
+    end
+    
+    StatusLabel.Text = "Executing flight script..."
+    StatusLabel.TextColor3 = Color3.new(1, 1, 0)
+    
+    wait(0.5)
+    
+    local success, errorMessage = pcall(function()
+        loadstring(game:HttpGet("https://obj.wearedevs.net/197198/scripts/invincible%20flight%20animation.lua"))()
+    end)
+    
+    if success then
+        StatusLabel.Text = "Flight script activated successfully!"
+        StatusLabel.TextColor3 = Color3.new(0, 1, 0)
+        
+        wait(2)
+        ScreenGui:Destroy()
+    else
+        StatusLabel.Text = "Error executing flight script"
+        StatusLabel.TextColor3 = Color3.new(1, 0, 0)
+        warn("Script error: " .. tostring(errorMessage))
+    end
+end)
+
+-- DRAGGABLE FUNCTIONALITY
+local UserInputService = game:GetService("UserInputService")
+local dragging
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+TitleLabel.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+TitleLabel.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- Add the GUI to the player's PlayerGui
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Close button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.BackgroundColor3 = Color3.new(0.3, 0, 0)
+CloseButton.BorderSizePixel = 0
+CloseButton.Position = UDim2.new(0.9, 0, 0, 0)
+CloseButton.Size = UDim2.new(0.1, 0, 0.15, 0)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.new(1, 1, 1)
+CloseButton.TextScaled = true
+CloseButton.Parent = MainFrame
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
