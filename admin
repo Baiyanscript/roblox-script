@@ -1,0 +1,65 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wizard"))()
+
+local PhantomForcesWindow = Library:NewWindow("Admin Rng | Version Hub")
+local MainSection = PhantomForcesWindow:NewSection("Main")
+local CreditsSection = PhantomForcesWindow:NewSection("Credits")
+local OtherScriptSection = PhantomForcesWindow:NewSection("Other Script")
+
+local autoRollActive = false
+local autoRollFastActive = false
+
+-- Auto Roll Toggle in Main Section
+MainSection:CreateToggle("Auto Roll", function(value)
+    autoRollActive = value
+    spawn(function()
+        while autoRollActive do
+            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Spin"):InvokeServer(true)
+            wait(1) -- Delay set to 1 second
+        end
+    end)
+end)
+
+-- Auto Roll (Fast) Toggle in Main Section
+MainSection:CreateToggle("Auto Roll (Fast)", function(value)
+    autoRollFastActive = value
+    spawn(function()
+        while autoRollFastActive do
+            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Spin"):InvokeServer(true)
+            wait(0.1) -- Delay set to 0.1 second (100 milliseconds)
+        end
+    end)
+end)
+
+-- Infinite Yield Button in Main Section
+MainSection:CreateButton("Infinite Yield", function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+end)
+
+-- Console Button in Main Section
+MainSection:CreateButton("Console", function()
+    game:GetService("StarterGui"):SetCore("DevConsoleVisible", true)
+end)
+
+-- Made By Maxwell Button in Credits Section
+CreditsSection:CreateButton("Made By Maxwell", function()
+    print("Sup")
+end)
+
+-- Auto Roll By luckyarabkid Button in Credits Section
+CreditsSection:CreateButton("Auto Roll By luckyarabkid", function()
+    print("Discord :D")
+end)
+
+-- Unluckify Server Button in Credits Section
+CreditsSection:CreateButton("Unluckify Server", function()
+    setclipboard("https://discord.com/invite/unluckify")
+end)
+
+-- Other Script Buttons in OtherScript Section
+OtherScriptSection:CreateButton("A Dusty Trip ROCKET With Inf Stmin", function()
+    setclipboard("https://scriptblox.com/script/a-dusty-trip-ROCKET-With-Inf-Stmin-12875")
+end)
+
+OtherScriptSection:CreateButton("Update! Find The Noobies Morphs Auto Collect Coins", function()
+    setclipboard("https://scriptblox.com/script/UPDATE!-Find-The-Noobies-Morphs-Auto-Collect-Coins-14269")
+end)
