@@ -1,0 +1,30 @@
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+
+local function makeHeadless()
+    if not char:FindFirstChild("Head") then return end
+    local head = char.Head
+    
+    -- Make head invisible / remove visuals
+    head.Transparency = 1
+    for _, v in pairs(head:GetChildren()) do
+        if v:IsA("MeshPart") or v:IsA("SpecialMesh") or v:IsA("Decal") or v:IsA("Texture") then
+            v.Transparency = 1
+        end
+    end
+    
+    -- Optional: Destroy head parts but re-parent accessories if needed
+    -- head:Destroy()  -- Uncomment if full removal wanted, but accessories may detach
+    
+    -- Ensure accessories stay attached (they usually do via attachments)
+    print("Headless activated - Head removed, accessories preserved!")
+end
+
+makeHeadless()
+
+-- Auto re-apply on respawn
+player.CharacterAdded:Connect(function(newChar)
+    char = newChar
+    wait(1)  -- Give time for character to load
+    makeHeadless()
+end)
