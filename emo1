@@ -1,0 +1,1035 @@
+local plrs = game:GetService("Players")
+local as = game:GetService("AssetService")
+local aes = game:GetService("AvatarEditorService")
+local rs = game:GetService("RunService")
+local hs = game:GetService("HttpService")
+local lp = plrs.LocalPlayer
+
+local m = {
+	["runanimation"]      = "run",
+	["climbanimation"]    = "climb",
+	["jumpanimation"]     = "jump",
+	["fallanimation"]     = "fall",
+	["idleanimation"]     = "idle",
+	["swimidleanimation"] = "swimidle",
+	["swimanimation"]     = "swim",
+	["walkanimation"]     = "walk"
+}
+
+local shortNames = {
+	["idleanimation"]     = "Idle",
+	["walkanimation"]     = "Walk",
+	["runanimation"]      = "Run",
+	["jumpanimation"]     = "Jump",
+	["fallanimation"]     = "Fall",
+	["climbanimation"]    = "Climb",
+	["swimidleanimation"] = "S.Idle",
+	["swimanimation"]     = "Swim"
+}
+
+local buttonOrder = {
+	"idleanimation",
+	"walkanimation",
+	"runanimation",
+	"jumpanimation",
+	"fallanimation",
+	"climbanimation",
+	"swimidleanimation",
+	"swimanimation"
+}
+
+-- ─────────────────────────────────────────────
+-- CACHE SYSTEM
+-- ─────────────────────────────────────────────
+local CACHE_FILE_NAME = "animation_bundle_data_cache.json"
+local ANIM_CACHE_URL = "https://raw.githubusercontent.com/TribalFootball/TuffTeto/main/animation_bundle_data_cache.json"
+
+local SEEN_BUNDLES_FILE = "seen_anim_bundles_cache.json"
+local SEEN_CACHE_URL = "https://raw.githubusercontent.com/TribalFootball/TuffTeto/main/seen_anim_bundles_cache.json"
+
+local EQUIPPED_FILE = "FeUgcAnim.json"
+
+local assetCache = {}
+local fileCache = {}
+local seenBundles = {}
+local skippedBundles = {}
+local equippedAnims = {}
+
+-- 1. Load Anims Cache
+local loadSuccess, fileContent = pcall(function() return readfile(CACHE_FILE_NAME) end)
+if loadSuccess and fileContent then
+	pcall(function() fileCache = hs:JSONDecode(fileContent) end)
+end
+
+task.spawn(function()
+	local ok, onlineContent = pcall(function() return game:HttpGet(ANIM_CACHE_URL) end)
+	if ok and onlineContent then
+		pcall(function()
+			local onlineData = hs:JSONDecode(onlineContent)
+			for k, v in pairs(onlineData) do
+				if not fileCache[k] then fileCache[k] = v end
+			end
+			writefile(CACHE_FILE_NAME, hs:JSONEncode(fileCache))
+		end)
+	end
+end)
+
+local function saveCacheToFile()
+	pcall(function() writefile(CACHE_FILE_NAME, hs:JSONEncode(fileCache)) end)
+end
+
+-- 2. Load Seen Bundles Cache
+pcall(function()
+	local content = readfile(SEEN_BUNDLES_FILE)
+	if content then seenBundles = hs:JSONDecode(content) end
+end)
+
+task.spawn(function()
+	local ok, onlineContent = pcall(function() return game:HttpGet(SEEN_CACHE_URL) end)
+	if ok and onlineContent then
+		pcall(function()
+			local onlineData = hs:JSONDecode(onlineContent)
+			for k, v in pairs(onlineData) do
+				if seenBundles[k] == nil then seenBundles[k] = v end
+			end
+			writefile(SEEN_BUNDLES_FILE, hs:JSONEncode(seenBundles))
+		end)
+	end
+end)
+
+local function saveSeenBundles()
+	pcall(function() writefile(SEEN_BUNDLES_FILE, hs:JSONEncode(seenBundles)) end)
+end
+
+-- 3. Load Equipped Anims Cache
+pcall(function()
+	local content = readfile(EQUIPPED_FILE)
+	if content then equippedAnims = hs:JSONDecode(content) end
+end)
+
+local function saveEquippedAnims()
+	pcall(function() writefile(EQUIPPED_FILE, hs:JSONEncode(equippedAnims)) end)
+end
+
+-- Function to handle fetching assets
+local function get(id, bundleId)
+	local stringId = tostring(id)
+	local cleanBundleId = tostring(bundleId or "Unknown")
+	if assetCache[stringId] then return assetCache[stringId] end
+	if fileCache[stringId] then
+		local reconstructed = {}
+		for _, data in ipairs(fileCache[stringId]) do
+			local anim = Instance.new("Animation")
+			anim.Name = data.Name
+			anim.AnimationId = data.AnimationId
+			table.insert(reconstructed, anim)
+		end
+		assetCache[stringId] = reconstructed
+		return reconstructed
+	end
+	local ok, objs = pcall(function() return game:GetObjects("rbxassetid://" .. stringId) end)
+	local t = {}
+	local serializableData = {}
+	if ok and objs and #objs > 0 then
+		local r = objs[1]
+		local function processItem(item)
+			if item:IsA("Animation") then
+				table.insert(t, item)
+				table.insert(serializableData, { Name = item.Name, AnimationId = item.AnimationId, BundleId = cleanBundleId })
+			end
+		end
+		processItem(r)
+		for _, c in ipairs(r:GetDescendants()) do processItem(c) end
+	end
+	assetCache[stringId] = t
+	fileCache[stringId] = serializableData
+	saveCacheToFile()
+	return t
+end
+
+-- ─────────────────────────────────────────────
+-- RESPONSIVE SCALE (Scaled 1.8x up)
+-- ─────────────────────────────────────────────
+local vp = workspace.CurrentCamera.ViewportSize
+local scale = math.clamp(math.min(vp.X / 1920, vp.Y / 1080), 0.55, 1.0) * 1.8
+local function s(n) return math.round(n * scale) end
+
+-- ─────────────────────────────────────────────
+-- ALL COOL GRAY PALETTE
+-- ─────────────────────────────────────────────
+local C = {
+	bg        = Color3.fromRGB(35, 40, 45),
+	panel     = Color3.fromRGB(45, 50, 55),
+	surface   = Color3.fromRGB(55, 60, 65),
+	surfaceHi = Color3.fromRGB(75, 80, 85),
+	accent    = Color3.fromRGB(130, 140, 150),
+	accentLo  = Color3.fromRGB(90, 100, 110),
+	green     = Color3.fromRGB(110, 120, 130), 
+	purple    = Color3.fromRGB(95, 105, 115),  
+	text      = Color3.fromRGB(220, 225, 230),
+	textDim   = Color3.fromRGB(160, 165, 170),
+	textMuted = Color3.fromRGB(110, 115, 120),
+	overlay   = Color3.fromRGB(20, 25, 30),
+}
+
+local W        = s(500)
+local H        = s(345)
+local LEFT_W   = s(275)
+local RIGHT_W  = W - LEFT_W
+local CELL     = s(76)
+local CELL_PAD = s(6)
+local GRID_H   = s(230)
+local FOOT_H   = s(28)
+local VP_H     = s(140)
+
+local function corner(parent, r)
+	-- Intentionally left blank: Removes all smooth edges!
+end
+
+local function stroke(parent, color, thickness)
+	local st = Instance.new("UIStroke", parent)
+	st.Color = color or Color3.fromRGB(65, 70, 75)
+	st.Thickness = thickness or 1
+	return st
+end
+
+local function applyCoolGradient(parent)
+	local grad = Instance.new("UIGradient", parent)
+	grad.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(160, 170, 180)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100, 110, 120)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 55, 60))
+	})
+	grad.Rotation = 45
+	return grad
+end
+
+-- ─────────────────────────────────────────────
+-- GUI ROOT
+-- ─────────────────────────────────────────────
+local gp = (typeof(gethui) == "function" and gethui()) or game:GetService("CoreGui")
+if gp:FindFirstChild("StudioAnimStudio") then
+	gp.StudioAnimStudio:Destroy()
+end
+
+local g = Instance.new("ScreenGui")
+g.Name = "StudioAnimStudio"
+g.ResetOnSpawn = false
+pcall(function() g.Parent = gp end)
+if not g.Parent then g.Parent = lp:WaitForChild("PlayerGui") end
+
+-- ─────────────────────────────────────────────
+-- MAIN FRAME
+-- ─────────────────────────────────────────────
+local mf = Instance.new("Frame", g)
+mf.Size = UDim2.new(0, W, 0, H)
+mf.Position = UDim2.new(0.5, -W/2, 0.5, -H/2)
+mf.BackgroundColor3 = C.bg
+mf.BackgroundTransparency = 0.2 -- Semi-transparent
+mf.Active = true
+mf.Draggable = true
+applyCoolGradient(mf)
+stroke(mf, Color3.fromRGB(80, 85, 90), 1)
+
+local topBar = Instance.new("Frame", mf)
+topBar.Size = UDim2.new(1, 0, 0, s(2))
+topBar.BackgroundColor3 = C.accent
+topBar.BackgroundTransparency = 0.3
+topBar.BorderSizePixel = 0
+
+-- ─────────────────────────────────────────────
+-- MODAL DIALOG (NEW ANIMS)
+-- ─────────────────────────────────────────────
+local modalOverlay = Instance.new("Frame", mf)
+modalOverlay.Size = UDim2.new(1, 0, 1, 0)
+modalOverlay.BackgroundColor3 = Color3.fromRGB(15, 18, 22)
+modalOverlay.BackgroundTransparency = 0.4
+modalOverlay.ZIndex = 50
+modalOverlay.Visible = false
+modalOverlay.Active = true
+
+local modalBox = Instance.new("Frame", modalOverlay)
+modalBox.Size = UDim2.new(0, s(360), 0, s(160))
+modalBox.Position = UDim2.new(0.5, -s(180), 0.5, -s(80))
+modalBox.BackgroundColor3 = C.panel
+modalBox.BackgroundTransparency = 0.1
+modalBox.ZIndex = 51
+applyCoolGradient(modalBox)
+stroke(modalBox, Color3.fromRGB(90, 95, 105), 1)
+
+local mTitle = Instance.new("TextLabel", modalBox)
+mTitle.Size = UDim2.new(1, -s(20), 0, s(60))
+mTitle.Position = UDim2.new(0, s(10), 0, s(10))
+mTitle.BackgroundTransparency = 1
+mTitle.TextWrapped = true
+mTitle.TextColor3 = C.text
+mTitle.Font = Enum.Font.GothamBold
+mTitle.TextSize = s(12)
+mTitle.ZIndex = 52
+
+local mSub = Instance.new("TextLabel", modalBox)
+mSub.Size = UDim2.new(1, -s(20), 0, s(20))
+mSub.Position = UDim2.new(0, s(10), 0, s(70))
+mSub.BackgroundTransparency = 1
+mSub.Text = "(It will be laggy on load)"
+mSub.TextColor3 = C.textDim
+mSub.Font = Enum.Font.Gotham
+mSub.TextSize = s(10)
+mSub.ZIndex = 52
+
+local yesBtnM = Instance.new("TextButton", modalBox)
+yesBtnM.Size = UDim2.new(0.3, 0, 0, s(30))
+yesBtnM.Position = UDim2.new(0.05, 0, 1, -s(40))
+yesBtnM.BackgroundColor3 = C.surfaceHi
+yesBtnM.BackgroundTransparency = 0.2
+yesBtnM.Text = "Yes (lag)"
+yesBtnM.TextColor3 = C.text
+yesBtnM.Font = Enum.Font.GothamBold
+yesBtnM.TextSize = s(11)
+yesBtnM.ZIndex = 52
+stroke(yesBtnM, C.accentLo, 1)
+
+local noBtnM = Instance.new("TextButton", modalBox)
+noBtnM.Size = UDim2.new(0.55, 0, 0, s(30))
+noBtnM.Position = UDim2.new(0.4, 0, 1, -s(40))
+noBtnM.BackgroundColor3 = C.surfaceHi
+noBtnM.BackgroundTransparency = 0.2
+noBtnM.Text = "No, i dont want to lag lol"
+noBtnM.TextColor3 = C.text
+noBtnM.Font = Enum.Font.GothamBold
+noBtnM.TextSize = s(10)
+noBtnM.ZIndex = 52
+stroke(noBtnM, C.accentLo, 1)
+
+local modalCallback = nil
+
+yesBtnM.MouseButton1Click:Connect(function()
+	modalOverlay.Visible = false
+	if modalCallback then modalCallback(true) end
+end)
+
+noBtnM.MouseButton1Click:Connect(function()
+	modalOverlay.Visible = false
+	if modalCallback then modalCallback(false) end
+end)
+
+local function showDialog(newCount, callback)
+	mTitle.Text = "Looks like we found " .. tostring(newCount) .. " new anim in the catalog, do you want to load the new anim?"
+	modalCallback = callback
+	modalOverlay.Visible = true
+end
+
+-- ─────────────────────────────────────────────
+-- MINIMISED PILL BUTTON
+-- ─────────────────────────────────────────────
+local minBtn = Instance.new("TextButton", g)
+minBtn.Size = UDim2.new(0, s(72), 0, s(28))
+minBtn.Position = UDim2.new(0, s(16), 0, s(16))
+minBtn.BackgroundColor3 = C.panel
+minBtn.TextColor3 = C.text
+minBtn.Text = "◈  Anim"
+minBtn.Font = Enum.Font.GothamBold
+minBtn.TextSize = s(11)
+minBtn.Active = true
+minBtn.Draggable = true
+minBtn.Visible = false
+stroke(minBtn, C.accent, 1)
+applyCoolGradient(minBtn)
+
+minBtn.MouseButton1Click:Connect(function()
+	minBtn.Visible = false
+	mf.Visible = true
+end)
+
+-- ─────────────────────────────────────────────
+-- LEFT PANEL
+-- ─────────────────────────────────────────────
+local lp_frame = Instance.new("Frame", mf)
+lp_frame.Size = UDim2.new(0, LEFT_W, 1, 0)
+lp_frame.BackgroundTransparency = 1
+
+local header = Instance.new("Frame", lp_frame)
+header.Size = UDim2.new(1, 0, 0, s(38))
+header.BackgroundTransparency = 1
+
+local tl = Instance.new("TextLabel", header)
+tl.Size = UDim2.new(1, -s(30), 1, 0)
+tl.Position = UDim2.new(0, s(12), 0, 0)
+tl.BackgroundTransparency = 1
+tl.Text = "FE UGC Animation"
+tl.TextColor3 = C.text
+tl.Font = Enum.Font.GothamBold
+tl.TextSize = s(13)
+tl.TextXAlignment = Enum.TextXAlignment.Left
+
+local minWindowBtn = Instance.new("TextButton", header)
+minWindowBtn.Size = UDim2.new(0, s(20), 0, s(20))
+minWindowBtn.Position = UDim2.new(1, -s(26), 0.5, -s(10))
+minWindowBtn.BackgroundColor3 = C.surfaceHi
+minWindowBtn.BackgroundTransparency = 0.5
+minWindowBtn.TextColor3 = C.textDim
+minWindowBtn.Text = "-"
+minWindowBtn.Font = Enum.Font.GothamBold
+minWindowBtn.TextSize = s(10)
+
+minWindowBtn.MouseButton1Click:Connect(function()
+	mf.Visible = false
+	minBtn.Visible = true
+end)
+
+local searchRow = Instance.new("Frame", lp_frame)
+searchRow.Size = UDim2.new(1, -s(24), 0, s(28))
+searchRow.Position = UDim2.new(0, s(12), 0, s(42))
+searchRow.BackgroundTransparency = 1
+
+local sb = Instance.new("TextBox", searchRow)
+sb.Size = UDim2.new(1, -s(62), 1, 0)
+sb.PlaceholderText = "Search bundles…"
+sb.Text = ""
+sb.BackgroundColor3 = C.surface
+sb.BackgroundTransparency = 0.4
+sb.TextColor3 = C.text
+sb.PlaceholderColor3 = C.textMuted
+sb.Font = Enum.Font.Gotham
+sb.TextSize = s(11)
+sb.ClearTextOnFocus = false
+stroke(sb, C.surfaceHi, 1)
+local sbPad = Instance.new("UIPadding", sb)
+sbPad.PaddingLeft = UDim.new(0, s(8))
+
+local searchBtn = Instance.new("TextButton", searchRow)
+searchBtn.Size = UDim2.new(0, s(56), 1, 0)
+searchBtn.Position = UDim2.new(1, -s(56), 0, 0)
+searchBtn.Text = "Search"
+searchBtn.BackgroundColor3 = C.accent
+searchBtn.BackgroundTransparency = 0.3
+searchBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+searchBtn.Font = Enum.Font.GothamBold
+searchBtn.TextSize = s(11)
+
+local gridScroller = Instance.new("ScrollingFrame", lp_frame)
+gridScroller.Size = UDim2.new(1, -s(24), 0, GRID_H)
+gridScroller.Position = UDim2.new(0, s(12), 0, s(76))
+gridScroller.BackgroundColor3 = C.surface
+gridScroller.BackgroundTransparency = 0.5
+gridScroller.BorderSizePixel = 0
+gridScroller.ScrollBarThickness = s(4)
+gridScroller.ScrollBarImageColor3 = C.accent
+
+local gridLayout = Instance.new("UIGridLayout", gridScroller)
+gridLayout.CellSize = UDim2.new(0, CELL, 0, CELL)
+gridLayout.CellPadding = UDim2.new(0, CELL_PAD, 0, CELL_PAD)
+
+local gridPadding = Instance.new("UIPadding", gridScroller)
+gridPadding.PaddingTop = UDim.new(0, CELL_PAD)
+gridPadding.PaddingLeft = UDim.new(0, CELL_PAD)
+gridPadding.PaddingBottom = UDim.new(0, CELL_PAD)
+
+local loadingOverlay = Instance.new("TextLabel", lp_frame)
+loadingOverlay.Size = gridScroller.Size
+loadingOverlay.Position = gridScroller.Position
+loadingOverlay.BackgroundColor3 = C.surface
+loadingOverlay.BackgroundTransparency = 0.3
+loadingOverlay.Text = "Loading…"
+loadingOverlay.TextColor3 = C.textDim
+loadingOverlay.Font = Enum.Font.GothamBold
+loadingOverlay.TextSize = s(13)
+loadingOverlay.Visible = false
+
+local footer = Instance.new("Frame", lp_frame)
+footer.Size = UDim2.new(1, -s(24), 0, FOOT_H)
+footer.Position = UDim2.new(0, s(12), 1, -s(10) - FOOT_H)
+footer.BackgroundTransparency = 1
+
+local prevBtn = Instance.new("TextButton", footer)
+prevBtn.Size = UDim2.new(0, s(52), 1, 0)
+prevBtn.Text = "← Back"
+prevBtn.BackgroundColor3 = C.surfaceHi
+prevBtn.BackgroundTransparency = 0.4
+prevBtn.TextColor3 = C.textDim
+prevBtn.Font = Enum.Font.GothamBold
+prevBtn.TextSize = s(10)
+
+local pageLbl = Instance.new("TextLabel", footer)
+pageLbl.Size = UDim2.new(1, -s(114), 1, 0)
+pageLbl.Position = UDim2.new(0, s(57), 0, 0)
+pageLbl.BackgroundTransparency = 1
+pageLbl.Text = "Page 1"
+pageLbl.TextColor3 = C.textDim
+pageLbl.Font = Enum.Font.Gotham
+pageLbl.TextSize = s(10)
+
+local nextBtn = Instance.new("TextButton", footer)
+nextBtn.Size = UDim2.new(0, s(52), 1, 0)
+nextBtn.Position = UDim2.new(1, -s(52), 0, 0)
+nextBtn.Text = "Next →"
+nextBtn.BackgroundColor3 = C.surfaceHi
+nextBtn.BackgroundTransparency = 0.4
+nextBtn.TextColor3 = C.textDim
+nextBtn.Font = Enum.Font.GothamBold
+nextBtn.TextSize = s(10)
+
+-- ─────────────────────────────────────────────
+-- DIVIDER
+-- ─────────────────────────────────────────────
+local divider = Instance.new("Frame", mf)
+divider.Size = UDim2.new(0, 1, 1, -s(20))
+divider.Position = UDim2.new(0, LEFT_W, 0, s(10))
+divider.BackgroundColor3 = C.surfaceHi
+divider.BackgroundTransparency = 0.5
+divider.BorderSizePixel = 0
+
+-- ─────────────────────────────────────────────
+-- RIGHT PANEL
+-- ─────────────────────────────────────────────
+local rp = Instance.new("Frame", mf)
+rp.Size = UDim2.new(0, RIGHT_W, 1, 0)
+rp.Position = UDim2.new(0, LEFT_W + 1, 0, 0)
+rp.BackgroundTransparency = 1
+
+local masterViewport = Instance.new("ViewportFrame", rp)
+masterViewport.Size = UDim2.new(1, -s(20), 0, VP_H)
+masterViewport.Position = UDim2.new(0, s(10), 0, s(10))
+masterViewport.BackgroundColor3 = C.overlay
+masterViewport.BackgroundTransparency = 0.3
+stroke(masterViewport, C.surfaceHi, 1)
+
+local statusLabel = Instance.new("TextLabel", rp)
+statusLabel.Size = UDim2.new(1, -s(20), 0, s(32))
+statusLabel.Position = UDim2.new(0, s(10), 0, s(10) + VP_H + s(5))
+statusLabel.BackgroundColor3 = C.surface
+statusLabel.BackgroundTransparency = 0.6
+statusLabel.Text = "No bundle selected"
+statusLabel.TextColor3 = C.textDim
+statusLabel.Font = Enum.Font.GothamSemibold
+statusLabel.TextSize = s(10)
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.TextWrapped = true
+statusLabel.TextTruncate = Enum.TextTruncate.AtEnd
+local sPad = Instance.new("UIPadding", statusLabel)
+sPad.PaddingLeft = UDim.new(0, s(7))
+sPad.PaddingRight = UDim.new(0, s(7))
+
+local buttonContainer = Instance.new("Frame", rp)
+buttonContainer.Size = UDim2.new(1, -s(20), 0, s(90))
+buttonContainer.Position = UDim2.new(0, s(10), 0, s(10) + VP_H + s(44))
+buttonContainer.BackgroundTransparency = 1
+
+local gridBtnLayout = Instance.new("UIGridLayout", buttonContainer)
+gridBtnLayout.CellSize = UDim2.new(0, s(60), 0, s(22))
+gridBtnLayout.CellPadding = UDim2.new(0, s(4), 0, s(4))
+
+local actRow = Instance.new("Frame", rp)
+actRow.Size = UDim2.new(1, -s(20), 0, s(30))
+actRow.Position = UDim2.new(0, s(10), 1, -s(40))
+actRow.BackgroundTransparency = 1
+
+local wearSelectedBtn = Instance.new("TextButton", actRow)
+wearSelectedBtn.Size = UDim2.new(0.48, 0, 1, 0)
+wearSelectedBtn.Text = "Wear Selected"
+wearSelectedBtn.BackgroundColor3 = C.green
+wearSelectedBtn.BackgroundTransparency = 0.3
+wearSelectedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+wearSelectedBtn.Font = Enum.Font.GothamBold
+wearSelectedBtn.TextSize = s(10)
+wearSelectedBtn.Visible = false
+
+local wearAllBtn = Instance.new("TextButton", actRow)
+wearAllBtn.Size = UDim2.new(0.48, 0, 1, 0)
+wearAllBtn.Position = UDim2.new(0.52, 0, 0, 0)
+wearAllBtn.Text = "Wear All"
+wearAllBtn.BackgroundColor3 = C.purple
+wearAllBtn.BackgroundTransparency = 0.3
+wearAllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+wearAllBtn.Font = Enum.Font.GothamBold
+wearAllBtn.TextSize = s(10)
+wearAllBtn.Visible = false
+
+-- ─────────────────────────────────────────────
+-- VIEWPORT / ANIMATION LOGIC
+-- ─────────────────────────────────────────────
+local activeGridThreads = {}
+local targetBundleItems = nil
+local activeMasterTrack = nil
+local activeMasterAnimName = nil
+local activeMasterType = nil
+local activeBundleName = "None"
+local currentBundleItems = {}
+local animationButtons = {}
+
+local function buildViewportSkeleton(viewportFrame)
+	local worldModel = viewportFrame:FindFirstChildOfClass("WorldModel")
+	if not worldModel then
+		worldModel = Instance.new("WorldModel")
+		worldModel.Parent = viewportFrame
+	else
+		for _, child in ipairs(worldModel:GetChildren()) do child:Destroy() end
+	end
+	local char = lp.Character or lp.CharacterAdded:Wait()
+	char.Archivable = true
+	local clone = char:Clone()
+	clone.Parent = worldModel
+	local root = clone:WaitForChild("HumanoidRootPart")
+	local human = clone:FindFirstChildOfClass("Humanoid")
+	local anim = human:FindFirstChildOfClass("Animator") or Instance.new("Animator", human)
+	local animateScript = clone:FindFirstChild("Animate")
+	if animateScript then animateScript.Disabled = true end
+	local cam = viewportFrame:FindFirstChildOfClass("Camera")
+	if not cam then
+		cam = Instance.new("Camera")
+		cam.Parent = viewportFrame
+		viewportFrame.CurrentCamera = cam
+	end
+	cam.CFrame = CFrame.new(Vector3.new(0, 1.5, 6), Vector3.new(0, 0, 0))
+	local angle = 0
+	local conn = rs.RenderStepped:Connect(function(dt)
+		if clone and root then
+			angle = angle + math.rad(25 * dt)
+			clone:PivotTo(CFrame.new(0, 0, 0) * CFrame.Angles(0, angle, 0))
+		end
+	end)
+	return clone, anim, conn
+end
+
+local function applyAnimationToCharacter(character, targetAnimations, slotType)
+	local animate = character:WaitForChild("Animate", 5)
+	local human = character:FindFirstChildOfClass("Humanoid")
+	if not animate or not human then return end
+
+	for _, track in ipairs(human:GetPlayingAnimationTracks()) do
+		pcall(function() track:AdjustWeight(0, 0) track:Stop(0) end)
+	end
+	
+	animate.Disabled = true
+	local cleanSlot = string.lower(slotType or "")
+	local animateFolderId = m[cleanSlot]
+	
+	if animateFolderId then
+		-- Apply to character
+		local folder = animate:FindFirstChild(animateFolderId)
+		if folder then
+			for _, obj in ipairs(folder:GetChildren()) do
+				if obj:IsA("Animation") then obj:Destroy() end
+			end
+			
+			-- Prepare data for saving
+			equippedAnims[cleanSlot] = {}
+			
+			for _, animAsset in ipairs(targetAnimations) do
+				local newAnim = Instance.new("Animation")
+				newAnim.Name = animAsset.Name
+				newAnim.AnimationId = animAsset.AnimationId
+				newAnim.Parent = folder
+				
+				table.insert(equippedAnims[cleanSlot], {
+					Name = animAsset.Name,
+					AnimationId = animAsset.AnimationId
+				})
+			end
+			
+			saveEquippedAnims()
+		end
+	end
+	
+	task.wait(0.05)
+	animate.Disabled = false
+end
+
+-- Function to re-apply saved animations automatically
+local function applySavedAnimations(character)
+	local animate = character:WaitForChild("Animate", 5)
+	local human = character:WaitForChild("Humanoid", 5)
+	if not animate or not human then return end
+	
+	-- Check if we have anything saved
+	local hasSavedAnims = false
+	for _, _ in pairs(equippedAnims) do hasSavedAnims = true; break end
+	if not hasSavedAnims then return end
+
+	for _, track in ipairs(human:GetPlayingAnimationTracks()) do
+		pcall(function() track:AdjustWeight(0, 0) track:Stop(0) end)
+	end
+	
+	animate.Disabled = true
+	
+	for slot, animDataList in pairs(equippedAnims) do
+		local folderName = m[slot]
+		if folderName then
+			local folder = animate:FindFirstChild(folderName)
+			if folder then
+				for _, obj in ipairs(folder:GetChildren()) do
+					if obj:IsA("Animation") then obj:Destroy() end
+				end
+				for _, data in ipairs(animDataList) do
+					local newAnim = Instance.new("Animation")
+					newAnim.Name = data.Name
+					newAnim.AnimationId = data.AnimationId
+					newAnim.Parent = folder
+				end
+			end
+		end
+	end
+	
+	task.wait(0.05)
+	animate.Disabled = false
+end
+
+-- Bind Respawn handling
+lp.CharacterAdded:Connect(function(char)
+	task.spawn(applySavedAnimations, char)
+end)
+
+local function getSpecificTrack(fetchedTracks, targetType)
+	if #fetchedTracks == 0 then return nil end
+	local fallbackTrack = fetchedTracks[1]
+	if targetType == "swimidleanimation" then
+		for _, tr in ipairs(fetchedTracks) do
+			if string.lower(tr.Name):find("idle") then return tr end
+		end
+		if fetchedTracks[2] then return fetchedTracks[2] end
+	elseif targetType == "swimanimation" then
+		for _, tr in ipairs(fetchedTracks) do
+			if string.lower(tr.Name) == "swim" then return tr end
+		end
+	end
+	return fallbackTrack
+end
+
+local function truncate(str, maxLen)
+	if #str > maxLen then return str:sub(1, maxLen - 1) .. "…" end
+	return str
+end
+
+local function renderMasterTrack(itemPayload, assetTypeName)
+	if activeMasterTrack then activeMasterTrack:Stop() activeMasterTrack = nil end
+	local dummy, animator, _ = buildViewportSkeleton(masterViewport)
+	local fetchedTracks = get(itemPayload.Id)
+	if #fetchedTracks == 0 then return end
+	local trackToPlay = getSpecificTrack(fetchedTracks, string.lower(assetTypeName or ""))
+	if not trackToPlay then return end
+	activeMasterAnimName = itemPayload.Name
+	activeMasterType = assetTypeName
+	local displayType = shortNames[string.lower(assetTypeName or "")] or "Track"
+	statusLabel.Text = truncate(activeBundleName, 22) .. "  •  " .. displayType
+	task.spawn(function()
+		local isIdle = (string.lower(assetTypeName or "") == "idleanimation")
+		if isIdle and #fetchedTracks > 1 then
+			local pointer = 1
+			while dummy and dummy.Parent do
+				if activeMasterTrack then activeMasterTrack:Stop() end
+				activeMasterTrack = animator:LoadAnimation(fetchedTracks[pointer])
+				activeMasterTrack.Looped = false
+				activeMasterTrack:Play()
+				activeMasterTrack.Stopped:Wait()
+				pointer = pointer + 1
+				if pointer > #fetchedTracks then pointer = 1 end
+			end
+		else
+			activeMasterTrack = animator:LoadAnimation(trackToPlay)
+			activeMasterTrack.Looped = true
+			activeMasterTrack:Play()
+		end
+	end)
+end
+
+for _, lowerType in ipairs(buttonOrder) do
+	local btn = Instance.new("TextButton", buttonContainer)
+	btn.BackgroundColor3 = C.surfaceHi
+	btn.BackgroundTransparency = 0.4
+	btn.TextColor3 = C.textMuted
+	btn.Text = shortNames[lowerType]
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = s(10)
+
+	btn.MouseButton1Click:Connect(function()
+		local payload = currentBundleItems[lowerType]
+		if payload then
+			wearSelectedBtn.Visible = true
+			renderMasterTrack(payload, lowerType)
+			for _, b in pairs(animationButtons) do
+				b.BackgroundColor3 = currentBundleItems[_] and C.green or C.surfaceHi
+				b.TextColor3 = currentBundleItems[_] and C.text or C.textMuted
+			end
+			btn.BackgroundColor3 = C.accent
+			btn.TextColor3 = C.text
+		end
+	end)
+
+	animationButtons[lowerType] = btn
+end
+
+local function inspectBundleDetails(bundleId, bundleName)
+	table.clear(currentBundleItems)
+	wearSelectedBtn.Visible = false
+	wearAllBtn.Visible = false
+	activeBundleName = bundleName or "Unknown"
+	statusLabel.Text = truncate(activeBundleName, 22) .. "  •  Loading…"
+
+	for _, btn in pairs(animationButtons) do
+		btn.BackgroundColor3 = C.surfaceHi
+		btn.TextColor3 = C.textMuted
+	end
+
+	local ok, res = pcall(function() return as:GetBundleDetailsAsync(bundleId) end)
+	if not ok or not res or not res.Items then
+		statusLabel.Text = truncate(activeBundleName, 22) .. "  •  Error"
+		return
+	end
+
+	targetBundleItems = res.Items
+	wearAllBtn.Visible = true
+
+	for _, item in ipairs(res.Items) do
+		local lowerType = string.lower(item.AssetType or "")
+		if lowerType == "swimanimation" then
+			currentBundleItems["swimanimation"] = item
+			currentBundleItems["swimidleanimation"] = item
+			for _, tt in ipairs({"swimanimation", "swimidleanimation"}) do
+				local b = animationButtons[tt]
+				if b then b.BackgroundColor3 = C.green b.TextColor3 = C.text end
+			end
+		elseif shortNames[lowerType] then
+			currentBundleItems[lowerType] = item
+			local b = animationButtons[lowerType]
+			if b then b.BackgroundColor3 = C.green b.TextColor3 = C.text end
+		end
+	end
+
+	if currentBundleItems["idleanimation"] then
+		wearSelectedBtn.Visible = true
+		renderMasterTrack(currentBundleItems["idleanimation"], "IdleAnimation")
+	else
+		statusLabel.Text = truncate(activeBundleName, 22) .. "  •  No Idle"
+	end
+end
+
+-- ─────────────────────────────────────────────
+-- GRID RENDERING
+-- ─────────────────────────────────────────────
+local searchResults = {}
+local catalogCursor = nil
+local currentPageIndex = 1
+local itemsPerPage = 9
+
+local function clearActiveGridContext()
+	for _, thread in ipairs(activeGridThreads) do task.cancel(thread) end
+	activeGridThreads = {}
+	for _, child in ipairs(gridScroller:GetChildren()) do
+		if child:IsA("ViewportFrame") then child:Destroy() end
+	end
+end
+
+local function drawGridPage()
+	clearActiveGridContext()
+	loadingOverlay.Visible = false
+
+	local start = (currentPageIndex - 1) * itemsPerPage + 1
+	local ending = math.min(currentPageIndex * itemsPerPage, #searchResults)
+
+	for i = start, ending do
+		local bundle = searchResults[i]
+		if not bundle then break end
+
+		local box = Instance.new("ViewportFrame", gridScroller)
+		box.BackgroundColor3 = C.panel
+		box.BackgroundTransparency = 0.3
+		stroke(box, C.surfaceHi, 1)
+
+		local label = Instance.new("TextLabel", box)
+		label.Size = UDim2.new(1, 0, 0, s(16))
+		label.Position = UDim2.new(0, 0, 1, -s(16))
+		label.BackgroundColor3 = C.overlay
+		label.BackgroundTransparency = 0.4
+		label.Text = truncate(bundle.Name, 11)
+		label.TextColor3 = C.text
+		label.Font = Enum.Font.GothamBold
+		label.TextSize = s(8)
+		label.ZIndex = 3
+
+		local hitBtn = Instance.new("TextButton", box)
+		hitBtn.Size = UDim2.new(1, 0, 1, 0)
+		hitBtn.BackgroundTransparency = 1
+		hitBtn.Text = ""
+		hitBtn.ZIndex = 4
+
+		hitBtn.MouseEnter:Connect(function() box.BackgroundColor3 = C.surfaceHi end)
+		hitBtn.MouseLeave:Connect(function() box.BackgroundColor3 = C.panel end)
+
+		hitBtn.MouseButton1Click:Connect(function()
+			inspectBundleDetails(bundle.Id, bundle.Name)
+		end)
+
+		local dummy, animator, conn = buildViewportSkeleton(box)
+
+		local loopThread = task.spawn(function()
+			-- Skip loading process if user answered "No" for this bundle
+			if skippedBundles[tostring(bundle.Id)] then
+				return 
+			end
+
+			local ok, details = pcall(function() return as:GetBundleDetailsAsync(bundle.Id) end)
+			if not ok or not details or not details.Items then return end
+			local usableTracks = {}
+			for _, subItem in ipairs(details.Items) do
+				if m[string.lower(subItem.AssetType or "")] then
+					table.insert(usableTracks, subItem)
+				end
+			end
+			if #usableTracks == 0 then return end
+			local trackIndex = 1
+			local activeCellTrack = nil
+			while box and box.Parent do
+				local subItem = usableTracks[trackIndex]
+				local animAssets = get(subItem.Id, bundle.Id)
+				if #animAssets > 0 then
+					if activeCellTrack then activeCellTrack:Stop() end
+					activeCellTrack = animator:LoadAnimation(animAssets[1])
+					activeCellTrack.Looped = true
+					activeCellTrack:Play()
+				end
+				task.wait(3.0)
+				trackIndex = trackIndex + 1
+				if trackIndex > #usableTracks then trackIndex = 1 end
+			end
+		end)
+
+		table.insert(activeGridThreads, loopThread)
+		box.Destroying:Connect(function()
+			task.cancel(loopThread)
+			conn:Disconnect()
+		end)
+	end
+
+	gridScroller.CanvasSize = UDim2.new(0, 0, 0, gridLayout.AbsoluteContentSize.Y + s(12))
+	pageLbl.Text = "Page " .. tostring(currentPageIndex)
+	prevBtn.BackgroundTransparency = (currentPageIndex > 1) and 0.4 or 0.65
+	prevBtn.TextColor3 = (currentPageIndex > 1) and C.text or C.textMuted
+end
+
+local function checkAndDrawGrid(pageData)
+	local newCount = 0
+	local currentNew = {}
+	for _, b in ipairs(pageData) do
+		if not seenBundles[tostring(b.Id)] then
+			newCount = newCount + 1
+			table.insert(currentNew, b)
+		end
+	end
+
+	if newCount > 0 then
+		showDialog(newCount, function(loadNew)
+			for _, b in ipairs(currentNew) do
+				local bIdStr = tostring(b.Id)
+				seenBundles[bIdStr] = true
+				if not loadNew then
+					skippedBundles[bIdStr] = true
+				end
+			end
+			saveSeenBundles()
+			drawGridPage()
+		end)
+	else
+		drawGridPage()
+	end
+end
+
+local function executeDiscoverySearch(query)
+	searchResults = {}
+	currentPageIndex = 1
+	catalogCursor = nil
+	loadingOverlay.Visible = true
+	pageLbl.Text = "Loading…"
+
+	local p = CatalogSearchParams.new()
+	p.SearchKeyword = query or ""
+	p.BundleTypes = {Enum.BundleType.Animations}
+	p.IncludeOffSale = true
+	p.Limit= 120
+	pcall(function() p.CreatorType = Enum.CreatorType.User end)
+	pcall(function() p.SalesTypeFilter = Enum.SalesTypeFilter.All end)
+	pcall(function() p.SortType = Enum.CatalogSortType.RecentlyCreated end)
+
+	local ok, pages = pcall(function() return aes:SearchCatalog(p) end)
+	if ok and pages then
+		catalogCursor = pages
+		searchResults = pages:GetCurrentPage()
+		checkAndDrawGrid(searchResults)
+	else
+		pageLbl.Text = "Error"
+		loadingOverlay.Text = "Search Error"
+	end
+end
+
+-- ─────────────────────────────────────────────
+-- BUTTON BINDINGS
+-- ─────────────────────────────────────────────
+nextBtn.MouseButton1Click:Connect(function()
+	if (currentPageIndex * itemsPerPage < #searchResults) then
+		currentPageIndex = currentPageIndex + 1
+		loadingOverlay.Visible = true
+		drawGridPage()
+	elseif catalogCursor and not catalogCursor.IsFinished then
+		loadingOverlay.Visible = true
+		pageLbl.Text = "Loading…"
+		local ok, _ = pcall(function() catalogCursor:AdvanceToNextPageAsync() end)
+		if ok then
+			local nextChunk = catalogCursor:GetCurrentPage()
+			for _, v in ipairs(nextChunk) do table.insert(searchResults, v) end
+			currentPageIndex = currentPageIndex + 1
+			checkAndDrawGrid(nextChunk)
+		end
+	end
+end)
+
+prevBtn.MouseButton1Click:Connect(function()
+	if currentPageIndex > 1 then
+		currentPageIndex = currentPageIndex - 1
+		loadingOverlay.Visible = true
+		drawGridPage()
+	end
+end)
+
+wearSelectedBtn.MouseButton1Click:Connect(function()
+	if not activeMasterType or not lp.Character then return end
+	local payload = currentBundleItems[string.lower(activeMasterType)]
+	if payload then
+		local fetchedTracks = get(payload.Id)
+		local trackToApply = getSpecificTrack(fetchedTracks, string.lower(activeMasterType))
+		if trackToApply then
+			applyAnimationToCharacter(lp.Character, {trackToApply}, activeMasterType)
+		end
+	end
+end)
+
+wearAllBtn.MouseButton1Click:Connect(function()
+	if not lp.Character then return end
+	for _, lowerType in ipairs(buttonOrder) do
+		local payload = currentBundleItems[lowerType]
+		if payload then
+			local fetchedTracks = get(payload.Id)
+			if lowerType == "idleanimation" then
+				applyAnimationToCharacter(lp.Character, fetchedTracks, lowerType)
+			else
+				local trackToApply = getSpecificTrack(fetchedTracks, lowerType)
+				if trackToApply then
+					applyAnimationToCharacter(lp.Character, {trackToApply}, lowerType)
+				end
+			end
+		end
+	end
+end)
+
+searchBtn.MouseButton1Click:Connect(function() executeDiscoverySearch(sb.Text) end)
+sb.FocusLost:Connect(function(enterPressed)
+	if enterPressed then executeDiscoverySearch(sb.Text) end
+end)
+
+-- ─────────────────────────────────────────────
+-- STARTUP
+-- ─────────────────────────────────────────────
+if lp.Character then
+	task.spawn(applySavedAnimations, lp.Character)
+end
+
+buildViewportSkeleton(masterViewport)
+executeDiscoverySearch("")
