@@ -1,0 +1,41 @@
+-- Jun Moveset | No spawn tool cuz i'm lazy
+-- notification
+game:GetService("StarterGui"):SetCore("SendNotification", { 
+	Title = "L0OLKIDD0";
+	Text = "Made by L0OLKIDD0";
+	Icon = "rbxthumb://type=Asset&id=91918175264782&w=150&h=150"})
+Duration = 15;
+
+if not isfile("Jun.rbxmx") then
+writefile("Jun.rbxmx", game:HttpGet("https://github.com/ian49972/RBXMS/raw/refs/heads/main/Jun.rbxmx"))
+end
+ 
+writefile("glimpseofweakness.mp3", game:HttpGet("https://github.com/ian49972/smth/raw/refs/heads/main/glimpseofweakness.mp3"))
+ 
+writefile("FangDance.mp3", game:HttpGet("https://github.com/ian49972/smth/raw/refs/heads/main/FangDance.mp3"))
+ 
+writefile("VirguleCascade.mp3", game:HttpGet("https://github.com/ian49972/smth/raw/refs/heads/main/VirguleCascade.mp3"))
+ 
+writefile("JunVoice.mp3", game:HttpGet("https://github.com/ian49972/smth/raw/refs/heads/main/JunVoice.mp3"))
+ 
+writefile("JunTheme.mp3", game:HttpGet("https://github.com/ian49972/smth/raw/refs/heads/main/JunTheme.mp3"))
+ 
+writefile("JUN.mp3", game:HttpGet("https://github.com/ian49972/smth/raw/refs/heads/main/JUN.mp3"))
+ 
+writefile("PhatomSever.webm", game:HttpGet("https://github.com/ian49972/IMAGES/raw/refs/heads/main/PhatomSever.webm"))
+
+writefile("JUNCUTSCENE.webm", game:HttpGet("https://github.com/ian49972/IMAGES/raw/refs/heads/main/JUNCUTSCENE.webm"))
+ 
+writefile("CGE.mp3", game:HttpGet("https://github.com/ian49972/smth/raw/refs/heads/main/CGE.mp3"))
+ 
+writefile("Sever.mp3", game:HttpGet("https://github.com/ian49972/smth/raw/refs/heads/main/Sever.mp3"))
+ 
+writefile("InchPunchV2.mp3", game:HttpGet("https://github.com/ian49972/smth/raw/refs/heads/main/InchPunchV2.mp3"))
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/GlimpseofPower"))()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/FangDance"))()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/VirguleCascade"))()
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/JunAwakening"))()
