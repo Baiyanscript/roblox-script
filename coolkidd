@@ -1,0 +1,57 @@
+--[=[
+ d888b  db    db d888888b      .d888b.      db      db    db  .d8b.  
+88' Y8b 88    88   `88'        VP  `8D      88      88    88 d8' `8b 
+88      88    88    88            odD'      88      88    88 88ooo88 
+88  ooo 88    88    88          .88'        88      88    88 88~~~88 
+88. ~8~ 88b  d88   .88.        j88.         88booo. 88b  d88 88   88    @uniquadev
+ Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
+
+designed using localmaze gui creator
+]=]
+
+-- Instances: 5 | Scripts: 0 | Modules: 0 | Tags: 0
+local LMG2L = {};
+
+-- Players.hvskvvjd73.PlayerGui.ScreenGui
+LMG2L["ScreenGui_1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+LMG2L["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+
+
+-- Players.hvskvvjd73.PlayerGui.ScreenGui.Frame
+LMG2L["Frame_2"] = Instance.new("Frame", LMG2L["ScreenGui_1"]);
+LMG2L["Frame_2"]["BorderSizePixel"] = 0;
+LMG2L["Frame_2"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+LMG2L["Frame_2"]["Size"] = UDim2.new(0, 166, 0, 112);
+LMG2L["Frame_2"]["Position"] = UDim2.new(0, -10, 0, 2);
+
+
+-- Players.hvskvvjd73.PlayerGui.ScreenGui.Frame.TextButton
+LMG2L["TextButton_3"] = Instance.new("TextButton", LMG2L["Frame_2"]);
+LMG2L["TextButton_3"]["TextWrapped"] = true;
+LMG2L["TextButton_3"]["BorderSizePixel"] = 0;
+LMG2L["TextButton_3"]["TextScaled"] = true;
+LMG2L["TextButton_3"]["BackgroundColor3"] = Color3.fromRGB(159, 0, 0);
+LMG2L["TextButton_3"]["Size"] = UDim2.new(0, 168, 0, 20);
+LMG2L["TextButton_3"]["Text"] = [[c00lkldd ]];
+LMG2L["TextButton_3"]["Position"] = UDim2.new(0, -2, 0, 0);
+
+
+-- Players.hvskvvjd73.PlayerGui.ScreenGui.Frame.TextButton.TextButton
+LMG2L["TextButton_4"] = Instance.new("TextButton", LMG2L["TextButton_3"]);
+LMG2L["TextButton_4"]["TextWrapped"] = true;
+LMG2L["TextButton_4"]["BorderSizePixel"] = 0;
+LMG2L["TextButton_4"]["TextScaled"] = true;
+LMG2L["TextButton_4"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextButton_4"]["Size"] = UDim2.new(0, 70, 0, 30);
+LMG2L["TextButton_4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+LMG2L["TextButton_4"]["Text"] = [[666]];
+LMG2L["TextButton_4"]["Position"] = UDim2.new(0, 56, 0, 64);
+
+
+-- Players.hvskvvjd73.PlayerGui.ScreenGui.Frame.TextButton.TextButton.UIDragDetector
+LMG2L["UIDragDetector_5"] = Instance.new("UIDragDetector", LMG2L["TextButton_4"]);
+
+
+
+
+return LMG2L["ScreenGui_1"], require;
