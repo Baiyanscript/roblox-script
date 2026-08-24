@@ -1,3 +1,4 @@
+-- loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Immortality-Lord-Hat-Script-240927"))()
 -- Configuration
 local chatDelay = 1.25
 local messages = {
