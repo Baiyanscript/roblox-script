@@ -1,0 +1,122 @@
+if _G.a then
+	local v1, v2, v3 = pairs(_G.a)
+	while true do
+		local v4
+		v3, v4 = v1(v2, v3)
+		if v3 == nil then
+			break
+		end
+		v4:Disconnect()
+	end
+	_G.a = nil
+end
+repeat
+	task.wait()
+until game.Players.LocalPlayer
+local localPlayer = game.Players.LocalPlayer
+local u5 = nil
+local humanoid = nil
+local humanoidRootPart = nil
+local u6 = false
+local u7 = {}
+local function u12()
+	u5 = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+	humanoid = u5:WaitForChild('Humanoid')
+	humanoidRootPart = u5:WaitForChild('HumanoidRootPart')
+	u7 = {}
+	local u52 = u5
+	local v8, v9, v10 = pairs(u52:GetDescendants())
+	while true do
+		local v11
+		v10, v11 = v8(v9, v10)
+		if v10 == nil then
+			break
+		end
+		if v11:IsA('BasePart') and v11.Transparency == 0 then
+			u7[#u7 + 1] = v11
+		end
+	end
+end
+local function u22()
+	local screenGui = Instance.new('ScreenGui')
+	local textButton = Instance.new('TextButton')
+	textButton.Size = UDim2.new(0, 100, 0, 50)
+	textButton.Position = UDim2.new(0.5, -50, 0.1, 0)
+	textButton.Text = 'Invisible'
+	textButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	textButton.Parent = screenGui
+	screenGui.Parent = game.Players.LocalPlayer:WaitForChild('PlayerGui')
+	local u13 = false
+	local position = nil
+	local position2 = nil
+	textButton.InputBegan:Connect(function(p14)
+		if p14.UserInputType == Enum.UserInputType.MouseButton1 then
+			u13 = true
+			position = p14.Position
+			position2 = textButton.Position
+		end
+	end)
+	textButton.InputChanged:Connect(function(p15)
+		if p15.UserInputType == Enum.UserInputType.MouseMovement and u13 then
+			local v16 = p15.Position - position
+			textButton.Position = UDim2.new(position2.X.Scale, position2.X.Offset + v16.X, position2.Y.Scale, position2.Y.Offset + v16.Y)
+		end
+	end)
+	textButton.InputEnded:Connect(function(p17)
+		if p17.UserInputType == Enum.UserInputType.MouseButton1 then
+			u13 = false
+		end
+	end)
+	textButton.MouseButton1Click:Connect(function()
+		u6 = not u6
+		local v18, v19, v20 = pairs(u7)
+		while true do
+			local v21
+			v20, v21 = v18(v19, v20)
+			if v20 == nil then
+				break
+			end
+			v21.Transparency = v21.Transparency == 0 and 0.5 or 0
+		end
+	end)
+end
+u12()
+u22()
+local v23 = { nil, nil }
+local localPlayer2 = localPlayer
+v23[1] = localPlayer.GetMouse(localPlayer2).KeyDown:Connect(function(p24)
+	if p24 == 'g' then
+		u6 = not u6
+		local v25, v26, v27 = pairs(u7)
+		while true do
+			local v28
+			v27, v28 = v25(v26, v27)
+			if v27 == nil then
+				break
+			end
+			v28.Transparency = v28.Transparency == 0 and 0.5 or 0
+		end
+	end
+end)
+v23[2] = game:GetService('RunService').Heartbeat:Connect(function()
+	if u6 then
+		local cFrame = humanoidRootPart.CFrame
+		local cameraOffset = humanoid.CameraOffset
+		local v29 = cFrame * CFrame.new(0, -200000, 0)
+		local humanoid = humanoid
+		local humanoidRootPart = humanoidRootPart
+		local position = v29:ToObjectSpace(CFrame.new(cFrame.Position)).Position
+		humanoidRootPart.CFrame = v29
+		humanoid.CameraOffset = position
+		game:GetService('RunService').RenderStepped:Wait()
+		local humanoid2 = humanoid
+		humanoidRootPart.CFrame = cFrame
+		humanoid2.CameraOffset = cameraOffset
+	end
+end)
+localPlayer.CharacterAdded:Connect(function()
+	u6 = false
+	u12()
+	u22()
+end)
+_G.a = v23
