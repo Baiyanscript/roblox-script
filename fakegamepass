@@ -1,3 +1,5 @@
+-- https://raw.githubusercontent.com/7yd7/FreeGamepass/main/Script.luau
+-- by 7yd7
 --[[
 getgenv().Settings = {
     CopyButton = false,
