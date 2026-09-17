@@ -1,3 +1,4 @@
+-- https://raw.githubusercontent.com/LSSOPS/OpenSource/refs/heads/main/KiraHub_Steal_An_Egg.lua
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
