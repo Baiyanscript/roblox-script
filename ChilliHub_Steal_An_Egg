@@ -1,3 +1,4 @@
+-- https://raw.githubusercontent.com/LSSOPS/OpenSource/refs/heads/main/ChilliHub_Steal_An_Egg.lua
 local fn = function(arg)
     local genv = typeof(getgenv) == "function" and getgenv() or _G
     if type(genv.ChilliDebugPrint) == "function" then
