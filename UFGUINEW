@@ -1,0 +1,522 @@
+-- Ultimate Fling GUI (Merged with SkidFling Mechanism)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local StarterGui = game:GetService("StarterGui")
+local LocalPlayer = Players.LocalPlayer
+
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Remove existing instance if present
+if PlayerGui:FindFirstChild("UltimateFlingGui") then
+	PlayerGui.UltimateFlingGui:Destroy()
+end
+
+-- ==========================================
+-- UI CREATION
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "UltimateFlingGui"
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+local Frame = Instance.new("Frame")
+Frame.Name = "MainFrame"
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Frame.BorderSizePixel = 0
+Frame.Position = UDim2.new(0.5, -138, 0.5, -170)
+Frame.Size = UDim2.new(0, 276, 0, 339)
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = Frame
+
+-- Title Bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Parent = Frame
+TitleBar.BackgroundColor3 = Color3.fromRGB(36, 36, 36)
+TitleBar.BorderSizePixel = 0
+TitleBar.Size = UDim2.new(1, 0, 0, 35)
+TitleBar.ZIndex = 11
+
+local UICorner6 = Instance.new("UICorner")
+UICorner6.CornerRadius = UDim.new(0, 12)
+UICorner6.Parent = TitleBar
+
+local TitleFix = Instance.new("Frame")
+TitleFix.Name = "TitleFix"
+TitleFix.Parent = TitleBar
+TitleFix.BackgroundColor3 = Color3.fromRGB(36, 36, 36)
+TitleFix.BorderSizePixel = 0
+TitleFix.Position = UDim2.new(0, 0, 1, -10)
+TitleFix.Size = UDim2.new(1, 0, 0, 10)
+TitleFix.ZIndex = 11
+
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Parent = TitleBar
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 11, 0, 0)
+Title.Size = UDim2.new(1, -70, 1, 0)
+Title.ZIndex = 12
+Title.Font = Enum.Font.GothamBold
+Title.Text = "Ultimate Fling GUI"
+Title.TextColor3 = Color3.fromRGB(240, 240, 245)
+Title.TextSize = 15
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local CloseBtn = Instance.new("ImageButton")
+CloseBtn.Name = "close"
+CloseBtn.Parent = TitleBar
+CloseBtn.BackgroundColor3 = Color3.fromRGB(165, 43, 45)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Position = UDim2.new(1, -28, 0, 6)
+CloseBtn.Size = UDim2.new(0, 23, 0, 23)
+CloseBtn.ZIndex = 12
+CloseBtn.Image = "rbxassetid://3926305904"
+CloseBtn.ImageRectOffset = Vector2.new(284, 4)
+CloseBtn.ImageRectSize = Vector2.new(24, 24)
+
+local MinimizeBtn = Instance.new("ImageButton")
+MinimizeBtn.Name = "Minimize"
+MinimizeBtn.Parent = TitleBar
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MinimizeBtn.BackgroundTransparency = 1
+MinimizeBtn.Position = UDim2.new(1, -55, 0, 6)
+MinimizeBtn.Size = UDim2.new(0, 23, 0, 23)
+MinimizeBtn.ZIndex = 12
+MinimizeBtn.Image = "rbxassetid://3926307971"
+MinimizeBtn.ImageRectOffset = Vector2.new(884, 284)
+MinimizeBtn.ImageRectSize = Vector2.new(36, 36)
+
+-- Target Selection Box
+local TargetSelect = Instance.new("Frame")
+TargetSelect.Name = "TargetSelect"
+TargetSelect.Parent = Frame
+TargetSelect.BackgroundColor3 = Color3.fromRGB(36, 36, 36)
+TargetSelect.BorderSizePixel = 0
+TargetSelect.Position = UDim2.new(0, 6, 0, 85)
+TargetSelect.Size = UDim2.new(0, 263, 0, 162)
+
+local UICorner2 = Instance.new("UICorner")
+UICorner2.CornerRadius = UDim.new(0, 12)
+UICorner2.Parent = TargetSelect
+
+local SearchBox = Instance.new("TextBox")
+SearchBox.Name = "SearchBox"
+SearchBox.Parent = TargetSelect
+SearchBox.BackgroundColor3 = Color3.fromRGB(36, 36, 36)
+SearchBox.BorderSizePixel = 0
+SearchBox.Position = UDim2.new(0, 0, 0, -42)
+SearchBox.Size = UDim2.new(1, 0, 0, 36)
+SearchBox.Font = Enum.Font.Highway
+SearchBox.PlaceholderColor3 = Color3.fromRGB(136, 136, 136)
+SearchBox.PlaceholderText = "Search Player..."
+SearchBox.Text = ""
+SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SearchBox.TextSize = 14
+
+local UICorner3 = Instance.new("UICorner")
+UICorner3.CornerRadius = UDim.new(0, 12)
+UICorner3.Parent = SearchBox
+
+local ScrollingFrame = Instance.new("ScrollingFrame")
+ScrollingFrame.Parent = TargetSelect
+ScrollingFrame.Active = true
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.BorderSizePixel = 0
+ScrollingFrame.Position = UDim2.new(0, 6, 0, 6)
+ScrollingFrame.Size = UDim2.new(1, -12, 1, -12)
+ScrollingFrame.ScrollBarThickness = 3
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Parent = ScrollingFrame
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 4)
+
+-- Action Buttons Frame
+local ActionFrame = Instance.new("Frame")
+ActionFrame.Name = "ActionFrame"
+ActionFrame.Parent = Frame
+ActionFrame.BackgroundColor3 = Color3.fromRGB(36, 36, 36)
+ActionFrame.BorderSizePixel = 0
+ActionFrame.Position = UDim2.new(0, 6, 0, 253)
+ActionFrame.Size = UDim2.new(0, 263, 0, 75)
+
+local UICorner4 = Instance.new("UICorner")
+UICorner4.CornerRadius = UDim.new(0, 12)
+UICorner4.Parent = ActionFrame
+
+local function CreateActionButton(name, text, position)
+	local btn = Instance.new("TextButton")
+	btn.Name = name
+	btn.Parent = ActionFrame
+	btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	btn.BorderSizePixel = 0
+	btn.Position = position
+	btn.Size = UDim2.new(0, 58, 0, 60)
+	btn.Font = Enum.Font.Highway
+	btn.Text = text
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.TextSize = 13
+
+	local btnCorner = Instance.new("UICorner")
+	btnCorner.CornerRadius = UDim.new(0, 10)
+	btnCorner.Parent = btn
+	return btn
+end
+
+local FlingBtn = CreateActionButton("Fling", "Fling", UDim2.new(0, 6, 0, 7))
+local AntiFlingBtn = CreateActionButton("AntiFling", "AntiFling", UDim2.new(0, 70, 0, 7))
+local GoToBtn = CreateActionButton("GoTo", "GoTo", UDim2.new(0, 134, 0, 7))
+local SpectateBtn = CreateActionButton("Spectate", "Spectate", UDim2.new(0, 198, 0, 7))
+
+-- Strokes / Styling
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(255, 82, 85)
+UIStroke.Thickness = 1.5
+UIStroke.Parent = Frame
+
+-- Notification Utility
+local function Message(Title, Text, Time)
+	StarterGui:SetCore('SendNotification', {
+		Title = Title,
+		Text = Text,
+		Duration = Time or 3
+	})
+end
+
+Message('UFGUI', '🔴 Loaded successfully! Press K to toggle.', 5)
+
+-- ==========================================
+-- LOGIC & FUNCTIONALITY
+-- ==========================================
+
+local SelectedPlayer = nil
+local SpectatingConnection = nil
+local AntiFlingEnabled = false
+local IsFlinging = false
+
+-- Draggable Logic
+local dragging, dragInput, dragStart, startPos
+local function updateDrag(input)
+	local delta = input.Position - dragStart
+	Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+TitleBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = Frame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+TitleBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		updateDrag(input)
+	end
+end)
+
+-- Toggle UI with Keybind (K)
+UserInputService.InputBegan:Connect(function(input, gpe)
+	if not gpe and input.KeyCode == Enum.KeyCode.K then
+		Frame.Visible = not Frame.Visible
+	end
+end)
+
+-- Window Controls
+CloseBtn.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
+
+local minimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	TargetSelect.Visible = not minimized
+	ActionFrame.Visible = not minimized
+	Frame.Size = minimized and UDim2.new(0, 276, 0, 35) or UDim2.new(0, 276, 0, 339)
+end)
+
+-- Player Selection List
+local function RefreshPlayerList()
+	for _, child in ipairs(ScrollingFrame:GetChildren()) do
+		if child:IsA("Frame") then
+			child:Destroy()
+		end
+	end
+
+	local searchText = SearchBox.Text:lower()
+
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p ~= LocalPlayer and (searchText == "" or p.Name:lower():find(searchText) or p.DisplayName:lower():find(searchText)) then
+			local item = Instance.new("Frame")
+			item.Size = UDim2.new(1, 0, 0, 35)
+			item.BackgroundTransparency = 1
+			item.Parent = ScrollingFrame
+
+			local thumb = Instance.new("ImageLabel")
+			thumb.Size = UDim2.new(0, 30, 0, 30)
+			thumb.Position = UDim2.new(0, 2, 0.5, -15)
+			thumb.BackgroundTransparency = 1
+			thumb.Image = Players:GetUserThumbnailAsync(p.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
+			thumb.Parent = item
+
+			local thumbCorner = Instance.new("UICorner")
+			thumbCorner.CornerRadius = UDim.new(1, 0)
+			thumbCorner.Parent = thumb
+
+			local btn = Instance.new("TextButton")
+			btn.Size = UDim2.new(1, -38, 1, -4)
+			btn.Position = UDim2.new(0, 35, 0, 2)
+			btn.BackgroundTransparency = (SelectedPlayer == p) and 0.3 or 1
+			btn.BackgroundColor3 = Color3.fromRGB(75, 17, 18)
+			btn.Text = p.DisplayName .. " (@" .. p.Name .. ")"
+			btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+			btn.Font = Enum.Font.GothamBold
+			btn.TextSize = 11
+			btn.TextXAlignment = Enum.TextXAlignment.Left
+			btn.Parent = item
+
+			local btnCorner = Instance.new("UICorner")
+			btnCorner.CornerRadius = UDim.new(0, 7)
+			btnCorner.Parent = btn
+
+			btn.MouseButton1Click:Connect(function()
+				SelectedPlayer = p
+				RefreshPlayerList()
+				Message('Selected Player', p.Name, 2)
+			end)
+		end
+	end
+end
+
+SearchBox:GetPropertyChangedSignal("Text"):Connect(RefreshPlayerList)
+Players.PlayerAdded:Connect(RefreshPlayerList)
+Players.PlayerRemoving:Connect(function(p)
+	if SelectedPlayer == p then
+		SelectedPlayer = nil
+	end
+	RefreshPlayerList()
+end)
+RefreshPlayerList()
+
+-- GoTo Action
+GoToBtn.MouseButton1Click:Connect(function()
+	if SelectedPlayer and SelectedPlayer.Character and SelectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+		local localChar = LocalPlayer.Character
+		if localChar and localChar:FindFirstChild("HumanoidRootPart") then
+			local targetHRP = SelectedPlayer.Character.HumanoidRootPart
+			localChar.HumanoidRootPart.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
+			Message('Teleported', 'To ' .. SelectedPlayer.Name, 2)
+		end
+	end
+end)
+
+-- Spectate Action
+SpectateBtn.MouseButton1Click:Connect(function()
+	local cam = workspace.CurrentCamera
+	if SpectatingConnection then
+		SpectatingConnection:Disconnect()
+		SpectatingConnection = nil
+		if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+			cam.CameraSubject = LocalPlayer.Character.Humanoid
+		end
+		SpectateBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		return
+	end
+
+	if SelectedPlayer and SelectedPlayer.Character and SelectedPlayer.Character:FindFirstChild("Humanoid") then
+		cam.CameraSubject = SelectedPlayer.Character.Humanoid
+		SpectateBtn.TextColor3 = Color3.fromRGB(85, 255, 85)
+		SpectatingConnection = RunService.RenderStepped:Connect(function()
+			if SelectedPlayer and SelectedPlayer.Character and SelectedPlayer.Character:FindFirstChild("Humanoid") then
+				cam.CameraSubject = SelectedPlayer.Character.Humanoid
+			else
+				if SpectatingConnection then
+					SpectatingConnection:Disconnect()
+					SpectatingConnection = nil
+					SpectateBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				end
+			end
+		end)
+	end
+end)
+
+-- Anti-Fling Function
+AntiFlingBtn.MouseButton1Click:Connect(function()
+	AntiFlingEnabled = not AntiFlingEnabled
+	AntiFlingBtn.TextColor3 = AntiFlingEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+	
+	Message('Anti-Fling', AntiFlingEnabled and 'Protection Enabled' or 'Protection Disabled', 2)
+
+	if AntiFlingEnabled then
+		task.spawn(function()
+			while AntiFlingEnabled do
+				task.wait(0.1)
+				for _, p in ipairs(Players:GetPlayers()) do
+					if p ~= LocalPlayer and p.Character then
+						for _, part in ipairs(p.Character:GetDescendants()) do
+							if part:IsA("BasePart") then
+								part.CanCollide = false
+							end
+						end
+					end
+				end
+			end
+		end)
+	end
+end)
+
+-- ==========================================
+-- FLINGSCRIPT (SKIDFLING) IMPLEMENTATION
+-- ==========================================
+local function SkidFling(TargetPlayer)
+	local Character = LocalPlayer.Character
+	local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+	local RootPart = Humanoid and Humanoid.RootPart
+	local TCharacter = TargetPlayer.Character
+	if not TCharacter then return end
+
+	local THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
+	local TRootPart = THumanoid and THumanoid.RootPart
+	local THead = TCharacter:FindFirstChild("Head")
+	local Accessory = TCharacter:FindFirstChildOfClass("Accessory")
+	local Handle = Accessory and Accessory:FindFirstChild("Handle")
+
+	if Character and Humanoid and RootPart then
+		-- Backup initial position
+		local OldPos = RootPart.CFrame
+		local FPDH = workspace.FallenPartsDestroyHeight
+
+		if THumanoid and THumanoid.Sit then
+			return Message("Error", TargetPlayer.Name .. " is sitting", 2)
+		end
+
+		-- Set Camera Focus
+		if THead then
+			workspace.CurrentCamera.CameraSubject = THead
+		elseif Handle then
+			workspace.CurrentCamera.CameraSubject = Handle
+		elseif THumanoid and TRootPart then
+			workspace.CurrentCamera.CameraSubject = THumanoid
+		end
+
+		if not TCharacter:FindFirstChildWhichIsA("BasePart") then return end
+
+		-- Fling Position Helper
+		local FPos = function(BasePart, Pos, Ang)
+			RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
+			Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
+			RootPart.Velocity = Vector3.new(9e7, 9e7 * 10, 9e7)
+			RootPart.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
+		end
+
+		-- SkidFling Physics Loop
+		local SFBasePart = function(BasePart)
+			local TimeToWait = 2.5
+			local StartTime = tick()
+			local Angle = 0
+			repeat
+				if RootPart and THumanoid then
+					if BasePart.Velocity.Magnitude < 50 then
+						Angle = Angle + 100
+						FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0 ,0))
+						task.wait()
+						FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+						task.wait()
+					else
+						FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+						task.wait()
+						FPos(BasePart, CFrame.new(0, -1.5, -THumanoid.WalkSpeed), CFrame.Angles(0, 0, 0))
+						task.wait()
+					end
+				end
+			until tick() - StartTime > TimeToWait or not IsFlinging or not TargetPlayer.Parent
+		end
+
+		workspace.FallenPartsDestroyHeight = 0/0
+
+		local BV = Instance.new("BodyVelocity")
+		BV.Parent = RootPart
+		BV.Velocity = Vector3.zero
+		BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+
+		if TRootPart then
+			SFBasePart(TRootPart)
+		elseif THead then
+			SFBasePart(THead)
+		elseif Handle then
+			SFBasePart(Handle)
+		else
+			BV:Destroy()
+			return Message("Error", TargetPlayer.Name .. " has no valid parts", 2)
+		end
+
+		BV:Destroy()
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+		workspace.CurrentCamera.CameraSubject = Humanoid
+
+		-- Safe Teleport Back & Clear Physical Velocity
+		if OldPos then
+			repeat
+				RootPart.CFrame = OldPos * CFrame.new(0, 0.5, 0)
+				Character:SetPrimaryPartCFrame(OldPos * CFrame.new(0, 0.5, 0))
+				Humanoid:ChangeState("GettingUp")
+				for _, part in ipairs(Character:GetChildren()) do
+					if part:IsA("BasePart") then
+						part.Velocity = Vector3.zero
+						part.RotVelocity = Vector3.zero
+					end
+				end
+				task.wait()
+			until (RootPart.Position - OldPos.p).Magnitude < 25 or not Character.Parent
+			workspace.FallenPartsDestroyHeight = FPDH
+		end
+	else
+		Message("Error", "Your character is not ready", 2)
+	end
+end
+
+-- Fling Button Trigger
+FlingBtn.MouseButton1Click:Connect(function()
+	if IsFlinging then
+		IsFlinging = false
+		FlingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		return
+	end
+
+	if not SelectedPlayer or not SelectedPlayer.Character then
+		return Message("Error", "Please select a valid player first", 2)
+	end
+
+	IsFlinging = true
+	FlingBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+	Message("Flinging", "Target: " .. SelectedPlayer.Name, 2)
+
+	task.spawn(function()
+		SkidFling(SelectedPlayer)
+		IsFlinging = false
+		FlingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	end)
+end)
