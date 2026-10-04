@@ -1,0 +1,1769 @@
+-- https://gist.githubusercontent.com/CanZero11/ec9b3510734fb65f6a6fff4f6c7ff372/raw/645cece76348dc55197537337317bd072eb07edb/Zero%2520hub.lua
+--==================================================
+-- ZERO HUB
+-- ULTRA FAST MOBILE EDITION
+--==================================================
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+--==================================================
+-- CONFIG
+--==================================================
+
+local LOGO = "rbxassetid://94113408086659"
+
+local Accent = Color3.fromRGB(20, 55, 130)
+local AccentBright = Color3.fromRGB(55, 115, 220)
+
+local Dark1 = Color3.fromRGB(3, 5, 12)
+local Dark2 = Color3.fromRGB(7, 10, 20)
+local Dark3 = Color3.fromRGB(12, 25, 65)
+
+local BACKGROUND_LOGO_TRANSPARENCY = 0.85
+
+--==================================================
+-- PARENT
+--==================================================
+
+local targetParent = (gethui and gethui()) or PlayerGui
+
+local Old = targetParent:FindFirstChild("ZeroHubGUI")
+
+if Old then
+    Old:Destroy()
+end
+
+--==================================================
+-- SCRIPT DATA
+--==================================================
+
+local ScriptData = {
+
+    ["STEAL AN EGG"] = {
+
+        ["NO KEY"] = {
+
+            {
+                Name = "FYY KEYLESS TELEPORT STEAL",
+                URL = "https://FyyCommunity.com"
+            },
+
+            {
+                Name = "CHILI HUB",
+                URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
+            },
+
+            {
+                Name = "LENNON",
+                URL = "https://raw.githubusercontent.com/lennonxscripts/lennonfarmv2/refs/heads/main/stealanegg"
+            },
+
+            {
+                Name = "BEE HUB ANIMATION PACK",
+                URL = "https://raw.githubusercontent.com/arjhaysaver-byte/BEE-SCRIPT-ANIMATION-PACK/refs/heads/main/bee_hub.lua"
+            },
+
+            {
+                Name = "NEW MIRANDA HUB",
+                URL = "https://raw.githubusercontent.com/miirandahub/loader/refs/heads/main/stealeggies"
+            },
+
+            {
+                Name = "SKR SAE",
+                URL = "https://flowauth.net/v1/loaders/6eacf1e3a133cbfdb781ec499655c6f1.lua"
+            },
+
+            {
+                Name = "PULSE HUB",
+                URL = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"
+            },
+
+            {
+                Name = "CLOVER HUB",
+                URL = "https://cloverhub.app/clover.lua"
+            }
+
+        },
+
+        ["KEY"] = {
+
+            {
+                Name = "ZEROIN HUB",
+                URL = "https://zeroinhub.com/api/script"
+            },
+
+            {
+                Name = "LUMIN HUB",
+                URL = "http://luminon.top/loader.lua"
+            },
+
+            {
+                Name = "AJJANS",
+                URL = "https://www.crozomods.xyz/scripts/new-script-steal-an-egg-mujkdmz4/raw"
+            },
+
+            {
+                Name = "BF LOADER",
+                URL = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"
+            }
+
+        }
+    },
+
+    ["ANTI HIT"] = {
+
+        ["NO KEY"] = {
+
+            {
+                Name = "VIREX ANTI HIT",
+                URL = "https://gist.githubusercontent.com/virexx55/836653079c73281295d6bfb5c10be5d9/raw/128b0220c9a36354b5c6504c3669f328e5354805/virex.lua"
+            },
+
+            {
+                Name = "STORM HUB ANTI CHASE",
+                URL = "https://flowauth.net/v1/loaders/15fad2708eb484d3b451f857c6e9a390.lua"
+            },
+
+            {
+                Name = "PRIVAT HUB",
+                URL = "https://api.jnkie.com/api/v1/luascripts/public/3e3da41b01b1dd0f4c178d4796cc3c4f7fac4078078ddf8f8c16a73958e8ba6d/download",
+
+                PreLoad = function()
+
+                    if getgenv then
+                        getgenv().SCRIPT_KEY = "KEYLESS"
+                    end
+
+                end
+            }
+
+        },
+
+        ["KEY"] = {}
+    },
+
+    ["RIDE A PET"] = {
+
+        ["NO KEY"] = {
+
+            {
+                Name = "MYSTRIX",
+                URL = "https://raw.githubusercontent.com/ummarxfarooq/mystrix-hub/refs/heads/main/loader"
+            },
+
+            {
+                Name = "GLIN'T HUB",
+                URL = "https://flowauth.net/v1/loaders/b792ba22a029da57e3e0306f258ae518.lua"
+            },
+
+            {
+                Name = "BEE HUB 🐝 🍯",
+                URL = "https://flowauth.net/v1/loaders/6d575d95b31568c868115392828e7df0.lua"
+            },
+
+            {
+                Name = "VIREX TP STEAL",
+                URL = "https://gist.githubusercontent.com/CanZero11/ec9b3510734fb65f6a6fff4f6c7ff372/raw/e0682e6ac8f4c36943164bcc3b86af9d99c1d40a/Virex%2520rap.lua"
+            }
+
+        },
+
+        ["KEY"] = {}
+    }
+}
+
+--==================================================
+-- SCREEN GUI
+--==================================================
+
+local ScreenGui = Instance.new("ScreenGui")
+
+ScreenGui.Name = "ZeroHubGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+ScreenGui.Parent = targetParent
+
+--==================================================
+-- SCALE
+--==================================================
+
+local UIScale = Instance.new("UIScale")
+UIScale.Parent = ScreenGui
+
+local function UpdateScale()
+
+    local Camera = workspace.CurrentCamera
+
+    if not Camera then
+        return
+    end
+
+    local Width = Camera.ViewportSize.X
+
+    if Width <= 360 then
+        UIScale.Scale = 0.72
+
+    elseif Width <= 430 then
+        UIScale.Scale = 0.80
+
+    elseif Width <= 600 then
+        UIScale.Scale = 0.88
+
+    else
+        UIScale.Scale = 1
+    end
+end
+
+UpdateScale()
+
+if workspace.CurrentCamera then
+
+    workspace.CurrentCamera:GetPropertyChangedSignal(
+        "ViewportSize"
+    ):Connect(UpdateScale)
+
+end
+
+--==================================================
+-- MAIN FRAME
+--==================================================
+
+local MainFrame = Instance.new("Frame")
+
+MainFrame.Name = "MainFrame"
+
+MainFrame.Size = UDim2.fromOffset(350, 330)
+
+MainFrame.Position = UDim2.new(
+    0.5,
+    -175,
+    0.5,
+    -165
+)
+
+MainFrame.BackgroundColor3 = Dark2
+MainFrame.BorderSizePixel = 0
+
+MainFrame.Active = true
+MainFrame.ClipsDescendants = true
+
+MainFrame.ZIndex = 10
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+
+MainCorner.CornerRadius = UDim.new(0, 13)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+
+MainStroke.Color = Accent
+MainStroke.Thickness = 1.5
+MainStroke.Transparency = 0.2
+
+MainStroke.Parent = MainFrame
+
+--==================================================
+-- BACKGROUND GRADIENT
+--==================================================
+
+local BackgroundGradient = Instance.new("UIGradient")
+
+BackgroundGradient.Color = ColorSequence.new({
+
+    ColorSequenceKeypoint.new(
+        0,
+        Dark3
+    ),
+
+    ColorSequenceKeypoint.new(
+        0.45,
+        Dark2
+    ),
+
+    ColorSequenceKeypoint.new(
+        1,
+        Dark1
+    )
+
+})
+
+BackgroundGradient.Rotation = 135
+BackgroundGradient.Parent = MainFrame
+
+--==================================================
+-- BACKGROUND LOGO
+--==================================================
+
+local BackgroundLogo = Instance.new("ImageLabel")
+
+BackgroundLogo.Name = "BackgroundLogo"
+
+BackgroundLogo.BackgroundTransparency = 1
+BackgroundLogo.Image = LOGO
+
+BackgroundLogo.ImageTransparency =
+    BACKGROUND_LOGO_TRANSPARENCY
+
+BackgroundLogo.Size =
+    UDim2.fromOffset(260, 260)
+
+BackgroundLogo.Position =
+    UDim2.new(
+        0.5,
+        -130,
+        0.5,
+        -105
+    )
+
+BackgroundLogo.ScaleType =
+    Enum.ScaleType.Fit
+
+BackgroundLogo.ZIndex = 11
+BackgroundLogo.Parent = MainFrame
+
+--==================================================
+-- TOP BAR
+--==================================================
+
+local TopBar = Instance.new("Frame")
+
+TopBar.Size =
+    UDim2.new(
+        1,
+        0,
+        0,
+        50
+    )
+
+TopBar.BackgroundColor3 = Dark2
+TopBar.BorderSizePixel = 0
+
+TopBar.ZIndex = 20
+TopBar.Parent = MainFrame
+
+local TopCorner = Instance.new("UICorner")
+
+TopCorner.CornerRadius =
+    UDim.new(0, 13)
+
+TopCorner.Parent = TopBar
+
+local TopGradient = Instance.new("UIGradient")
+
+TopGradient.Color = ColorSequence.new({
+
+    ColorSequenceKeypoint.new(
+        0,
+        Color3.fromRGB(18, 40, 95)
+    ),
+
+    ColorSequenceKeypoint.new(
+        0.5,
+        Color3.fromRGB(9, 15, 30)
+    ),
+
+    ColorSequenceKeypoint.new(
+        1,
+        Color3.fromRGB(5, 7, 15)
+    )
+
+})
+
+TopGradient.Parent = TopBar
+
+--==================================================
+-- LOGO
+--==================================================
+
+local Logo = Instance.new("ImageLabel")
+
+Logo.Size =
+    UDim2.fromOffset(35, 35)
+
+Logo.Position =
+    UDim2.fromOffset(7, 7)
+
+Logo.BackgroundTransparency = 1
+Logo.Image = LOGO
+
+Logo.ScaleType =
+    Enum.ScaleType.Fit
+
+Logo.ZIndex = 22
+Logo.Parent = TopBar
+
+--==================================================
+-- TITLE
+--==================================================
+
+local Title = Instance.new("TextLabel")
+
+Title.Size =
+    UDim2.new(
+        1,
+        -125,
+        0,
+        22
+    )
+
+Title.Position =
+    UDim2.fromOffset(48, 7)
+
+Title.BackgroundTransparency = 1
+
+Title.Text = "ZERO HUB"
+
+Title.TextColor3 =
+    Color3.fromRGB(
+        235,
+        242,
+        255
+    )
+
+Title.Font =
+    Enum.Font.GothamBold
+
+Title.TextSize = 15
+
+Title.TextXAlignment =
+    Enum.TextXAlignment.Left
+
+Title.ZIndex = 22
+Title.Parent = TopBar
+
+local Subtitle = Instance.new("TextLabel")
+
+Subtitle.Size =
+    UDim2.new(
+        1,
+        -125,
+        0,
+        16
+    )
+
+Subtitle.Position =
+    UDim2.fromOffset(49, 28)
+
+Subtitle.BackgroundTransparency = 1
+
+Subtitle.Text =
+    "SAE • MULTI SCRIPT HUB"
+
+Subtitle.TextColor3 =
+    Color3.fromRGB(
+        120,
+        155,
+        220
+    )
+
+Subtitle.Font =
+    Enum.Font.Gotham
+
+Subtitle.TextSize = 7
+
+Subtitle.TextXAlignment =
+    Enum.TextXAlignment.Left
+
+Subtitle.ZIndex = 22
+Subtitle.Parent = TopBar
+
+--==================================================
+-- CLOSE BUTTON
+--==================================================
+
+local CloseButton = Instance.new("TextButton")
+
+CloseButton.Name = "CloseButton"
+
+CloseButton.Size =
+    UDim2.fromOffset(
+        28,
+        28
+    )
+
+CloseButton.Position =
+    UDim2.new(
+        1,
+        -36,
+        0,
+        11
+    )
+
+CloseButton.BackgroundColor3 =
+    Color3.fromRGB(
+        10,
+        20,
+        45
+    )
+
+CloseButton.BackgroundTransparency = 0.05
+
+CloseButton.Text = "X"
+
+CloseButton.TextColor3 =
+    Color3.fromRGB(
+        235,
+        242,
+        255
+    )
+
+CloseButton.Font =
+    Enum.Font.GothamBold
+
+CloseButton.TextSize = 12
+
+CloseButton.AutoButtonColor = true
+
+CloseButton.ZIndex = 30
+CloseButton.Parent = TopBar
+
+local CloseCorner = Instance.new("UICorner")
+
+CloseCorner.CornerRadius =
+    UDim.new(0, 8)
+
+CloseCorner.Parent = CloseButton
+
+local CloseStroke = Instance.new("UIStroke")
+
+CloseStroke.Color = AccentBright
+CloseStroke.Thickness = 1.3
+CloseStroke.Transparency = 0.25
+
+CloseStroke.Parent = CloseButton
+
+local CloseLogo = Instance.new("ImageLabel")
+
+CloseLogo.Name = "CloseLogo"
+
+CloseLogo.BackgroundTransparency = 1
+
+CloseLogo.Image = LOGO
+CloseLogo.ImageTransparency = 0.78
+
+CloseLogo.Size =
+    UDim2.new(
+        0.78,
+        0,
+        0.78,
+        0
+    )
+
+CloseLogo.Position =
+    UDim2.new(
+        0.11,
+        0,
+        0.11,
+        0
+    )
+
+CloseLogo.ScaleType =
+    Enum.ScaleType.Fit
+
+CloseLogo.ZIndex = 31
+CloseLogo.Parent = CloseButton
+
+--==================================================
+-- DRAGGING
+--==================================================
+
+local Dragging = false
+local DragStart
+local StartPos
+
+TopBar.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+        or Input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        Dragging = true
+
+        DragStart = Input.Position
+        StartPos = MainFrame.Position
+
+        Input.Changed:Connect(function()
+
+            if Input.UserInputState ==
+                Enum.UserInputState.End then
+
+                Dragging = false
+
+            end
+
+        end)
+
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+
+    if not Dragging then
+        return
+    end
+
+    if Input.UserInputType ==
+        Enum.UserInputType.MouseMovement
+        or Input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        local Delta =
+            Input.Position - DragStart
+
+        MainFrame.Position =
+            UDim2.new(
+
+                StartPos.X.Scale,
+                StartPos.X.Offset + Delta.X,
+
+                StartPos.Y.Scale,
+                StartPos.Y.Offset + Delta.Y
+
+            )
+
+    end
+
+end)
+
+--==================================================
+-- BODY
+--==================================================
+
+local Body = Instance.new("Frame")
+
+Body.Size =
+    UDim2.new(
+        1,
+        -12,
+        1,
+        -58
+    )
+
+Body.Position =
+    UDim2.fromOffset(
+        6,
+        55
+    )
+
+Body.BackgroundTransparency = 1
+
+Body.ZIndex = 20
+Body.Parent = MainFrame
+
+--==================================================
+-- SIDEBAR
+--==================================================
+
+local Sidebar = Instance.new("Frame")
+
+Sidebar.Size =
+    UDim2.fromOffset(
+        92,
+        1
+    )
+
+Sidebar.SizeConstraint =
+    Enum.SizeConstraint.RelativeYY
+
+Sidebar.BackgroundColor3 =
+    Color3.fromRGB(
+        4,
+        8,
+        18
+    )
+
+Sidebar.BackgroundTransparency = 0.15
+
+Sidebar.BorderSizePixel = 0
+
+Sidebar.ZIndex = 21
+Sidebar.Parent = Body
+
+local SidebarCorner = Instance.new("UICorner")
+
+SidebarCorner.CornerRadius =
+    UDim.new(0, 9)
+
+SidebarCorner.Parent = Sidebar
+
+local SidebarLayout = Instance.new("UIListLayout")
+
+SidebarLayout.Padding =
+    UDim.new(0, 5)
+
+SidebarLayout.SortOrder =
+    Enum.SortOrder.LayoutOrder
+
+SidebarLayout.Parent = Sidebar
+
+local SidebarPadding = Instance.new("UIPadding")
+
+SidebarPadding.PaddingTop =
+    UDim.new(0, 6)
+
+SidebarPadding.Parent = Sidebar
+
+--==================================================
+-- RIGHT AREA
+--==================================================
+
+local RightArea = Instance.new("Frame")
+
+RightArea.Size =
+    UDim2.new(
+        1,
+        -99,
+        1,
+        0
+    )
+
+RightArea.Position =
+    UDim2.fromOffset(
+        99,
+        0
+    )
+
+RightArea.BackgroundTransparency = 1
+
+RightArea.ZIndex = 21
+RightArea.Parent = Body
+
+--==================================================
+-- SEARCH
+--==================================================
+
+local SearchBox = Instance.new("TextBox")
+
+SearchBox.Size =
+    UDim2.new(
+        1,
+        -4,
+        0,
+        30
+    )
+
+SearchBox.Position =
+    UDim2.fromOffset(
+        2,
+        0
+    )
+
+SearchBox.BackgroundColor3 =
+    Color3.fromRGB(
+        8,
+        14,
+        30
+    )
+
+SearchBox.BorderSizePixel = 0
+
+SearchBox.PlaceholderText =
+    "Search scripts..."
+
+SearchBox.PlaceholderColor3 =
+    Color3.fromRGB(
+        100,
+        120,
+        155
+    )
+
+SearchBox.Text = ""
+
+SearchBox.TextColor3 =
+    Color3.fromRGB(
+        225,
+        235,
+        255
+    )
+
+SearchBox.Font =
+    Enum.Font.Gotham
+
+SearchBox.TextSize = 9
+
+SearchBox.ClearTextOnFocus = false
+
+SearchBox.ZIndex = 23
+SearchBox.Parent = RightArea
+
+local SearchCorner = Instance.new("UICorner")
+
+SearchCorner.CornerRadius =
+    UDim.new(0, 8)
+
+SearchCorner.Parent = SearchBox
+
+--==================================================
+-- CONTENT
+--==================================================
+
+local Content = Instance.new("ScrollingFrame")
+
+Content.Size =
+    UDim2.new(
+        1,
+        -4,
+        1,
+        -37
+    )
+
+Content.Position =
+    UDim2.fromOffset(
+        2,
+        37
+    )
+
+Content.BackgroundTransparency = 1
+Content.BorderSizePixel = 0
+
+Content.ScrollBarThickness = 2
+
+Content.ScrollBarImageColor3 =
+    AccentBright
+
+Content.CanvasSize =
+    UDim2.new()
+
+Content.AutomaticCanvasSize =
+    Enum.AutomaticSize.Y
+
+Content.ZIndex = 22
+Content.Parent = RightArea
+
+local ContentLayout = Instance.new("UIListLayout")
+
+ContentLayout.Padding =
+    UDim.new(0, 5)
+
+ContentLayout.SortOrder =
+    Enum.SortOrder.LayoutOrder
+
+ContentLayout.Parent = Content
+
+local ContentPadding = Instance.new("UIPadding")
+
+ContentPadding.PaddingBottom =
+    UDim.new(0, 8)
+
+ContentPadding.Parent = Content
+
+--==================================================
+-- NAVIGATION
+--==================================================
+
+local CurrentPage = "MAIN"
+local NavButtons = {}
+
+local function MakeNav(Name)
+
+    local Button = Instance.new("TextButton")
+
+    Button.Size =
+        UDim2.new(
+            1,
+            -8,
+            0,
+            34
+        )
+
+    Button.Position =
+        UDim2.fromOffset(
+            4,
+            0
+        )
+
+    Button.BackgroundColor3 =
+        Color3.fromRGB(
+            8,
+            15,
+            32
+        )
+
+    Button.BorderSizePixel = 0
+
+    Button.Text = Name
+
+    Button.TextColor3 =
+        Color3.fromRGB(
+            160,
+            180,
+            220
+        )
+
+    Button.Font =
+        Enum.Font.GothamBold
+
+    Button.TextSize = 7
+
+    Button.AutoButtonColor = false
+
+    Button.ZIndex = 23
+    Button.Parent = Sidebar
+
+    local Corner = Instance.new("UICorner")
+
+    Corner.CornerRadius =
+        UDim.new(0, 7)
+
+    Corner.Parent = Button
+
+    NavButtons[#NavButtons + 1] =
+        Button
+
+    return Button
+end
+
+local MainButton =
+    MakeNav("MAIN")
+
+local SAEButton =
+    MakeNav("STEAL AN EGG")
+
+local AntiButton =
+    MakeNav("ANTI HIT")
+
+local RideButton =
+    MakeNav("RIDE A PET")
+
+--==================================================
+-- STATUS
+--==================================================
+
+local StatusLabel = Instance.new("TextLabel")
+
+StatusLabel.Size =
+    UDim2.new(
+        1,
+        -8,
+        0,
+        20
+    )
+
+StatusLabel.Position =
+    UDim2.new(
+        0,
+        4,
+        1,
+        -25
+    )
+
+StatusLabel.BackgroundTransparency = 1
+
+StatusLabel.Text = "READY"
+
+StatusLabel.TextColor3 =
+    Color3.fromRGB(
+        90,
+        140,
+        220
+    )
+
+StatusLabel.Font =
+    Enum.Font.GothamBold
+
+StatusLabel.TextSize = 7
+
+StatusLabel.TextXAlignment =
+    Enum.TextXAlignment.Center
+
+StatusLabel.ZIndex = 24
+StatusLabel.Parent = Sidebar
+
+--==================================================
+-- CARDS
+--==================================================
+
+local Cards = {}
+
+local function ClearContent()
+
+    table.clear(Cards)
+
+    for _, Child in ipairs(
+        Content:GetChildren()
+    ) do
+
+        if Child:IsA("GuiObject") then
+            Child:Destroy()
+        end
+
+    end
+
+end
+
+--==================================================
+-- RUN SCRIPT
+--==================================================
+
+local function RunScript(Data)
+
+    if not Data or not Data.URL then
+        return
+    end
+
+    StatusLabel.Text = "LOADING..."
+
+    task.spawn(function()
+
+        local Success, ErrorMessage =
+            pcall(function()
+
+                if Data.PreLoad then
+                    Data.PreLoad()
+                end
+
+                local Source =
+                    game:HttpGet(
+                        Data.URL
+                    )
+
+                local Function =
+                    loadstring(Source)
+
+                if not Function then
+                    error(
+                        "loadstring failed"
+                    )
+                end
+
+                Function()
+
+            end)
+
+        if Success then
+
+            StatusLabel.Text =
+                "LOADED"
+
+        else
+
+            StatusLabel.Text =
+                "ERROR"
+
+            warn(
+                "[ZERO HUB] "
+                .. tostring(ErrorMessage)
+            )
+
+        end
+
+    end)
+
+end
+
+--==================================================
+-- CARD
+--==================================================
+
+local function CreateCard(Data, Type)
+
+    local Card = Instance.new("Frame")
+
+    Card.Size =
+        UDim2.new(
+            1,
+            -4,
+            0,
+            50
+        )
+
+    Card.BackgroundColor3 =
+        Color3.fromRGB(
+            7,
+            13,
+            28
+        )
+
+    Card.BackgroundTransparency = 0.08
+    Card.BorderSizePixel = 0
+
+    Card.ZIndex = 23
+    Card.Parent = Content
+
+    local Corner = Instance.new("UICorner")
+
+    Corner.CornerRadius =
+        UDim.new(0, 8)
+
+    Corner.Parent = Card
+
+    local Stroke = Instance.new("UIStroke")
+
+    Stroke.Color = Accent
+    Stroke.Thickness = 1
+    Stroke.Transparency = 0.55
+
+    Stroke.Parent = Card
+
+    -- NAME
+
+    local Name = Instance.new("TextLabel")
+
+    Name.Size =
+        UDim2.new(
+            1,
+            -82,
+            0,
+            19
+        )
+
+    Name.Position =
+        UDim2.fromOffset(
+            8,
+            4
+        )
+
+    Name.BackgroundTransparency = 1
+
+    Name.Text = Data.Name
+
+    Name.TextColor3 =
+        Color3.fromRGB(
+            225,
+            235,
+            255
+        )
+
+    Name.Font =
+        Enum.Font.GothamBold
+
+    Name.TextSize = 8
+
+    Name.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    Name.ZIndex = 24
+    Name.Parent = Card
+
+    -- TYPE
+
+    local TypeLabel =
+        Instance.new("TextLabel")
+
+    TypeLabel.Size =
+        UDim2.new(
+            1,
+            -82,
+            0,
+            14
+        )
+
+    TypeLabel.Position =
+        UDim2.fromOffset(
+            8,
+            25
+        )
+
+    TypeLabel.BackgroundTransparency = 1
+
+    TypeLabel.Text = Type
+
+    TypeLabel.TextColor3 =
+        Type == "NO KEY"
+        and Color3.fromRGB(
+            75,
+            180,
+            255
+        )
+        or Color3.fromRGB(
+            170,
+            150,
+            255
+        )
+
+    TypeLabel.Font =
+        Enum.Font.Gotham
+
+    TypeLabel.TextSize = 6
+
+    TypeLabel.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    TypeLabel.ZIndex = 24
+    TypeLabel.Parent = Card
+
+    -- EXECUTE
+
+    local Execute =
+        Instance.new("TextButton")
+
+    Execute.Size =
+        UDim2.fromOffset(
+            60,
+            27
+        )
+
+    Execute.Position =
+        UDim2.new(
+            1,
+            -68,
+            0.5,
+            -13
+        )
+
+    Execute.BackgroundColor3 =
+        Accent
+
+    Execute.BorderSizePixel = 0
+
+    Execute.Text = "EXECUTE"
+
+    Execute.TextColor3 =
+        Color3.new(
+            1,
+            1,
+            1
+        )
+
+    Execute.Font =
+        Enum.Font.GothamBold
+
+    Execute.TextSize = 6
+
+    Execute.AutoButtonColor = false
+
+    Execute.ZIndex = 25
+    Execute.Parent = Card
+
+    local ExecuteCorner =
+        Instance.new("UICorner")
+
+    ExecuteCorner.CornerRadius =
+        UDim.new(0, 7)
+
+    ExecuteCorner.Parent =
+        Execute
+
+    Execute.Activated:Connect(
+        function()
+
+            RunScript(Data)
+
+        end
+    )
+
+    Cards[#Cards + 1] = {
+        Card = Card,
+        Name = string.lower(
+            Data.Name
+        )
+    }
+
+end
+
+--==================================================
+-- MAIN PAGE
+--==================================================
+
+local function CreateMain()
+
+    ClearContent()
+
+    local Info = Instance.new("TextLabel")
+
+    Info.Size =
+        UDim2.new(
+            1,
+            -4,
+            0,
+            42
+        )
+
+    Info.BackgroundColor3 =
+        Color3.fromRGB(
+            7,
+            13,
+            28
+        )
+
+    Info.BackgroundTransparency = 0.08
+    Info.BorderSizePixel = 0
+
+    Info.Text =
+        "ZERO HUB • Dark Blue Edition\n\nCreator: Can_zero"
+
+    Info.TextColor3 =
+        Color3.fromRGB(
+            185,
+            205,
+            240
+        )
+
+    Info.Font =
+        Enum.Font.Gotham
+
+    Info.TextSize = 8
+
+    Info.TextWrapped = true
+
+    Info.ZIndex = 23
+    Info.Parent = Content
+
+    local InfoCorner =
+        Instance.new("UICorner")
+
+    InfoCorner.CornerRadius =
+        UDim.new(0, 8)
+
+    InfoCorner.Parent = Info
+
+    --==================================================
+    -- YOUTUBE
+    --==================================================
+
+    local YouTube =
+        Instance.new("TextButton")
+
+    YouTube.Size =
+        UDim2.new(
+            1,
+            -4,
+            0,
+            32
+        )
+
+    YouTube.BackgroundColor3 =
+        Color3.fromRGB(
+            12,
+            28,
+            65
+        )
+
+    YouTube.Text =
+        "YouTube • @Can_Zero • COPY"
+
+    YouTube.TextColor3 =
+        Color3.fromRGB(
+            190,
+            215,
+            255
+        )
+
+    YouTube.Font =
+        Enum.Font.GothamBold
+
+    YouTube.TextSize = 8
+
+    YouTube.ZIndex = 23
+    YouTube.Parent = Content
+
+    local YTCorner =
+        Instance.new("UICorner")
+
+    YTCorner.CornerRadius =
+        UDim.new(0, 8)
+
+    YTCorner.Parent = YouTube
+
+    YouTube.Activated:Connect(
+        function()
+
+            if setclipboard then
+
+                setclipboard(
+                    "https://www.youtube.com/@Can_Zero"
+                )
+
+            end
+
+            StatusLabel.Text =
+                "YOUTUBE COPIED"
+
+        end
+    )
+
+end
+
+--==================================================
+-- SCRIPT PAGE
+--==================================================
+
+local function CreateScriptPage(Page)
+
+    ClearContent()
+
+    local Data =
+        ScriptData[Page]
+
+    if not Data then
+        return
+    end
+
+    local function SectionTitle(Text)
+
+        local Label =
+            Instance.new("TextLabel")
+
+        Label.Size =
+            UDim2.new(
+                1,
+                -4,
+                0,
+                23
+            )
+
+        Label.BackgroundTransparency = 1
+
+        Label.Text = Text
+
+        Label.TextColor3 =
+            AccentBright
+
+        Label.Font =
+            Enum.Font.GothamBold
+
+        Label.TextSize = 8
+
+        Label.TextXAlignment =
+            Enum.TextXAlignment.Left
+
+        Label.ZIndex = 23
+        Label.Parent = Content
+
+    end
+
+    SectionTitle("NO KEY")
+
+    for _, Script in ipairs(
+        Data["NO KEY"] or {}
+    ) do
+
+        CreateCard(
+            Script,
+            "NO KEY"
+        )
+
+    end
+
+    if #(Data["KEY"] or {}) > 0 then
+
+        SectionTitle("KEY")
+
+        for _, Script in ipairs(
+            Data["KEY"]
+        ) do
+
+            CreateCard(
+                Script,
+                "KEY"
+            )
+
+        end
+
+    end
+
+end
+
+--==================================================
+-- PAGE SWITCH
+--==================================================
+
+local function SetPage(Page)
+
+    CurrentPage = Page
+
+    for _, Button in ipairs(
+        NavButtons
+    ) do
+
+        if Button.Text == Page then
+
+            Button.BackgroundColor3 =
+                Accent
+
+            Button.TextColor3 =
+                Color3.new(
+                    1,
+                    1,
+                    1
+                )
+
+        else
+
+            Button.BackgroundColor3 =
+                Color3.fromRGB(
+                    8,
+                    15,
+                    32
+                )
+
+            Button.TextColor3 =
+                Color3.fromRGB(
+                    160,
+                    180,
+                    220
+                )
+
+        end
+
+    end
+
+    if Page == "MAIN" then
+
+        CreateMain()
+
+    else
+
+        CreateScriptPage(Page)
+
+    end
+
+    SearchBox.Text = ""
+    StatusLabel.Text = "READY"
+
+end
+
+--==================================================
+-- NAVIGATION
+--==================================================
+
+MainButton.Activated:Connect(
+    function()
+
+        SetPage("MAIN")
+
+    end
+)
+
+SAEButton.Activated:Connect(
+    function()
+
+        SetPage("STEAL AN EGG")
+
+    end
+)
+
+AntiButton.Activated:Connect(
+    function()
+
+        SetPage("ANTI HIT")
+
+    end
+)
+
+RideButton.Activated:Connect(
+    function()
+
+        SetPage("RIDE A PET")
+
+    end
+)
+
+--==================================================
+-- FAST SEARCH
+--==================================================
+
+SearchBox:GetPropertyChangedSignal(
+    "Text"
+):Connect(function()
+
+    local Query =
+        string.lower(
+            SearchBox.Text
+        )
+
+    for _, Info in ipairs(Cards) do
+
+        if Query == "" then
+
+            Info.Card.Visible = true
+
+        else
+
+            Info.Card.Visible =
+                string.find(
+                    Info.Name,
+                    Query,
+                    1,
+                    true
+                ) ~= nil
+
+        end
+
+    end
+
+end)
+
+--==================================================
+-- MINI BUTTON
+--==================================================
+
+local MiniButton =
+    Instance.new("ImageButton")
+
+MiniButton.Name =
+    "ZeroMiniButton"
+
+MiniButton.Size =
+    UDim2.fromOffset(
+        54,
+        54
+    )
+
+MiniButton.Position =
+    UDim2.new(
+        0,
+        12,
+        0.5,
+        -27
+    )
+
+MiniButton.BackgroundColor3 =
+    Color3.fromRGB(
+        5,
+        10,
+        25
+    )
+
+MiniButton.BackgroundTransparency =
+    0.08
+
+MiniButton.Image = LOGO
+
+MiniButton.ScaleType =
+    Enum.ScaleType.Fit
+
+MiniButton.AutoButtonColor = false
+
+MiniButton.Visible = false
+
+MiniButton.ZIndex = 100
+MiniButton.Parent = ScreenGui
+
+local MiniCorner =
+    Instance.new("UICorner")
+
+MiniCorner.CornerRadius =
+    UDim.new(1, 0)
+
+MiniCorner.Parent =
+    MiniButton
+
+local MiniStroke =
+    Instance.new("UIStroke")
+
+MiniStroke.Color =
+    AccentBright
+
+MiniStroke.Thickness = 1.8
+
+MiniStroke.Transparency = 0.15
+
+MiniStroke.Parent =
+    MiniButton
+
+--==================================================
+-- CLOSE / OPEN
+--==================================================
+
+CloseButton.Activated:Connect(
+    function()
+
+        MainFrame.Visible = false
+        MiniButton.Visible = true
+
+    end
+)
+
+MiniButton.Activated:Connect(
+    function()
+
+        MiniButton.Visible = false
+        MainFrame.Visible = true
+
+    end
+)
+
+--==================================================
+-- MINI DRAG
+--==================================================
+
+local MiniDragging = false
+local MiniStart
+local MiniPos
+
+MiniButton.InputBegan:Connect(
+    function(Input)
+
+        if Input.UserInputType ==
+            Enum.UserInputType.MouseButton1
+            or Input.UserInputType ==
+            Enum.UserInputType.Touch then
+
+            MiniDragging = true
+
+            MiniStart =
+                Input.Position
+
+            MiniPos =
+                MiniButton.Position
+
+            Input.Changed:Connect(
+                function()
+
+                    if Input.UserInputState ==
+                        Enum.UserInputState.End then
+
+                        MiniDragging = false
+
+                    end
+
+                end
+            )
+
+        end
+
+    end
+)
+
+UserInputService.InputChanged:Connect(
+    function(Input)
+
+        if not MiniDragging then
+            return
+        end
+
+        if Input.UserInputType ==
+            Enum.UserInputType.MouseMovement
+            or Input.UserInputType ==
+            Enum.UserInputType.Touch then
+
+            local Delta =
+                Input.Position -
+                MiniStart
+
+            MiniButton.Position =
+                UDim2.new(
+
+                    MiniPos.X.Scale,
+                    MiniPos.X.Offset +
+                        Delta.X,
+
+                    MiniPos.Y.Scale,
+                    MiniPos.Y.Offset +
+                        Delta.Y
+
+                )
+
+        end
+
+    end
+)
+
+--==================================================
+-- START
+--==================================================
+
+SetPage("MAIN")
+
+print(
+    "[ZERO HUB] Ultra fast version loaded."
+)
