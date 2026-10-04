@@ -1,0 +1,1740 @@
+-- https://gist.githubusercontent.com/CanZero11/5c23731c9ec855972cd92c28adf12c94/raw/3ab2f43e4b7095ffcf91d1a549b8b359029aac7b/Virex%2520Hub%2520all%2520sae.lua
+--==================================================
+-- VIREX HUB SAE
+-- FULL CLIENT SCRIPT
+-- YELLOW / GOLD ANIMATED EDITION
+--==================================================
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+--==================================================
+-- GUI PARENT
+--==================================================
+
+local GuiParent
+
+pcall(function()
+    if gethui then
+        GuiParent = gethui()
+    end
+end)
+
+if not GuiParent then
+    pcall(function()
+        GuiParent = game:GetService("CoreGui")
+    end)
+end
+
+if not GuiParent then
+    GuiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+pcall(function()
+    local Old = GuiParent:FindFirstChild("VirexHubGUI")
+    if Old then
+        Old:Destroy()
+    end
+end)
+
+--==================================================
+-- COLORS
+--==================================================
+
+local BLACK = Color3.fromRGB(5, 5, 7)
+local PANEL = Color3.fromRGB(14, 14, 18)
+local PANEL2 = Color3.fromRGB(20, 20, 25)
+
+local WHITE = Color3.fromRGB(240, 240, 245)
+local GREY = Color3.fromRGB(145, 145, 155)
+
+local Accent = Color3.fromRGB(255, 195, 35)
+local AccentBright = Color3.fromRGB(255, 225, 80)
+
+--==================================================
+-- THEMES
+--==================================================
+
+local Themes = {
+    ["GOLD"] = {
+        Color3.fromRGB(255, 195, 35),
+        Color3.fromRGB(255, 225, 80)
+    },
+
+    ["YELLOW"] = {
+        Color3.fromRGB(255, 220, 25),
+        Color3.fromRGB(255, 240, 90)
+    },
+
+    ["CRIMSON"] = {
+        Color3.fromRGB(175, 15, 35),
+        Color3.fromRGB(230, 35, 55)
+    },
+
+    ["DARK CRIMSON"] = {
+        Color3.fromRGB(105, 8, 20),
+        Color3.fromRGB(170, 20, 40)
+    },
+
+    ["EMERALD"] = {
+        Color3.fromRGB(20, 175, 100),
+        Color3.fromRGB(55, 225, 135)
+    },
+
+    ["DEEP EMERALD"] = {
+        Color3.fromRGB(5, 105, 65),
+        Color3.fromRGB(20, 165, 100)
+    },
+
+    ["BRIGHT EMERALD"] = {
+        Color3.fromRGB(25, 220, 115),
+        Color3.fromRGB(80, 255, 160)
+    },
+
+    ["PURPLE"] = {
+        Color3.fromRGB(135, 45, 210),
+        Color3.fromRGB(185, 90, 255)
+    },
+
+    ["BLUE"] = {
+        Color3.fromRGB(35, 105, 220),
+        Color3.fromRGB(75, 155, 255)
+    },
+
+    ["CYAN"] = {
+        Color3.fromRGB(20, 175, 205),
+        Color3.fromRGB(70, 225, 245)
+    },
+
+    ["ORANGE"] = {
+        Color3.fromRGB(225, 100, 25),
+        Color3.fromRGB(255, 155, 55)
+    },
+
+    ["ROSE"] = {
+        Color3.fromRGB(220, 45, 125),
+        Color3.fromRGB(255, 90, 165)
+    }
+}
+
+local AnimatedStrokes = {}
+local AnimatedButtons = {}
+local AnimatedLabels = {}
+
+local function RegisterStroke(Object)
+    table.insert(AnimatedStrokes, Object)
+end
+
+local function RegisterButton(Object)
+    table.insert(AnimatedButtons, Object)
+end
+
+local function RegisterLabel(Object)
+    table.insert(AnimatedLabels, Object)
+end
+
+local function ApplyTheme(NewAccent, NewBright)
+
+    Accent = NewAccent
+    AccentBright = NewBright
+
+    for _, Object in ipairs(AnimatedStrokes) do
+        if Object and Object.Parent then
+            Object.Color = Accent
+        end
+    end
+
+    for _, Object in ipairs(AnimatedLabels) do
+        if Object and Object.Parent then
+            Object.TextColor3 = AccentBright
+        end
+    end
+
+    for _, Object in ipairs(AnimatedButtons) do
+        if Object and Object.Parent then
+            if Object:GetAttribute("VirexSelected") then
+                Object.BackgroundColor3 = Accent
+            end
+        end
+    end
+end
+
+--==================================================
+-- SCREEN GUI
+--==================================================
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "VirexHubGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = GuiParent
+
+--==================================================
+-- MAIN FRAME
+--==================================================
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.fromOffset(570, 540)
+MainFrame.Position = UDim2.fromScale(0.5, 0.5)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = BLACK
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.ZIndex = 5
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 15)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Accent
+MainStroke.Thickness = 1.5
+MainStroke.Transparency = 0.2
+MainStroke.Parent = MainFrame
+
+RegisterStroke(MainStroke)
+
+--==================================================
+-- MOBILE SCALE
+--==================================================
+
+local UIScale = Instance.new("UIScale")
+UIScale.Parent = MainFrame
+
+local function UpdateScale()
+
+    local Camera = workspace.CurrentCamera
+
+    if not Camera then
+        return
+    end
+
+    local Viewport = Camera.ViewportSize
+
+    local ScaleX = (Viewport.X - 20) / 570
+    local ScaleY = (Viewport.Y - 20) / 540
+
+    local Scale = math.min(ScaleX, ScaleY)
+
+    Scale = math.clamp(Scale, 0.45, 1)
+
+    UIScale.Scale = Scale
+end
+
+UpdateScale()
+
+if workspace.CurrentCamera then
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(UpdateScale)
+end
+
+--==================================================
+-- INTERNAL BACKGROUND
+--==================================================
+
+local HubBackground = Instance.new("Frame")
+HubBackground.Size = UDim2.fromScale(1, 1)
+HubBackground.BackgroundColor3 = BLACK
+HubBackground.BorderSizePixel = 0
+HubBackground.ZIndex = 6
+HubBackground.Parent = MainFrame
+
+local BackgroundGradient = Instance.new("UIGradient")
+BackgroundGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(32, 27, 5)),
+    ColorSequenceKeypoint.new(0.45, Color3.fromRGB(10, 10, 12)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(4, 4, 6))
+})
+BackgroundGradient.Rotation = 135
+BackgroundGradient.Parent = HubBackground
+
+--==================================================
+-- WATERMARK
+--==================================================
+
+local Watermark = Instance.new("ImageLabel")
+Watermark.Size = UDim2.fromOffset(280, 280)
+Watermark.Position = UDim2.fromScale(0.5, 0.56)
+Watermark.AnchorPoint = Vector2.new(0.5, 0.5)
+Watermark.BackgroundTransparency = 1
+Watermark.Image = "rbxassetid://107391174248131"
+Watermark.ImageTransparency = 0.88
+Watermark.ScaleType = Enum.ScaleType.Fit
+Watermark.ZIndex = 7
+Watermark.Parent = MainFrame
+
+--==================================================
+-- TOP BAR
+--==================================================
+
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 70)
+TopBar.BackgroundColor3 = Color3.fromRGB(10, 10, 13)
+TopBar.BackgroundTransparency = 0.05
+TopBar.BorderSizePixel = 0
+TopBar.ZIndex = 10
+TopBar.Parent = MainFrame
+
+local TopGradient = Instance.new("UIGradient")
+TopGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(38, 30, 5)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(14, 13, 10)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 8, 11))
+})
+TopGradient.Parent = TopBar
+
+local Logo = Instance.new("ImageLabel")
+Logo.Size = UDim2.fromOffset(50, 50)
+Logo.Position = UDim2.fromOffset(12, 10)
+Logo.BackgroundTransparency = 1
+Logo.Image = "rbxassetid://107391174248131"
+Logo.ScaleType = Enum.ScaleType.Fit
+Logo.ZIndex = 11
+Logo.Parent = TopBar
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(0, 230, 0, 28)
+Title.Position = UDim2.fromOffset(72, 11)
+Title.BackgroundTransparency = 1
+Title.Text = "VIREX HUB"
+Title.TextColor3 = WHITE
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 22
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.ZIndex = 11
+Title.Parent = TopBar
+
+local Subtitle = Instance.new("TextLabel")
+Subtitle.Size = UDim2.new(0, 250, 0, 20)
+Subtitle.Position = UDim2.fromOffset(73, 38)
+Subtitle.BackgroundTransparency = 1
+Subtitle.Text = "SAE • MULTI SCRIPT HUB"
+Subtitle.TextColor3 = GREY
+Subtitle.Font = Enum.Font.Gotham
+Subtitle.TextSize = 11
+Subtitle.TextXAlignment = Enum.TextXAlignment.Left
+Subtitle.ZIndex = 11
+Subtitle.Parent = TopBar
+
+--==================================================
+-- CLOSE
+--==================================================
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.fromOffset(38, 38)
+CloseButton.Position = UDim2.new(1, -48, 0, 16)
+CloseButton.BackgroundColor3 = PANEL2
+CloseButton.Text = "×"
+CloseButton.TextColor3 = WHITE
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 25
+CloseButton.AutoButtonColor = false
+CloseButton.ZIndex = 12
+CloseButton.Parent = TopBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 10)
+CloseCorner.Parent = CloseButton
+
+--==================================================
+-- BODY
+--==================================================
+
+local Body = Instance.new("Frame")
+Body.Size = UDim2.new(1, 0, 1, -70)
+Body.Position = UDim2.fromOffset(0, 70)
+Body.BackgroundTransparency = 1
+Body.ZIndex = 10
+Body.Parent = MainFrame
+
+--==================================================
+-- SIDEBAR
+--==================================================
+
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 145, 1, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(9, 9, 12)
+Sidebar.BackgroundTransparency = 0.08
+Sidebar.BorderSizePixel = 0
+Sidebar.ZIndex = 10
+Sidebar.Parent = Body
+
+local SidebarPadding = Instance.new("UIPadding")
+SidebarPadding.PaddingTop = UDim.new(0, 12)
+SidebarPadding.PaddingLeft = UDim.new(0, 9)
+SidebarPadding.PaddingRight = UDim.new(0, 9)
+SidebarPadding.Parent = Sidebar
+
+local SidebarLayout = Instance.new("UIListLayout")
+SidebarLayout.Padding = UDim.new(0, 7)
+SidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+SidebarLayout.Parent = Sidebar
+
+--==================================================
+-- RIGHT AREA
+--==================================================
+
+local RightArea = Instance.new("Frame")
+RightArea.Size = UDim2.new(1, -145, 1, 0)
+RightArea.Position = UDim2.fromOffset(145, 0)
+RightArea.BackgroundTransparency = 1
+RightArea.ZIndex = 10
+RightArea.Parent = Body
+
+--==================================================
+-- SEARCH
+--==================================================
+
+local SearchBox = Instance.new("TextBox")
+SearchBox.Size = UDim2.new(1, -22, 0, 38)
+SearchBox.Position = UDim2.fromOffset(11, 11)
+SearchBox.BackgroundColor3 = PANEL
+SearchBox.BorderSizePixel = 0
+SearchBox.ClearTextOnFocus = false
+SearchBox.PlaceholderText = "Search scripts..."
+SearchBox.PlaceholderColor3 = GREY
+SearchBox.Text = ""
+SearchBox.TextColor3 = WHITE
+SearchBox.Font = Enum.Font.Gotham
+SearchBox.TextSize = 13
+SearchBox.TextXAlignment = Enum.TextXAlignment.Left
+SearchBox.ZIndex = 12
+SearchBox.Parent = RightArea
+
+local SearchPadding = Instance.new("UIPadding")
+SearchPadding.PaddingLeft = UDim.new(0, 13)
+SearchPadding.Parent = SearchBox
+
+local SearchCorner = Instance.new("UICorner")
+SearchCorner.CornerRadius = UDim.new(0, 10)
+SearchCorner.Parent = SearchBox
+
+local SearchStroke = Instance.new("UIStroke")
+SearchStroke.Color = Accent
+SearchStroke.Transparency = 0.7
+SearchStroke.Parent = SearchBox
+
+RegisterStroke(SearchStroke)
+
+--==================================================
+-- CONTENT
+--==================================================
+
+local Content = Instance.new("ScrollingFrame")
+Content.Size = UDim2.new(1, -22, 1, -62)
+Content.Position = UDim2.fromOffset(11, 56)
+Content.BackgroundTransparency = 1
+Content.BorderSizePixel = 0
+Content.ScrollBarThickness = 3
+Content.ScrollBarImageColor3 = Accent
+Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Content.CanvasSize = UDim2.new()
+Content.ZIndex = 11
+Content.Parent = RightArea
+
+local ContentPadding = Instance.new("UIPadding")
+ContentPadding.PaddingBottom = UDim.new(0, 12)
+ContentPadding.Parent = Content
+
+local ContentLayout = Instance.new("UIListLayout")
+ContentLayout.Padding = UDim.new(0, 8)
+ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ContentLayout.Parent = Content
+
+--==================================================
+-- DATA
+--==================================================
+
+local ScriptData = {
+
+    ["STEAL AN EGG"] = {
+
+        ["NO KEY"] = {
+            {
+                Name = "FYY COMMUNITY",
+                URL = "https://FyyCommunity.my.id"
+            },
+            {
+                Name = "CHILI HUB",
+                URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
+            },
+            {
+                Name = "LENNON",
+                URL = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"
+            },
+            {
+                Name = "BLYXO STEAL AN EGG",
+                URL = "https://flowauth.net/v1/loaders/69d3463240384f3a73fbe32c178093a2.lua"
+            },
+            {
+                Name = "BEE HUB ANIMATION PACK",
+                URL = "https://raw.githubusercontent.com/arjhaysaver-byte/BEE-SCRIPT-ANIMATION-PACK/refs/heads/main/bee_hub.lua"
+            },
+            {
+                Name = "MIRANDA HUB",
+                URL = "https://raw.githubusercontent.com/miirandahub/loader/refs/heads/main/afkk"
+            }
+        },
+
+        ["KEY"] = {
+            {
+                Name = "ZEROIN HUB",
+                URL = "https://zeroinhub.com/api/script"
+            },
+            {
+                Name = "LUMIN HUB",
+                URL = "http://luminon.top/loader.lua"
+            },
+            {
+                Name = "AJJANS",
+                URL = "https://www.crozomods.xyz/scripts/new-script-steal-an-egg-mujkdmz4/raw"
+            },
+            {
+                Name = "BF LOADER",
+                URL = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"
+            }
+        }
+    },
+
+    ["RIDE A PET"] = {
+
+        ["NO KEY"] = {
+            {
+                Name = "MYSTRIX",
+                URL = "https://raw.githubusercontent.com/ummarxfarooq/mystrix-hub/refs/heads/main/loader"
+            },
+            {
+                Name = "GLIN'T HUB",
+                URL = "https://flowauth.net/v1/loaders/b792ba22a029da57e3e0306f258ae518.lua"
+            },
+            {
+                Name = "BLYXO RIDE A PET",
+                URL = "https://flowauth.net/v1/loaders/354ab9b4bef70a7d4247d6249da1e41e.lua"
+            },
+            {
+                Name = "BEE HUB 🐝 🍯",
+                URL = "https://flowauth.net/v1/loaders/6d575d95b31568c868115392828e7df0.lua"
+            }
+        },
+
+        ["KEY"] = {}
+    },
+
+    ["ANTI HIT"] = {
+        ["NO KEY"] = {
+            {
+                Name = "STORM HUB ANTI CHASE",
+                URL = "https://flowauth.net/v1/loaders/15fad2708eb484d3b451f857c6e9a390.lua"
+            }
+        }
+    }
+}
+
+--==================================================
+-- HELPERS
+--==================================================
+
+local ScriptButtons = {}
+
+local function CreateCorner(Object, Radius)
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, Radius)
+    Corner.Parent = Object
+
+    return Corner
+end
+
+local function ClearContent()
+
+    for _, Child in ipairs(Content:GetChildren()) do
+
+        if Child:IsA("GuiObject") then
+            Child:Destroy()
+        end
+    end
+
+    ScriptButtons = {}
+end
+
+--==================================================
+-- BUTTON ANIMATION
+--==================================================
+
+local function AddButtonAnimation(Button, NormalColor, HoverColor)
+
+    RegisterButton(Button)
+
+    local OriginalSize = Button.Size
+
+    Button.MouseEnter:Connect(function()
+
+        TweenService:Create(
+            Button,
+            TweenInfo.new(
+                0.14,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+            {
+                BackgroundColor3 = HoverColor,
+                Size = UDim2.new(
+                    OriginalSize.X.Scale,
+                    OriginalSize.X.Offset + 3,
+                    OriginalSize.Y.Scale,
+                    OriginalSize.Y.Offset + 2
+                )
+            }
+        ):Play()
+    end)
+
+    Button.MouseLeave:Connect(function()
+
+        if not Button:GetAttribute("VirexSelected") then
+
+            TweenService:Create(
+                Button,
+                TweenInfo.new(
+                    0.14,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+                {
+                    BackgroundColor3 = NormalColor,
+                    Size = OriginalSize
+                }
+            ):Play()
+
+        else
+
+            TweenService:Create(
+                Button,
+                TweenInfo.new(0.14),
+                {
+                    Size = OriginalSize
+                }
+            ):Play()
+        end
+    end)
+
+    Button.MouseButton1Down:Connect(function()
+
+        TweenService:Create(
+            Button,
+            TweenInfo.new(0.06),
+            {
+                Size = UDim2.new(
+                    OriginalSize.X.Scale,
+                    OriginalSize.X.Offset - 2,
+                    OriginalSize.Y.Scale,
+                    OriginalSize.Y.Offset - 2
+                )
+            }
+        ):Play()
+    end)
+
+    Button.MouseButton1Up:Connect(function()
+
+        TweenService:Create(
+            Button,
+            TweenInfo.new(0.08),
+            {
+                Size = OriginalSize
+            }
+        ):Play()
+    end)
+end
+
+--==================================================
+-- EXECUTE SCRIPT
+--==================================================
+
+local function RunScript(URL, Status)
+
+    Status.Text = "LOADING..."
+    Status.TextColor3 = AccentBright
+
+    task.spawn(function()
+
+        local Success, ErrorMessage = pcall(function()
+
+            local Source = game:HttpGet(URL)
+
+            local Function = loadstring(Source)
+
+            if not Function then
+                error("Loader compilation failed")
+            end
+
+            Function()
+        end)
+
+        if Success then
+
+            Status.Text = "ONLINE"
+            Status.TextColor3 = Color3.fromRGB(90, 220, 120)
+
+        else
+
+            Status.Text = "ERROR"
+            Status.TextColor3 = Color3.fromRGB(255, 80, 80)
+
+            warn("[VIREX]", ErrorMessage)
+        end
+    end)
+end
+
+--==================================================
+-- SCRIPT CARD
+--==================================================
+
+local function CreateScriptCard(Data)
+
+    local Card = Instance.new("Frame")
+    Card.Size = UDim2.new(1, -2, 0, 67)
+    Card.BackgroundColor3 = PANEL
+    Card.BorderSizePixel = 0
+    Card.ZIndex = 12
+    Card.Parent = Content
+
+    CreateCorner(Card, 11)
+
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Accent
+    Stroke.Transparency = 0.78
+    Stroke.Parent = Card
+
+    RegisterStroke(Stroke)
+
+    local NameLabel = Instance.new("TextLabel")
+    NameLabel.Size = UDim2.new(1, -130, 0, 24)
+    NameLabel.Position = UDim2.fromOffset(12, 8)
+    NameLabel.BackgroundTransparency = 1
+    NameLabel.Text = Data.Name
+    NameLabel.TextColor3 = WHITE
+    NameLabel.Font = Enum.Font.GothamSemibold
+    NameLabel.TextSize = 13
+    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    NameLabel.ZIndex = 13
+    NameLabel.Parent = Card
+
+    local ReadyLabel = Instance.new("TextLabel")
+    ReadyLabel.Size = UDim2.new(1, -130, 0, 20)
+    ReadyLabel.Position = UDim2.fromOffset(12, 32)
+    ReadyLabel.BackgroundTransparency = 1
+    ReadyLabel.Text = "Ready to execute"
+    ReadyLabel.TextColor3 = GREY
+    ReadyLabel.Font = Enum.Font.Gotham
+    ReadyLabel.TextSize = 10
+    ReadyLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ReadyLabel.ZIndex = 13
+    ReadyLabel.Parent = Card
+
+    local Status = Instance.new("TextLabel")
+    Status.Size = UDim2.fromOffset(70, 18)
+    Status.Position = UDim2.new(1, -82, 0, 8)
+    Status.BackgroundTransparency = 1
+    Status.Text = "READY"
+    Status.TextColor3 = GREY
+    Status.Font = Enum.Font.GothamBold
+    Status.TextSize = 9
+    Status.TextXAlignment = Enum.TextXAlignment.Right
+    Status.ZIndex = 14
+    Status.Parent = Card
+
+    local Execute = Instance.new("TextButton")
+    Execute.Size = UDim2.fromOffset(82, 30)
+    Execute.Position = UDim2.new(1, -94, 0, 30)
+    Execute.BackgroundColor3 = Accent
+    Execute.BorderSizePixel = 0
+    Execute.Text = "EXECUTE"
+    Execute.TextColor3 = WHITE
+    Execute.Font = Enum.Font.GothamBold
+    Execute.TextSize = 10
+    Execute.AutoButtonColor = false
+    Execute.ZIndex = 14
+    Execute.Parent = Card
+
+    CreateCorner(Execute, 8)
+
+    AddButtonAnimation(
+        Execute,
+        Accent,
+        AccentBright
+    )
+
+    Execute.MouseButton1Click:Connect(function()
+
+        RunScript(Data.URL, Status)
+
+        local Original = Execute.Size
+
+        TweenService:Create(
+            Execute,
+            TweenInfo.new(0.08, Enum.EasingStyle.Back),
+            {
+                Size = UDim2.new(
+                    Original.X.Scale,
+                    Original.X.Offset + 6,
+                    Original.Y.Scale,
+                    Original.Y.Offset + 3
+                )
+            }
+        ):Play()
+
+        task.delay(0.08, function()
+
+            if Execute and Execute.Parent then
+
+                TweenService:Create(
+                    Execute,
+                    TweenInfo.new(0.12),
+                    {
+                        Size = Original
+                    }
+                ):Play()
+            end
+        end)
+    end)
+
+    table.insert(ScriptButtons, {
+        Frame = Card,
+        Name = string.lower(Data.Name)
+    })
+end
+
+--==================================================
+-- SECTION
+--==================================================
+
+local function CreateSectionTitle(Text)
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -2, 0, 28)
+    Label.BackgroundTransparency = 1
+    Label.Text = Text
+    Label.TextColor3 = AccentBright
+    Label.Font = Enum.Font.GothamBold
+    Label.TextSize = 14
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.ZIndex = 12
+    Label.Parent = Content
+
+    RegisterLabel(Label)
+
+    return Label
+end
+
+local function CreateInfo(Text, Height)
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -2, 0, Height or 30)
+    Label.BackgroundTransparency = 1
+    Label.Text = Text
+    Label.TextColor3 = GREY
+    Label.Font = Enum.Font.Gotham
+    Label.TextSize = 12
+    Label.TextWrapped = true
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.ZIndex = 12
+    Label.Parent = Content
+
+    return Label
+end
+
+--==================================================
+-- EXECUTOR
+--==================================================
+
+local function GetExecutor()
+
+    local Executor = "Unknown"
+
+    pcall(function()
+
+        if identifyexecutor then
+
+            local Result = identifyexecutor()
+
+            if Result then
+                Executor = tostring(Result)
+            end
+        end
+    end)
+
+    if Executor == "Unknown" then
+
+        pcall(function()
+
+            if getexecutorname then
+
+                local Result = getexecutorname()
+
+                if Result then
+                    Executor = tostring(Result)
+                end
+            end
+        end)
+    end
+
+    return Executor
+end
+
+--==================================================
+-- USER CARD
+--==================================================
+
+local function CreateUserCard()
+
+    local Card = Instance.new("Frame")
+    Card.Size = UDim2.new(1, -2, 0, 92)
+    Card.BackgroundColor3 = PANEL
+    Card.BorderSizePixel = 0
+    Card.ZIndex = 12
+    Card.Parent = Content
+
+    CreateCorner(Card, 12)
+
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Accent
+    Stroke.Transparency = 0.65
+    Stroke.Parent = Card
+
+    RegisterStroke(Stroke)
+
+    local Avatar = Instance.new("ImageLabel")
+    Avatar.Size = UDim2.fromOffset(62, 62)
+    Avatar.Position = UDim2.fromOffset(12, 15)
+    Avatar.BackgroundColor3 = PANEL2
+    Avatar.BorderSizePixel = 0
+    Avatar.ZIndex = 13
+    Avatar.Parent = Card
+
+    CreateCorner(Avatar, 12)
+
+    pcall(function()
+
+        local Image = Players:GetUserThumbnailAsync(
+            LocalPlayer.UserId,
+            Enum.ThumbnailType.HeadShot,
+            Enum.ThumbnailSize.Size100x100
+        )
+
+        Avatar.Image = Image
+    end)
+
+    local DisplayName = Instance.new("TextLabel")
+    DisplayName.Size = UDim2.new(1, -90, 0, 23)
+    DisplayName.Position = UDim2.fromOffset(84, 10)
+    DisplayName.BackgroundTransparency = 1
+    DisplayName.Text = LocalPlayer.DisplayName
+    DisplayName.TextColor3 = WHITE
+    DisplayName.Font = Enum.Font.GothamBold
+    DisplayName.TextSize = 14
+    DisplayName.TextXAlignment = Enum.TextXAlignment.Left
+    DisplayName.ZIndex = 13
+    DisplayName.Parent = Card
+
+    local Username = Instance.new("TextLabel")
+    Username.Size = UDim2.new(1, -90, 0, 18)
+    Username.Position = UDim2.fromOffset(84, 33)
+    Username.BackgroundTransparency = 1
+    Username.Text = "@" .. LocalPlayer.Name
+    Username.TextColor3 = GREY
+    Username.Font = Enum.Font.Gotham
+    Username.TextSize = 11
+    Username.TextXAlignment = Enum.TextXAlignment.Left
+    Username.ZIndex = 13
+    Username.Parent = Card
+
+    local Executor = Instance.new("TextLabel")
+    Executor.Size = UDim2.new(1, -90, 0, 20)
+    Executor.Position = UDim2.fromOffset(84, 57)
+    Executor.BackgroundTransparency = 1
+    Executor.Text = "⚡ " .. GetExecutor()
+    Executor.TextColor3 = AccentBright
+    Executor.Font = Enum.Font.GothamSemibold
+    Executor.TextSize = 11
+    Executor.TextXAlignment = Enum.TextXAlignment.Left
+    Executor.ZIndex = 13
+    Executor.Parent = Card
+
+    RegisterLabel(Executor)
+end
+
+--==================================================
+-- MAIN PAGE
+--==================================================
+
+local function BuildMain()
+
+    ClearContent()
+
+    CreateSectionTitle("WELCOME TO VIREX")
+
+    CreateInfo(
+        "Multi-script hub for Steal An Egg, Anti Hit and Ride A Pet.",
+        38
+    )
+
+    CreateUserCard()
+
+    CreateSectionTitle("CREATOR")
+
+    CreateInfo("Can_zero", 30)
+
+    --==================================================
+    -- DISCORD
+    --==================================================
+
+    CreateSectionTitle("DISCORD")
+
+    local Discord = Instance.new("TextButton")
+    Discord.Size = UDim2.new(1, -2, 0, 42)
+    Discord.BackgroundColor3 = PANEL
+    Discord.BorderSizePixel = 0
+    Discord.Text = "discord.gg/virexs   •   COPY"
+    Discord.TextColor3 = WHITE
+    Discord.Font = Enum.Font.GothamSemibold
+    Discord.TextSize = 12
+    Discord.AutoButtonColor = false
+    Discord.ZIndex = 12
+    Discord.Parent = Content
+
+    CreateCorner(Discord, 10)
+
+    local DiscordStroke = Instance.new("UIStroke")
+    DiscordStroke.Color = Accent
+    DiscordStroke.Transparency = 0.65
+    DiscordStroke.Parent = Discord
+
+    RegisterStroke(DiscordStroke)
+
+    AddButtonAnimation(Discord, PANEL, PANEL2)
+
+    Discord.MouseButton1Click:Connect(function()
+
+        pcall(function()
+            setclipboard("https://discord.gg/virexs")
+        end)
+
+        Discord.Text = "COPIED ✓"
+
+        task.delay(1.5, function()
+
+            if Discord and Discord.Parent then
+                Discord.Text = "discord.gg/virexs   •   COPY"
+            end
+        end)
+    end)
+
+    --==================================================
+    -- YOUTUBE
+    --==================================================
+
+    CreateSectionTitle("YOUTUBE")
+
+    local YouTube = Instance.new("TextButton")
+    YouTube.Size = UDim2.new(1, -2, 0, 42)
+    YouTube.BackgroundColor3 = PANEL
+    YouTube.BorderSizePixel = 0
+    YouTube.Text = "Virex YouTube  •  @Vrx.66"
+    YouTube.TextColor3 = WHITE
+    YouTube.Font = Enum.Font.GothamSemibold
+    YouTube.TextSize = 12
+    YouTube.AutoButtonColor = false
+    YouTube.ZIndex = 12
+    YouTube.Parent = Content
+
+    CreateCorner(YouTube, 10)
+
+    local YouTubeStroke = Instance.new("UIStroke")
+    YouTubeStroke.Color = Accent
+    YouTubeStroke.Transparency = 0.65
+    YouTubeStroke.Parent = YouTube
+
+    RegisterStroke(YouTubeStroke)
+
+    AddButtonAnimation(YouTube, PANEL, PANEL2)
+
+    YouTube.MouseButton1Click:Connect(function()
+
+        pcall(function()
+            setclipboard("https://www.youtube.com/@Vrx.66")
+        end)
+
+        YouTube.Text = "COPIED ✓"
+
+        task.delay(1.5, function()
+
+            if YouTube and YouTube.Parent then
+                YouTube.Text = "Virex YouTube  •  @Vrx.66"
+            end
+        end)
+    end)
+
+    --==================================================
+    -- THEME CHANGER
+    --==================================================
+
+    CreateSectionTitle("THEME COLOR")
+
+    CreateInfo(
+        "Animated accent color.",
+        25
+    )
+
+    local ThemeHolder = Instance.new("Frame")
+    ThemeHolder.Size = UDim2.new(1, -2, 0, 190)
+    ThemeHolder.BackgroundTransparency = 1
+    ThemeHolder.ZIndex = 12
+    ThemeHolder.Parent = Content
+
+    local Grid = Instance.new("UIGridLayout")
+    Grid.CellSize = UDim2.new(0.31, 0, 0, 35)
+    Grid.CellPadding = UDim2.new(0.025, 0, 0, 8)
+    Grid.Parent = ThemeHolder
+
+    for ThemeName, Theme in pairs(Themes) do
+
+        local Button = Instance.new("TextButton")
+        Button.BackgroundColor3 = Theme[1]
+        Button.BorderSizePixel = 0
+        Button.Text = ThemeName
+        Button.TextColor3 = WHITE
+        Button.Font = Enum.Font.GothamBold
+        Button.TextSize = 9
+        Button.AutoButtonColor = false
+        Button.ZIndex = 13
+        Button.Parent = ThemeHolder
+
+        CreateCorner(Button, 8)
+
+        local Stroke = Instance.new("UIStroke")
+        Stroke.Color = Theme[2]
+        Stroke.Transparency = 0.25
+        Stroke.Parent = Button
+
+        Button.MouseEnter:Connect(function()
+
+            TweenService:Create(
+                Button,
+                TweenInfo.new(0.15),
+                {
+                    BackgroundColor3 = Theme[2]
+                }
+            ):Play()
+        end)
+
+        Button.MouseLeave:Connect(function()
+
+            TweenService:Create(
+                Button,
+                TweenInfo.new(0.15),
+                {
+                    BackgroundColor3 = Theme[1]
+                }
+            ):Play()
+        end)
+
+        Button.MouseButton1Click:Connect(function()
+
+            ApplyTheme(
+                Theme[1],
+                Theme[2]
+            )
+
+            Button.Text = "✓ " .. ThemeName
+
+            task.delay(1, function()
+
+                if Button and Button.Parent then
+                    Button.Text = ThemeName
+                end
+            end)
+        end)
+    end
+end
+
+--==================================================
+-- ANTI-HIT VARIABLES
+--==================================================
+
+local AntiHitEnabled = false
+local IsTeleporting = false
+
+--==================================================
+-- ANTI-HIT TELEPORT POINTS
+-- EXACT ROUTE FROM UPLOADED VIREX FILE
+--==================================================
+
+local TeleportPoints = {
+    Vector3.new(500.62, 241.28, -366.64),
+    Vector3.new(504.45, 155.80, -366.35),
+    Vector3.new(508.30, 70.28, -366.03),
+    Vector3.new(513.86, 70.28, -366.25),
+    Vector3.new(519.43, 70.28, -366.47),
+    Vector3.new(524.32, 70.28, -366.59),
+    Vector3.new(529.22, 70.28, -366.71),
+    Vector3.new(538.01, 70.28, -365.55),
+    Vector3.new(546.80, 70.28, -364.40)
+}
+
+local ANTI_HIT_SPEED = 0.02
+
+--==================================================
+-- ANTI-HIT LOADING
+--==================================================
+
+local LoadingFrame = Instance.new("Frame")
+LoadingFrame.Size = UDim2.fromOffset(220, 75)
+LoadingFrame.Position = UDim2.fromScale(0.5, 0.5)
+LoadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(12, 10, 5)
+LoadingFrame.BorderSizePixel = 0
+LoadingFrame.Visible = false
+LoadingFrame.ZIndex = 100
+LoadingFrame.Parent = ScreenGui
+
+CreateCorner(LoadingFrame, 10)
+
+local LoadingStroke = Instance.new("UIStroke")
+LoadingStroke.Color = Accent
+LoadingStroke.Thickness = 1.5
+LoadingStroke.Parent = LoadingFrame
+
+RegisterStroke(LoadingStroke)
+
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Size = UDim2.new(1, 0, 0, 30)
+LoadingText.Position = UDim2.fromOffset(0, 7)
+LoadingText.BackgroundTransparency = 1
+LoadingText.Text = "VIREX TELEPORTING..."
+LoadingText.TextColor3 = AccentBright
+LoadingText.Font = Enum.Font.GothamBold
+LoadingText.TextSize = 11
+LoadingText.ZIndex = 101
+LoadingText.Parent = LoadingFrame
+
+RegisterLabel(LoadingText)
+
+local LoadingBack = Instance.new("Frame")
+LoadingBack.Size = UDim2.new(1, -24, 0, 8)
+LoadingBack.Position = UDim2.fromOffset(12, 48)
+LoadingBack.BackgroundColor3 = Color3.fromRGB(35, 30, 8)
+LoadingBack.BorderSizePixel = 0
+LoadingBack.ZIndex = 101
+LoadingBack.Parent = LoadingFrame
+
+CreateCorner(LoadingBack, 8)
+
+local LoadingBar = Instance.new("Frame")
+LoadingBar.Size = UDim2.new(0, 0, 1, 0)
+LoadingBar.BackgroundColor3 = Accent
+LoadingBar.BorderSizePixel = 0
+LoadingBar.ZIndex = 102
+LoadingBar.Parent = LoadingBack
+
+CreateCorner(LoadingBar, 8)
+
+--==================================================
+-- STOP TELEPORT
+--==================================================
+
+local function StopTeleportLoading()
+
+    IsTeleporting = false
+
+    if LoadingBar then
+        LoadingBar.Size = UDim2.new(1, 0, 1, 0)
+    end
+
+    if LoadingFrame then
+        LoadingFrame.Visible = false
+    end
+end
+
+--==================================================
+-- ANTI-HIT ROUTE
+--==================================================
+
+local function TeleportRoute(Character)
+
+    if not Character then
+        return
+    end
+
+    local Root = Character:FindFirstChild("HumanoidRootPart")
+
+    if not Root then
+        return
+    end
+
+    IsTeleporting = true
+
+    LoadingFrame.Visible = true
+    LoadingBar.Size = UDim2.new(0, 0, 1, 0)
+
+    for Index, Position in ipairs(TeleportPoints) do
+
+        if not AntiHitEnabled then
+            StopTeleportLoading()
+            return
+        end
+
+        if not Root.Parent then
+            StopTeleportLoading()
+            return
+        end
+
+        Root.CFrame = CFrame.new(Position)
+
+        local Progress = Index / #TeleportPoints
+
+        TweenService:Create(
+            LoadingBar,
+            TweenInfo.new(
+                ANTI_HIT_SPEED,
+                Enum.EasingStyle.Linear
+            ),
+            {
+                Size = UDim2.new(
+                    Progress,
+                    0,
+                    1,
+                    0
+                )
+            }
+        ):Play()
+
+        task.wait(ANTI_HIT_SPEED)
+    end
+
+    StopTeleportLoading()
+end
+
+--==================================================
+-- ANTI-HIT PAGE
+--==================================================
+
+local function BuildAntiHit()
+
+    ClearContent()
+
+    CreateSectionTitle("ANTI HIT")
+
+    CreateInfo(
+        "Virex Anti-Hit route + Anti-Chase.",
+        32
+    )
+
+    --==================================================
+    -- VIREX ANTI HIT TOGGLE
+    --==================================================
+
+    local AntiButton = Instance.new("TextButton")
+    AntiButton.Size = UDim2.new(1, -2, 0, 50)
+    AntiButton.BackgroundColor3 = PANEL
+    AntiButton.BorderSizePixel = 0
+    AntiButton.Text = "🛡  VIREX ANTI-HIT : OFF"
+    AntiButton.TextColor3 = WHITE
+    AntiButton.Font = Enum.Font.GothamBold
+    AntiButton.TextSize = 12
+    AntiButton.AutoButtonColor = false
+    AntiButton.ZIndex = 12
+    AntiButton.Parent = Content
+
+    CreateCorner(AntiButton, 10)
+
+    local AntiStroke = Instance.new("UIStroke")
+    AntiStroke.Color = Accent
+    AntiStroke.Transparency = 0.55
+    AntiStroke.Parent = AntiButton
+
+    RegisterStroke(AntiStroke)
+
+    AddButtonAnimation(
+        AntiButton,
+        PANEL,
+        PANEL2
+    )
+
+    local function UpdateAntiButton()
+
+        if AntiHitEnabled then
+
+            AntiButton.Text = "🛡  VIREX ANTI-HIT : ON"
+            AntiButton.BackgroundColor3 = Accent
+
+        else
+
+            AntiButton.Text = "🛡  VIREX ANTI-HIT : OFF"
+            AntiButton.BackgroundColor3 = PANEL
+        end
+    end
+
+    AntiButton.MouseButton1Click:Connect(function()
+
+        AntiHitEnabled = not AntiHitEnabled
+
+        UpdateAntiButton()
+
+        if not AntiHitEnabled and IsTeleporting then
+            StopTeleportLoading()
+        end
+    end)
+
+    UpdateAntiButton()
+
+    CreateSectionTitle("NO KEY")
+
+    --==================================================
+    -- STORM HUB
+    --==================================================
+
+    CreateScriptCard({
+        Name = "STORM HUB ANTI CHASE",
+        URL = "https://flowauth.net/v1/loaders/15fad2708eb484d3b451f857c6e9a390.lua"
+    })
+end
+
+--==================================================
+-- NORMAL SCRIPT PAGE
+--==================================================
+
+local function BuildPage(PageName)
+
+    if PageName == "ANTI HIT" then
+        BuildAntiHit()
+        return
+    end
+
+    ClearContent()
+
+    CreateSectionTitle(PageName)
+
+    local Data = ScriptData[PageName]
+
+    if not Data then
+
+        CreateInfo(
+            "No scripts available.",
+            35
+        )
+
+        return
+    end
+
+    if PageName == "STEAL AN EGG" then
+
+        CreateSectionTitle("NO KEY")
+
+        for _, Script in ipairs(Data["NO KEY"]) do
+            CreateScriptCard(Script)
+        end
+
+        CreateSectionTitle("KEY")
+
+        for _, Script in ipairs(Data["KEY"]) do
+            CreateScriptCard(Script)
+        end
+    end
+
+    if PageName == "RIDE A PET" then
+
+        CreateSectionTitle("NO KEY")
+
+        for _, Script in ipairs(Data["NO KEY"]) do
+            CreateScriptCard(Script)
+        end
+
+        CreateSectionTitle("KEY")
+
+        for _, Script in ipairs(Data["KEY"]) do
+            CreateScriptCard(Script)
+        end
+    end
+end
+
+--==================================================
+-- NAVIGATION
+--==================================================
+
+local function CreateNavButton(Text, Order)
+
+    local Button = Instance.new("TextButton")
+    Button.Name = Text
+    Button.Size = UDim2.new(1, 0, 0, 38)
+    Button.BackgroundColor3 = PANEL
+    Button.BorderSizePixel = 0
+    Button.Text = Text
+    Button.TextColor3 = GREY
+    Button.Font = Enum.Font.GothamBold
+    Button.TextSize = 10
+    Button.AutoButtonColor = false
+    Button.LayoutOrder = Order
+    Button.ZIndex = 12
+    Button.Parent = Sidebar
+
+    CreateCorner(Button, 9)
+
+    Button:SetAttribute("VirexSelected", false)
+
+    AddButtonAnimation(
+        Button,
+        PANEL,
+        PANEL2
+    )
+
+    Button.MouseButton1Click:Connect(function()
+
+        for _, Child in ipairs(Sidebar:GetChildren()) do
+
+            if Child:IsA("TextButton") then
+
+                Child:SetAttribute("VirexSelected", false)
+                Child.BackgroundColor3 = PANEL
+                Child.TextColor3 = GREY
+            end
+        end
+
+        Button:SetAttribute("VirexSelected", true)
+        Button.BackgroundColor3 = Accent
+        Button.TextColor3 = WHITE
+
+        if Text == "MAIN" then
+            BuildMain()
+        else
+            BuildPage(Text)
+        end
+    end)
+
+    return Button
+end
+
+local MainNav = CreateNavButton("MAIN", 1)
+CreateNavButton("STEAL AN EGG", 2)
+CreateNavButton("ANTI HIT", 3)
+CreateNavButton("RIDE A PET", 4)
+
+MainNav:SetAttribute("VirexSelected", true)
+MainNav.BackgroundColor3 = Accent
+MainNav.TextColor3 = WHITE
+
+--==================================================
+-- SEARCH
+--==================================================
+
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+
+    local Query = string.lower(SearchBox.Text)
+
+    for _, Info in ipairs(ScriptButtons) do
+
+        if Query == "" then
+
+            Info.Frame.Visible = true
+
+        else
+
+            Info.Frame.Visible =
+                string.find(
+                    Info.Name,
+                    Query,
+                    1,
+                    true
+                ) ~= nil
+        end
+    end
+end)
+
+--==================================================
+-- MINI LOGO
+--==================================================
+
+local MiniButton = Instance.new("ImageButton")
+MiniButton.Name = "MiniVirex"
+MiniButton.Size = UDim2.fromOffset(58, 58)
+MiniButton.Position = UDim2.new(0, 15, 0.5, 0)
+MiniButton.AnchorPoint = Vector2.new(0, 0.5)
+MiniButton.BackgroundColor3 = BLACK
+MiniButton.BorderSizePixel = 0
+MiniButton.Image = "rbxassetid://107391174248131"
+MiniButton.Visible = false
+MiniButton.ZIndex = 100
+MiniButton.Parent = ScreenGui
+
+CreateCorner(MiniButton, 14)
+
+local MiniStroke = Instance.new("UIStroke")
+MiniStroke.Color = Accent
+MiniStroke.Thickness = 1.5
+MiniStroke.Parent = MiniButton
+
+RegisterStroke(MiniStroke)
+
+--==================================================
+-- CLOSE / RESTORE
+--==================================================
+
+CloseButton.MouseButton1Click:Connect(function()
+
+    MainFrame.Visible = false
+    MiniButton.Visible = true
+end)
+
+MiniButton.MouseButton1Click:Connect(function()
+
+    MainFrame.Visible = true
+    MiniButton.Visible = false
+end)
+
+--==================================================
+-- DRAG
+--==================================================
+
+local Dragging = false
+local DragStart
+local StartPosition
+
+TopBar.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        Dragging = true
+        DragStart = Input.Position
+        StartPosition = MainFrame.Position
+
+        Input.Changed:Connect(function()
+
+            if Input.UserInputState == Enum.UserInputState.End then
+                Dragging = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+
+    if not Dragging then
+        return
+    end
+
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        local Delta = Input.Position - DragStart
+
+        MainFrame.Position = UDim2.new(
+            StartPosition.X.Scale,
+            StartPosition.X.Offset + Delta.X,
+            StartPosition.Y.Scale,
+            StartPosition.Y.Offset + Delta.Y
+        )
+    end
+end)
+
+--==================================================
+-- ANTI-HIT PROMPT TRIGGER
+-- EXACT BEHAVIOR FROM UPLOADED FILE
+--==================================================
+
+ProximityPromptService.PromptTriggered:Connect(function(Prompt, Player)
+
+    if Player ~= LocalPlayer then
+        return
+    end
+
+    if not AntiHitEnabled then
+        return
+    end
+
+    if IsTeleporting then
+        return
+    end
+
+    local Character = LocalPlayer.Character
+
+    if not Character then
+        return
+    end
+
+    task.spawn(function()
+        TeleportRoute(Character)
+    end)
+end)
+
+--==================================================
+-- ANIMATED ACCENT
+--==================================================
+
+local AnimationTime = 0
+
+RunService.RenderStepped:Connect(function(Delta)
+
+    AnimationTime += Delta
+
+    local Pulse =
+        (math.sin(AnimationTime * 3) + 1) / 2
+
+    local PulseColor =
+        Accent:Lerp(
+            AccentBright,
+            Pulse * 0.35
+        )
+
+    if MainStroke and MainStroke.Parent then
+
+        MainStroke.Color = PulseColor
+
+        MainStroke.Transparency =
+            0.18 + Pulse * 0.17
+    end
+
+    if SearchStroke and SearchStroke.Parent then
+
+        SearchStroke.Color = PulseColor
+
+        SearchStroke.Transparency =
+            0.55 + Pulse * 0.2
+    end
+
+    for _, Stroke in ipairs(AnimatedStrokes) do
+
+        if Stroke and Stroke.Parent then
+            Stroke.Color = PulseColor
+        end
+    end
+
+    for _, Button in ipairs(AnimatedButtons) do
+
+        if Button and Button.Parent then
+
+            if Button:GetAttribute("VirexSelected") then
+
+                Button.BackgroundColor3 =
+                    Accent:Lerp(
+                        AccentBright,
+                        Pulse * 0.45
+                    )
+            end
+        end
+    end
+end)
+
+--==================================================
+-- INITIALIZE
+--==================================================
+
+BuildMain()
+
+print("[VIREX HUB] Animated Yellow Edition Loaded")
+print("[VIREX HUB] Integrated Anti-Hit Loaded")
