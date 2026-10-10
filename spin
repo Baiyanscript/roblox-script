@@ -6,6 +6,8 @@ local localPlayer = Players.LocalPlayer
 local spinning = false
 local spinSpeed = 15 -- 預設旋轉速度
 
+local characterAddedConn -- 用於儲存角色重生的連線，方便後續中斷
+
 local function createSpinGui()
     local existingGui = localPlayer.PlayerGui:FindFirstChild("AdvancedSpinGui")
     if existingGui then existingGui:Destroy() end
@@ -41,10 +43,21 @@ local function createSpinGui()
     titleBar.TextSize = 14
     titleBar.Parent = mainFrame
 
-    -- 縮小按鈕
+    -- 關閉按鈕 (×)
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 30, 0, 30)
+    closeBtn.Position = UDim2.new(1, -30, 0, 0)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.Text = "×"
+    closeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    closeBtn.TextSize = 18
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.Parent = titleBar
+
+    -- 縮小按鈕 (—)
     local minimizeBtn = Instance.new("TextButton")
     minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-    minimizeBtn.Position = UDim2.new(1, -30, 0, 0)
+    minimizeBtn.Position = UDim2.new(1, -60, 0, 0)
     minimizeBtn.BackgroundTransparency = 1
     minimizeBtn.Text = "—"
     minimizeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -128,12 +141,12 @@ local function createSpinGui()
 
     -- 2. 調整速度
     speedDownBtn.MouseButton1Click:Connect(function()
-        spinSpeed = math.max(5, spinSpeed - 5) -- 最低限制為 5
+        spinSpeed = math.max(5, spinSpeed - 5)
         speedLabel.Text = "目前速度: " .. spinSpeed
     end)
 
     speedUpBtn.MouseButton1Click:Connect(function()
-        spinSpeed = math.min(100, spinSpeed + 5) -- 最高限制為 100
+        spinSpeed = math.min(100, spinSpeed + 5)
         speedLabel.Text = "目前速度: " .. spinSpeed
     end)
 
@@ -152,7 +165,16 @@ local function createSpinGui()
         end
     end)
 
-    -- 4. 拖動視窗邏輯 (Drag Logic)
+    -- 4. 關閉面板功能
+    closeBtn.MouseButton1Click:Connect(function()
+        spinning = false
+        if characterAddedConn then
+            characterAddedConn:Disconnect()
+        end
+        screenGui:Destroy()
+    end)
+
+    -- 5. 拖動視窗邏輯
     local dragging = false
     local dragInput, dragStart, startPos
 
@@ -192,7 +214,7 @@ end
 createSpinGui()
 
 -- 重生後重新建立 GUI
-localPlayer.CharacterAdded:Connect(function()
+characterAddedConn = localPlayer.CharacterAdded:Connect(function()
     spinning = false
     createSpinGui()
 end)
