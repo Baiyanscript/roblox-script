@@ -6,9 +6,12 @@ local localPlayer = Players.LocalPlayer
 local spinning = false
 local spinSpeed = 15 -- 預設旋轉速度
 
-local characterAddedConn -- 用於儲存角色重生的連線，方便後續中斷
+-- 用於跨重生保留選單狀態的變數
+local savedPosition = UDim2.new(0.5, -110, 0.4, 0)
+local savedMinimizedState = false
+local characterAddedConn
 
-local function createSpinGui()
+local function createSpinGui(wasSpinning)
     local existingGui = localPlayer.PlayerGui:FindFirstChild("AdvancedSpinGui")
     if existingGui then existingGui:Destroy() end
 
@@ -18,11 +21,15 @@ local function createSpinGui()
     screenGui.ResetOnSpawn = false
     screenGui.Parent = localPlayer.PlayerGui
 
-    -- 主視窗框架
+    -- 主視窗框架 (載入記錄的位置與大小)
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
-    mainFrame.Size = UDim2.new(0, 220, 0, 160)
-    mainFrame.Position = UDim2.new(0.5, -110, 0.4, 0)
+    if savedMinimizedState then
+        mainFrame.Size = UDim2.new(0, 220, 0, 30)
+    else
+        mainFrame.Size = UDim2.new(0, 220, 0, 160)
+    end
+    mainFrame.Position = savedPosition
     mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     mainFrame.ClipsDescendants = true
     mainFrame.Parent = screenGui
@@ -59,30 +66,39 @@ local function createSpinGui()
     minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
     minimizeBtn.Position = UDim2.new(1, -60, 0, 0)
     minimizeBtn.BackgroundTransparency = 1
-    minimizeBtn.Text = "—"
+    minimizeBtn.Text = savedMinimizedState and "+" or "—"
     minimizeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
     minimizeBtn.TextSize = 16
     minimizeBtn.Font = Enum.Font.GothamBold
     minimizeBtn.Parent = titleBar
 
-    -- 內容容器 (縮放時隱藏)
+    -- 內容容器 (根據儲存的縮合狀態決定是否顯示)
     local contentFrame = Instance.new("Frame")
     contentFrame.Name = "ContentFrame"
     contentFrame.Size = UDim2.new(1, 0, 1, -30)
     contentFrame.Position = UDim2.new(0, 0, 0, 30)
     contentFrame.BackgroundTransparency = 1
+    contentFrame.Visible = not savedMinimizedState
     contentFrame.Parent = mainFrame
 
     -- 旋轉開關按鈕
     local toggleBtn = Instance.new("TextButton")
     toggleBtn.Size = UDim2.new(0, 180, 0, 40)
     toggleBtn.Position = UDim2.new(0.5, -90, 0, 10)
-    toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    toggleBtn.Text = "旋轉: 關閉"
-    toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     toggleBtn.Font = Enum.Font.GothamBold
     toggleBtn.TextSize = 15
+    toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255) -- 開關文字設為白色[cite: 8]
     toggleBtn.Parent = contentFrame
+
+    -- 根據重生前的狀態設定按鈕外觀與變數
+    spinning = wasSpinning or false
+    if spinning then
+        toggleBtn.Text = "旋轉: 開啟"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
+    else
+        toggleBtn.Text = "旋轉: 關閉"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    end
 
     local toggleCorner = Instance.new("UICorner")
     toggleCorner.CornerRadius = UDim.new(0, 6)
@@ -150,11 +166,10 @@ local function createSpinGui()
         speedLabel.Text = "目前速度: " .. spinSpeed
     end)
 
-    -- 3. 視窗縮小與展開
-    local isMinimized = false
+    -- 3. 視窗縮小與展開 (並自動記錄狀態)
     minimizeBtn.MouseButton1Click:Connect(function()
-        isMinimized = not isMinimized
-        if isMinimized then
+        savedMinimizedState = not savedMinimizedState
+        if savedMinimizedState then
             mainFrame:TweenSize(UDim2.new(0, 220, 0, 30), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.2, true)
             minimizeBtn.Text = "+"
             contentFrame.Visible = false
@@ -174,13 +189,14 @@ local function createSpinGui()
         screenGui:Destroy()
     end)
 
-    -- 5. 拖動視窗邏輯
+    -- 5. 整個面板拖動邏輯 (並自動記錄位置)
     local dragging = false
     local dragInput, dragStart, startPos
 
     local function update(input)
         local delta = input.Position - dragStart
         mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        savedPosition = mainFrame.Position -- 即時記錄位置[cite: 8]
     end
 
     titleBar.InputBegan:Connect(function(input)
@@ -210,13 +226,13 @@ local function createSpinGui()
     end)
 end
 
--- 初始化 GUI
-createSpinGui()
+-- 初始化 GUI (預設未開啟)
+createSpinGui(false)
 
--- 重生後重新建立 GUI
+-- 重生後偵測死亡前的狀態、位置與縮合狀態並重建 GUI
 characterAddedConn = localPlayer.CharacterAdded:Connect(function()
-    spinning = false
-    createSpinGui()
+    local currentSpinState = spinning
+    createSpinGui(currentSpinState)
 end)
 
 -- 執行旋轉
