@@ -1,0 +1,421 @@
+-- NXT Script - Fixed & Cleaned
+local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local CurrentCamera = Workspace.CurrentCamera
+
+-- تحديد مجلد واجهة المستخدم (PlayerGui أو CoreGui)
+local TargetGui
+pcall(function()
+    TargetGui = CoreGui
+end)
+if not TargetGui or not pcall(function() return TargetGui.Name end) then
+    TargetGui = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- المتغيرات العامة والحالة
+local antiHitEnabled = true
+local activeConnections = setmetatable({}, { __mode = "k" })
+local eventConnections = {}
+
+-- إحداثيات الانتقال السريع (Anti-Hit Bypass)
+local teleportLocations = {
+    CFrame.new(4747.71, 70.57, -335.25),
+    CFrame.new(3520.94, 70.73, -343.74),
+    CFrame.new(2446.02, 70.88, -351.18),
+    CFrame.new(1352.11, 71.02, -358.75),
+    CFrame.new(544.49, 71.13, -364.34)
+}
+
+-- وظيفة حماية الشخصية عند تفعيل الـ Prompt (Desync / Anti-Hit)
+local function executeAntiHitBypass()
+    local Character = LocalPlayer.Character
+    if not Character then return end
+    
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+    if not Humanoid or not HumanoidRootPart then return end
+
+    local originalHRPPos = HumanoidRootPart.CFrame
+    local originalCamCFrame = CurrentCamera.CFrame
+    local originalCamType = CurrentCamera.CameraType
+
+    -- إنشاء نسخة طبق الأصل وهمية للشخصية
+    local isArchivable = Character.Archivable
+    Character.Archivable = true
+    local clone = Character:Clone()
+    Character.Archivable = isArchivable
+
+    if clone then
+        for _, descendant in ipairs(clone:GetDescendants()) do
+            if descendant:IsA("BasePart") then
+                descendant.Anchored = true
+                descendant.CanCollide = false
+            elseif descendant:IsA("LocalScript") or descendant:IsA("Script") then
+                descendant:Destroy()
+            end
+        end
+        clone.Parent = Workspace
+    end
+
+    CurrentCamera.CameraType = Enum.CameraType.Scriptable
+    CurrentCamera.CFrame = originalCamCFrame
+    Humanoid.BreakJointsOnDeath = false
+
+    -- إخفاء عناصر الشخصية الأصلية مؤقتاً
+    local savedStates = {}
+    for _, descendant in ipairs(Character:GetDescendants()) do
+        if descendant:IsA("BasePart") then
+            savedStates[descendant] = { LTM = descendant.LocalTransparencyModifier }
+            descendant.LocalTransparencyModifier = 1
+        elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
+            savedStates[descendant] = { T = descendant.Transparency }
+            descendant.Transparency = 1
+        elseif descendant:IsA("Trail") or descendant:IsA("ParticleEmitter") or descendant:IsA("Beam") 
+            or descendant:IsA("Highlight") or descendant:IsA("Light") 
+            or descendant:IsA("BillboardGui") or descendant:IsA("SurfaceGui") then
+            savedStates[descendant] = { E = descendant.Enabled }
+            descendant.Enabled = false
+        elseif descendant:IsA("Motor6D") then
+            descendant.Enabled = true
+        end
+    end
+
+    -- التنقل السريع عبر النقاط
+    for _, cf in ipairs(teleportLocations) do
+        Humanoid.PlatformStand = true
+        Humanoid.Health = 100
+        HumanoidRootPart.CFrame = cf
+        CurrentCamera.CFrame = originalCamCFrame
+        task.wait(0.02)
+    end
+
+    for _ = 1, 15 do
+        Humanoid.Health = 100
+        Humanoid.PlatformStand = true
+        HumanoidRootPart.CFrame = teleportLocations[#teleportLocations]
+        CurrentCamera.CFrame = originalCamCFrame
+        task.wait(0.01)
+    end
+
+    -- إعادة الشخصية لوضعها الطبيعي
+    HumanoidRootPart.CFrame = originalHRPPos
+    Humanoid.PlatformStand = false
+
+    for item, state in pairs(savedStates) do
+        if item and item.Parent then
+            if state.LTM then item.LocalTransparencyModifier = state.LTM end
+            if state.T then item.Transparency = state.T end
+            if state.E ~= nil then item.Enabled = state.E end
+        end
+    end
+
+    if clone then clone:Destroy() end
+    CurrentCamera.CameraType = originalCamType
+end
+
+-- تنظيف الإشارات المقطوعة
+local function cleanupConnections()
+    for prompt, conns in pairs(activeConnections) do
+        if not prompt or not prompt.Parent then
+            if conns then
+                for _, conn in ipairs(conns) do
+                    if conn then conn:Disconnect() end
+                end
+            end
+            activeConnections[prompt] = nil
+        end
+    end
+end
+
+task.spawn(function()
+    while task.wait(30) do
+        cleanupConnections()
+    end
+end)
+
+-- تعديل الـ ProximityPrompt للضغط الفوري (Instant Hold)
+local function setupPrompt(prompt)
+    if not prompt or typeof(prompt) ~= "Instance" or not prompt:IsA("ProximityPrompt") then
+        return
+    end
+
+    prompt.HoldDuration = 0
+
+    if not activeConnections[prompt] then
+        local holdConn = prompt:GetPropertyChangedSignal("HoldDuration"):Connect(function()
+            if antiHitEnabled and prompt and prompt.Parent and prompt.HoldDuration > 0 then
+                prompt.HoldDuration = 0
+            end
+        end)
+        
+        local destroyConn = prompt.Destroying:Connect(function()
+            if activeConnections[prompt] then
+                for _, conn in ipairs(activeConnections[prompt]) do
+                    if conn then conn:Disconnect() end
+                end
+                activeConnections[prompt] = nil
+            end
+        end)
+
+        activeConnections[prompt] = { holdConn, destroyConn }
+    end
+end
+
+-- بناء واجهة المستخدم (GUI)
+if TargetGui:FindFirstChild("NXT_Native") then
+    TargetGui.NXT_Native:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "NXT_Native"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = TargetGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 220, 0, 160)
+MainFrame.Position = UDim2.new(0.5, -110, 0.4, -80)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.ZIndex = 2
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 6)
+MainCorner.Parent = MainFrame
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, -24, 0, 24)
+TitleLabel.Position = UDim2.new(0, 12, 0, 8)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "NXT - Steal An Egg"
+TitleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+TitleLabel.Font = Enum.Font.Code
+TitleLabel.TextSize = 12
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.ZIndex = 3
+TitleLabel.Parent = MainFrame
+
+local ToggleAntiHitBtn = Instance.new("TextButton")
+ToggleAntiHitBtn.Size = UDim2.new(1, -24, 0, 32)
+ToggleAntiHitBtn.Position = UDim2.new(0, 12, 0, 38)
+ToggleAntiHitBtn.BackgroundColor3 = Color3.fromRGB(35, 160, 35)
+ToggleAntiHitBtn.Text = ""
+ToggleAntiHitBtn.AutoButtonColor = false
+ToggleAntiHitBtn.ZIndex = 3
+ToggleAntiHitBtn.Parent = MainFrame
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 4)
+ToggleCorner.Parent = ToggleAntiHitBtn
+
+local AntiHitText = Instance.new("TextLabel")
+AntiHitText.Size = UDim2.new(1, 0, 1, 0)
+AntiHitText.BackgroundTransparency = 1
+AntiHitText.Text = "ANTI HIT - ON"
+AntiHitText.TextColor3 = Color3.fromRGB(255, 255, 255)
+AntiHitText.Font = Enum.Font.SourceSansBold
+AntiHitText.TextSize = 13
+AntiHitText.ZIndex = 4
+AntiHitText.Parent = ToggleAntiHitBtn
+
+local UpBtn = Instance.new("TextButton")
+UpBtn.Size = UDim2.new(0.5, -16, 0, 32)
+UpBtn.Position = UDim2.new(0, 12, 0, 78)
+UpBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+UpBtn.Text = "UP"
+UpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+UpBtn.Font = Enum.Font.SourceSansBold
+UpBtn.TextSize = 13
+UpBtn.ZIndex = 3
+UpBtn.Parent = MainFrame
+
+local UpCorner = Instance.new("UICorner")
+UpCorner.CornerRadius = UDim.new(0, 4)
+UpCorner.Parent = UpBtn
+
+local DownBtn = Instance.new("TextButton")
+DownBtn.Size = UDim2.new(0.5, -16, 0, 32)
+DownBtn.Position = UDim2.new(0.5, 4, 0, 78)
+DownBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+DownBtn.Text = "DOWN"
+DownBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DownBtn.Font = Enum.Font.SourceSansBold
+DownBtn.TextSize = 13
+DownBtn.ZIndex = 3
+DownBtn.Parent = MainFrame
+
+local DownCorner = Instance.new("UICorner")
+DownCorner.CornerRadius = UDim.new(0, 4)
+DownCorner.Parent = DownBtn
+
+-- 新增：高度設定欄位 (Height Setting Box)
+local HeightLabel = Instance.new("TextLabel")
+HeightLabel.Size = UDim2.new(0.5, -16, 0, 28)
+HeightLabel.Position = UDim2.new(0, 12, 0, 118)
+HeightLabel.BackgroundTransparency = 1
+HeightLabel.Text = "Height Step:"
+HeightLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+HeightLabel.Font = Enum.Font.Code
+HeightLabel.TextSize = 12
+HeightLabel.TextXAlignment = Enum.TextXAlignment.Left
+HeightLabel.ZIndex = 3
+HeightLabel.Parent = MainFrame
+
+local HeightBox = Instance.new("TextBox")
+HeightBox.Size = UDim2.new(0.5, -16, 0, 28)
+HeightBox.Position = UDim2.new(0.5, 4, 0, 118)
+HeightBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+HeightBox.Text = "15" -- 預設高度（可點擊 UI 直接修改）
+HeightBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+HeightBox.Font = Enum.Font.Code
+HeightBox.TextSize = 12
+HeightBox.ZIndex = 3
+HeightBox.Parent = MainFrame
+
+local HeightCorner = Instance.new("UICorner")
+HeightCorner.CornerRadius = UDim.new(0, 4)
+HeightCorner.Parent = HeightBox
+
+-- منصة الطيران/الارتفاع (Air Platform Logic)
+local isPlatformActive = false
+local floorPart = nil
+local renderConnection = nil
+local currentHeightOffset = 0
+
+-- 讀取輸入框高度數值的函數
+local function getHeightStep()
+    local num = tonumber(HeightBox.Text)
+    return num or 15 -- 如果輸入非數字，預設為 15
+end
+
+local function createPlatform()
+    if floorPart and floorPart.Parent then
+        floorPart:Destroy()
+    end
+    floorPart = Instance.new("Part")
+    floorPart.Name = "FloorPart"
+    floorPart.Size = Vector3.new(15, 1, 15)
+    floorPart.Anchored = true
+    floorPart.CanCollide = true
+    floorPart.Transparency = 1
+    floorPart.Parent = Workspace
+end
+
+local function removePlatform()
+    isPlatformActive = false
+    currentHeightOffset = 0
+    if floorPart then
+        floorPart:Destroy()
+        floorPart = nil
+    end
+    if renderConnection then
+        renderConnection:Disconnect()
+        renderConnection = nil
+    end
+end
+
+local function updatePlatformPosition()
+    if not isPlatformActive or not floorPart or not floorPart.Parent then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    floorPart.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y - 3.2, hrp.Position.Z)
+end
+
+UpBtn.MouseButton1Click:Connect(function()
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local step = getHeightStep()
+
+    if not isPlatformActive then
+        isPlatformActive = true
+        currentHeightOffset = step
+        hrp.CFrame = hrp.CFrame + Vector3.new(0, step, 0)
+        createPlatform()
+        if not renderConnection then
+            renderConnection = RunService.RenderStepped:Connect(updatePlatformPosition)
+        end
+    else
+        currentHeightOffset = currentHeightOffset + step
+        hrp.CFrame = hrp.CFrame + Vector3.new(0, step, 0)
+    end
+end)
+
+DownBtn.MouseButton1Click:Connect(function()
+    if not isPlatformActive then return end
+
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local step = getHeightStep()
+
+    if currentHeightOffset <= step then
+        removePlatform()
+        return
+    end
+
+    currentHeightOffset = currentHeightOffset - step
+    if hrp then
+        hrp.CFrame = hrp.CFrame + Vector3.new(0, -step, 0)
+    end
+
+    if currentHeightOffset < step then
+        removePlatform()
+    end
+end)
+
+-- تفعيل/إلغاء ميزة Anti-Hit
+local function setAntiHitState(enabled)
+    antiHitEnabled = enabled
+
+    if antiHitEnabled then
+        ToggleAntiHitBtn.BackgroundColor3 = Color3.fromRGB(35, 160, 35)
+        AntiHitText.Text = "ANTI HIT - ON"
+
+        for _, descendant in ipairs(Workspace:GetDescendants()) do
+            setupPrompt(descendant)
+        end
+
+        if #eventConnections == 0 then
+            table.insert(eventConnections, Workspace.DescendantAdded:Connect(function(descendant)
+                if antiHitEnabled then setupPrompt(descendant) end
+            end))
+            
+            table.insert(eventConnections, ProximityPromptService.PromptShown:Connect(function(prompt)
+                if antiHitEnabled then setupPrompt(prompt) end
+            end))
+            
+            table.insert(eventConnections, ProximityPromptService.PromptTriggered:Connect(function(_, player)
+                if antiHitEnabled and player == LocalPlayer then
+                    executeAntiHitBypass()
+                end
+            end))
+        end
+    else
+        ToggleAntiHitBtn.BackgroundColor3 = Color3.fromRGB(160, 35, 35)
+        AntiHitText.Text = "ANTI HIT - OFF"
+
+        for _, conn in ipairs(eventConnections) do
+            if conn then conn:Disconnect() end
+        end
+        eventConnections = {}
+    end
+end
+
+ToggleAntiHitBtn.MouseButton1Click:Connect(function()
+    setAntiHitState(not antiHitEnabled)
+end)
+
+-- التشغيل المبدئي
+setAntiHitState(true)
