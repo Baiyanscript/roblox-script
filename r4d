@@ -1,3 +1,44 @@
+--R4D Revamp (Mostly For R15)
+--By M1zz
+
+game.StarterGui:SetCore("SendNotification", {
+            Title = "R4D Revamp By M1zz",
+            Text = "Subscribe To M1ZZ001",
+            Duration = 5
+        })
+        wait(1)
+        
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Important Note:",
+            Text = "This script only works for R15 avatar",
+            Duration = 5
+        }) 
+        wait(5)
+  
+  game.StarterGui:SetCore("SendNotification", {
+            Title = "INFO",
+            Text = "This is the only official script that has no Client-Sided and all of it made by M1zz.",
+            Duration = 20
+        })
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "WARNING",
+            Text = "The script was published at [1/6/26]. If you see another similar script, mean it's a copy version (Skid)",
+            Duration = 20
+        })
+        wait(5)
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "HOW TO USE",
+            Text = "Please click RE or Spawn Here before changing to other animation to avoid bug!",
+            Duration = 20
+        }) 
+        wait(9)
+   
+game.StarterGui:SetCore("SendNotification", {
+            Title = "R4D Revamp Executed",
+            Text = "Enjoy trolling the server!!",
+            Duration = 5
+        })     
+
 -- Create ScreenGui
 local gui = Instance.new("ScreenGui")
 gui.Name = "BigMenuGUI"
@@ -27,7 +68,7 @@ local bg = Instance.new("ImageLabel")
 bg.Size = UDim2.new(1, 0, 1, 0)
 bg.Position = UDim2.new(0, 0, 0, 0)
 bg.BackgroundTransparency = 1
-bg.Image = "rbxassetid://70869600792415"
+bg.Image = "rbxassetid://14492716941"
 bg.ZIndex = 0
 bg.Parent = frame
 
@@ -48,7 +89,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -20, 0, 40)
 title.Position = UDim2.new(0, 10, 0, 5)
 title.BackgroundTransparency = 1
-title.Text = "動作腳本"
+title.Text = "R4D Revamp"
 title.TextScaled = false
 title.TextSize = 24 -- previously maybe 22
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -102,7 +143,7 @@ local restoreBtn = Instance.new("ImageButton")
 restoreBtn.Size = UDim2.new(0, 60, 0, 60)
 restoreBtn.Position = UDim2.new(0, 20, 1, -80)
 restoreBtn.BackgroundTransparency = 1
-restoreBtn.Image = "rbxassetid://70869600792415"
+restoreBtn.Image = "rbxassetid://15273265681"
 restoreBtn.Visible = false
 restoreBtn.Parent = gui
 restoreBtn.Active = true
@@ -134,7 +175,7 @@ local respawnBtn = Instance.new("TextButton")
 respawnBtn.Size = UDim2.new(0, 40, 0, 20)
 respawnBtn.Position = UDim2.new(1, -390, 0, 30) -- next to close button
 respawnBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-respawnBtn.Text = "重生"
+respawnBtn.Text = "RE"
 respawnBtn.TextScaled = false
 respawnBtn.TextWrapped = true
 respawnBtn.TextSize = 18
@@ -159,7 +200,7 @@ local StopAnimBtn = Instance.new("TextButton")
 StopAnimBtn.Size = UDim2.new(0, 60, 0, 45)
 StopAnimBtn.Position = UDim2.new(1, -340, 0, 5) -- next to close button
 StopAnimBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-StopAnimBtn.Text = "原地重生"
+StopAnimBtn.Text = "Spawn Here"
 StopAnimBtn.TextScaled = false
 StopAnimBtn.TextWrapped = true
 StopAnimBtn.TextSize = 18
@@ -206,8 +247,8 @@ wait(0.3)
 game.Players.LocalPlayer.Character.Humanoid.Health = 0
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "你恢復正常了",
-            Text = "再次運行此腳本以停止動作腳本",
+            Title = "You're back to normal",
+            Text = "Run this again to stop the animation script",
             Duration = 5
         })
 
@@ -277,11 +318,11 @@ makeButton(page1, "SkinWalker", function()
 
 
 --FE Skinwalker Animation (R15 only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE Skinwalker Animation",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
         
@@ -300,10 +341,10 @@ makeButton(page1, "Dog Pet", function()
 
 
 --FE Dog Pet (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "Dog Pet By Baiyan",
+            Title = "Dog Pet By M1zz",
             Text = "Click Your Target Player To Be Their Pet",
             Duration = 5
         })
@@ -504,12 +545,12 @@ end)
 makeButton(page1, "Hand", function() 
 
 --FE Hand Animation (R15 only)
---By Baiyan
+--By M1zz
 
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "Hand Animation",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
   wait(0.7)
@@ -1524,12 +1565,12 @@ makeButton(page1, "Skateboard", function()
 
 
 --FE Skateboard (R15 Only)
---By Baiyan
+--By M1zz
 
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE Skateboard",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
   wait(0.7)
@@ -1551,12 +1592,12 @@ makeButton(page1, "Gun", function()
 
 
 --FE Gun (R15 Only)
---By Baiyan
+--By M1zz
 
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE Gun",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
       wait(0.7)
@@ -1830,11 +1871,11 @@ makeButton(page1, "Ability", function()
 
 
 --FE Ability (R15 Only)
---By Baiyan
+--By M1zz
 
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE Ability By Baiyan",
+            Title = "FE Ability By M1zz",
             Text = "Click On Your Target To Explode Them",
             Duration = 5
         })
@@ -2001,11 +2042,11 @@ makeButton(page1, "AmongUs", function()
 
 
 --FE AmongUs (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE AmongUs",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
         
@@ -2024,11 +2065,11 @@ makeButton(page1, "Boxing", function()
 
 
 -- FE Boxing (R15 Only)
--- By Baiyan
+-- By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
 	Title = "FE Boxing",
-	Text = "By Baiyan",
+	Text = "By M1zz",
 	Duration = 5
 })
 wait(0.7)
@@ -2255,10 +2296,10 @@ makeButton(page1, "Bike", function()
 
 
 -- FE Bike (R15 Only)
--- By Baiyan
+-- By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "FE Bike By Baiyan",
+    Title = "FE Bike By M1zz",
     Text = "Hold Jump To Wheelie",
     Duration = 5
 })
@@ -2360,11 +2401,11 @@ makeButton(page2, "R6", function()
 
 
 --FE R6 Animation (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE R6 Animation",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
 
@@ -2386,11 +2427,11 @@ makeButton(page2, "Mini", function()
 
 
 --FE Mini (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE Mini",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
 
@@ -2464,10 +2505,10 @@ makeButton(page2, "Typing Animation", function()
 
 
 --FE Typing Animation (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE Typing Animation By Baiyan",
+            Title = "FE Typing Animation By M1zz",
             Text = "This script run typing and talking animation when you chat",
             Duration = 5
         })
@@ -2537,11 +2578,11 @@ makeButton(page2, "Creeper", function()
 
 
 --FE Creeper (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE Creeper",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
 
@@ -2625,10 +2666,10 @@ makeButton(page2, "D1ck", function()
 
 
 --FE D1ck (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE D1ck By Baiyan",
+            Title = "FE D1ck By M1zz",
             Text = "Click Your Target Player To Annoy",
             Duration = 5
         })
@@ -2738,10 +2779,10 @@ makeButton(page2, "Claw Machine", function()
 
 
 --FE Claw Machine (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE Claw Machine By Baiyan",
+            Title = "FE Claw Machine By M1zz",
             Text = "You can ask friends how much round do they want!",
             Duration = 5
         })
@@ -2854,10 +2895,10 @@ makeButton(page2, "Sliding", function()
 
 
 --FE Sliding (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE Sliding By Baiyan",
+            Title = "FE Sliding By M1zz",
             Text = "Jump To Slide ",
             Duration = 5
         })
@@ -2931,11 +2972,11 @@ end)
 makeButton(page2, "S3x", function() 
 
 --FE S3x (R15 Only)
---By Baiyan
+--By M1zz
 
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE S3x By Baiyan",
+            Title = "FE S3x By M1zz",
             Text = "Equip the tool and click the target player",
             Duration = 5
         })
@@ -5477,11 +5518,11 @@ end)
 makeButton(page2, "Drift", function() 
 
 --FE Drift (R15 Only)
---By Baiyan
+--By M1zz
 
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE Drift By Baiyan",
+            Title = "FE Drift By M1zz",
             Text = "Hold Jump To Brake",
             Duration = 5
         })
@@ -5582,10 +5623,10 @@ grid3.CellPadding = grid1.CellPadding
 makeButton(page3, "High Striker", function() 
 
 --FE High Striker (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE High Striker By Baiyan",
+            Title = "FE High Striker By M1zz",
             Text = "You can ask friends how much round do they want!",
             Duration = 5
         })
@@ -5698,10 +5739,10 @@ end)
 makeButton(page3, "Give Sniper", function() 
 
 -- FE Give Sniper (Only R15)
--- By Baiyan
+-- By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-Title = "FE Give Sniper By Baiyan",
+Title = "FE Give Sniper By M1zz",
 Text = "Equip the tool and click the target player",
 Duration = 5
 })
@@ -5924,10 +5965,10 @@ end)
 makeButton(page3, "Give Hammer", function() 
 
 --FE Give Hammer (Only R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE Give Hammer By Baiyan",
+            Title = "FE Give Hammer By M1zz",
             Text = "Equip the tool and click the target player",
             Duration = 5
         })
@@ -6181,10 +6222,10 @@ end)
 makeButton(page3, "Give PickAxe", function() 
 
 --FE Give Pick Axe (Only R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-            Title = "FE Give Pick Axe By Baiyan",
+            Title = "FE Give Pick Axe By M1zz",
             Text = "Equip the tool and click the target player",
             Duration = 5
         })
@@ -6437,10 +6478,10 @@ end)
 makeButton(page3, "Sword Animation", function() 
 
 --FE Sword Animation (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "FE Sword Animation By Baiyan",
+    Title = "FE Sword Animation By M1zz",
     Text = "Equip the tool and click the target player",
     Duration = 5
 })
@@ -6655,11 +6696,11 @@ end)
 makeButton(page3, "Headless", function() 
 
 -- FE Headless (R15 Only)
--- By Baiyan
+-- By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Headless",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -6693,11 +6734,11 @@ end)
 makeButton(page3, "Headless & Korblox", function() 
 
 -- FE Headless & Korblox (R15 Only)
--- By Baiyan
+-- By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Headless & Korblox",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -6752,10 +6793,10 @@ end)
 makeButton(page3, "Jumpstyle", function() 
 
 --FE JumpStyle (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "FE JumpStyle By Baiyan",
+    Title = "FE JumpStyle By M1zz",
     Text = "Equip the tool and click the target player",
     Duration = 5
 })
@@ -7763,11 +7804,11 @@ end)
 makeButton(page3, "Minecraft Animation", function() 
 
 --FE Minecraft Animation (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Minecraft",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -8347,11 +8388,11 @@ grid4.CellSize = grid1.CellSize
 makeButton(page4, "G0re", function()
 
 --FE G0re (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE G0re",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -8729,11 +8770,11 @@ end)
 makeButton(page4, "Invisible", function()
 
 --FE Invisible (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Invisible",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -8794,7 +8835,7 @@ tool.Unequipped:Connect(function()
 	playDodgeAnimationB()
 end)
 
---Noclip By Baiyan
+--Noclip By M1zz
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -8829,11 +8870,11 @@ end)
 makeButton(page4, "Magician", function()
 
 --FE Magician (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Magician",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -9342,11 +9383,11 @@ end)
 makeButton(page4, "Headless Guy", function()
 
 --FE Headless Guy (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Headless Guy",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -9631,10 +9672,10 @@ end)
 makeButton(page4, "Mysterious Guy", function()
 
 --FE Mysterious Guy (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "FE Mysterious Guy By Baiyan",
+    Title = "FE Mysterious Guy By M1zz",
     Text = "Equip the tool and click the target player",
     Duration = 5
 })
@@ -10362,11 +10403,11 @@ end)
 makeButton(page4, "Cowboy", function()
 
 --FE Cowboy (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Cowboy",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -10410,7 +10451,7 @@ end
 tool.Equipped:Connect(function()
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "Ride Horse By Baiyan",
+    Title = "Ride Horse By M1zz",
     Text = "Move to ride your horse",
     Duration = 5
 })
@@ -10540,10 +10581,10 @@ end)
 makeButton(page4, "Police Officer", function()
 
 --FE Police Officer (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "FE Police Officer By Baiyan",
+    Title = "FE Police Officer By M1zz",
     Text = "Equip the tool and click the target player",
     Duration = 5
 })
@@ -11050,10 +11091,10 @@ end)
 makeButton(page4, "Drone", function()
 
 --FE Drone (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "FE Drone By Baiyan",
+    Title = "FE Drone By M1zz",
     Text = "Hold jump if you wanna go higher",
     Duration = 5
 })
@@ -11306,7 +11347,7 @@ end)
 
 ---Bypassed Tower Of hell
 ---Double Jump
----By Baiyan
+---By M1zz
 
 -- Define the workspace, player, and jump block variables
 local workspace = game:GetService("Workspace")
@@ -11357,11 +11398,11 @@ end
 makeButton(page4, "Bomb", function()
 
 --FE Bomb (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Bomb",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -11745,11 +11786,11 @@ grid5.CellSize = grid1.CellSize
 makeButton(page5, "SCP096", function() 
 
 --FE Scp096 (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Scp096",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -11999,11 +12040,11 @@ end)
 makeButton(page5, "Creepy Creature", function()
 
 --FE Creepy Creature (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Creepy Creature",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -12173,11 +12214,11 @@ end)
 makeButton(page5, "FnaF", function()
 
 --FE FnaF (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE FnaF",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -12510,11 +12551,11 @@ end)
 makeButton(page5, "Snail", function()
 
 --FE Snail (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Snail",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -12693,11 +12734,11 @@ end)
 makeButton(page5, "Geometry Dash", function()
 
 --FE Geometry Dash (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Geometry Dash",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -12762,11 +12803,11 @@ end)
 makeButton(page5, "Monkey", function()
 
 --FE Monkey (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Monkey",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -13051,11 +13092,11 @@ end)
 
 makeButton(page5, "Rat", function()
 --FE Rat (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Rat",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -13073,11 +13114,11 @@ character.climb.ClimbAnim.AnimationId = "rbxassetid://112100973569061"
  end)
 makeButton(page5, "Head Pet", function()
 --FE Head Pet (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Head Pet",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -13231,11 +13272,11 @@ end)
  end)
 makeButton(page5, "67", function()
 --FE 67 (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE 67",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -13552,11 +13593,11 @@ grid6.CellSize = grid1.CellSize
 
 makeButton(page6, "Little Guy", function()
 --FE Little Guy (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Little Guy",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -13744,11 +13785,11 @@ end)
  end)
 makeButton(page6, "Arrow", function()
 --FE Arrow (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Arrow",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -13899,11 +13940,11 @@ end)
  end)
 makeButton(page6, "Baby", function()
 --FE Baby (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Baby",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -14051,7 +14092,7 @@ tool.Equipped:Connect(function()
     isEquipped = true
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "FE Baby By Baiyan",
+    Title = "FE Baby By M1zz",
     Text = "Click target player to give cart",
     Duration = 5
 })
@@ -14215,7 +14256,7 @@ tool.Equipped:Connect(function()
     isEquipped = true
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "FE Baby By Baiyan",
+    Title = "FE Baby By M1zz",
     Text = "Click target player to give baby sleeping bed",
     Duration = 5
 })
@@ -14290,10 +14331,10 @@ end)
  end)
 makeButton(page6, "Glitcher", function()
 -- FE Glitcher (R15)
--- By Baiyan
+-- By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "FE Glitcher By Baiyan",
+    Title = "FE Glitcher By M1zz",
     Text = "Your character movement will be laggy/glitching",
     Duration = 5
 })
@@ -14386,11 +14427,11 @@ end
  end)
 makeButton(page6, "Cat", function()
 --FE Cat (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Cat",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -14453,11 +14494,11 @@ end)
 
 makeButton(page6, "Fish", function()
 --FE Fish (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Fish",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -14478,11 +14519,11 @@ character.swim.Swim.AnimationId = "rbxassetid://102957953130055"
  end)
 makeButton(page6, "Crazy Dance", function()
 --FE Crazy Dance (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Crazy Dance",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -14627,11 +14668,11 @@ end)
  end)
 makeButton(page6, "Grabber", function()
 --FE Grabber (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Grabber",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -14898,11 +14939,11 @@ end)
 
 makeButton(page6, "Car", function()
 -- FE Car (R15 Only)
--- By Baiyan
+-- By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Car",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -15005,11 +15046,11 @@ grid7.CellSize = grid1.CellSize
 
 makeButton(page7, "Spiderman", function()
 --FE Spiderman Animation (R15 only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE Spiderman Animation",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
 
@@ -15065,12 +15106,12 @@ end
  end)
 makeButton(page7, "Wheel", function()
 --FE Wheel (R15 Only)
---By Baiyan
+--By M1zz
 
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE Wheel",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
   wait(0.7)
@@ -15089,11 +15130,11 @@ end
  end)
 makeButton(page7, "Wings", function()
 --FE Wings (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE Wings",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
         
@@ -15116,7 +15157,7 @@ game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 30
 
 ---Bypassed Tower Of hell
 ---Double Jump
----By Baiyan
+---By M1zz
 
 -- Define the workspace, player, and jump block variables
 local workspace = game:GetService("Workspace")
@@ -15166,17 +15207,17 @@ while true do
     wait(0.1)
 end
 
----By Baiyan
+---By M1zz
 
 
  end)
 makeButton(page7, "Zombie", function()
 --FE Zombie Animation (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE Zombie Animation [BETA]",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
         
@@ -15194,11 +15235,11 @@ character.climb.ClimbAnim.AnimationId = "rbxassetid://121075390792786"
  end)
 makeButton(page7, "Tank", function()
 --FE Tank (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
             Title = "FE Tank",
-            Text = "By Baiyan",
+            Text = "By M1zz",
             Duration = 5
         })
 
@@ -15216,10 +15257,10 @@ character.climb.ClimbAnim.AnimationId = "rbxassetid://115951523870527"
  end)
 makeButton(page7, "Torture", function()
 --FE Torture (R15 Only)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "FE Torture By Baiyan",
+    Title = "FE Torture By M1zz",
     Text = "Equip the tool and click the target player",
     Duration = 5
 })
@@ -17993,11 +18034,11 @@ end)
  end)
 makeButton(page7, "Swearing", function()
 --FE Swearing (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Swearing",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -18320,11 +18361,11 @@ end)
  end)
 makeButton(page7, "Telekinesis", function()
 --FE Telekinesis (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Telekinesis",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -18766,11 +18807,11 @@ end)
  end)
 makeButton(page7, "Sonic", function()
 --FE Sonic (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Sonic",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -18860,7 +18901,7 @@ end
 tool.Equipped:Connect(function()
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "Sonic Hedgehog Roll By Baiyan",
+    Title = "Sonic Hedgehog Roll By M1zz",
     Text = "Move to roll",
     Duration = 5
 })
@@ -18901,11 +18942,11 @@ grid8.CellSize = grid1.CellSize
 
 makeButton(page8, "Spider", function()
 --FE Spider (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Spider",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -19060,11 +19101,11 @@ end)
  end)
 makeButton(page8, "Mm2 Set", function()
 --FE Mm2 Set (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Mm2 Set",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
@@ -19354,11 +19395,11 @@ end)
  end)
 makeButton(page8, "Worm", function()
 --FE Worm (R15)
---By Baiyan
+--By M1zz
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "FE Worm",
-    Text = "By Baiyan",
+    Text = "By M1zz",
     Duration = 5
 })
 
