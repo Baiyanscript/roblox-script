@@ -1,0 +1,907 @@
+-- Devirtualized / behaviorally reconstructed from the supplied VM-obfuscated Luau.
+-- Goofyscator VM, decoder, integrity scaffolding, and runtime junk have been removed.
+
+local REPOSITORY = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
+
+local Library = loadstring(game:HttpGet(REPOSITORY .. "Library.lua"))()
+local ThemeManager = loadstring(game:HttpGet(REPOSITORY .. "addons/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet(REPOSITORY .. "addons/SaveManager.lua"))()
+
+local Options = Library.Options
+local Toggles = Library.Toggles
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local Window = Library:CreateWindow({
+    Title = "Syscall",
+    Footer = "steal an egg",
+    NotifySide = "Right",
+    ShowCustomCursor = true,
+    AutoShow = true,
+    Center = true,
+})
+
+local Tabs = {
+    Main = Window:AddTab("Main", "home"),
+    ESPPlayer = Window:AddTab("ESP Player", "eye"),
+    ESPEgg = Window:AddTab("ESP Egg", "egg"),
+    Settings = Window:AddTab("Settings", "settings"),
+}
+
+local GameGroup = Tabs.Main:AddLeftGroupbox("Game")
+local PlayerGroup = Tabs.Main:AddRightGroupbox("Player")
+
+local mobileAutoFire = false
+local flyEnabled = false
+local bodyVelocity
+local bodyGyro
+local tpWalkEnabled = false
+local tpWalkSpeed = 50
+
+local playerDrawings = {}
+local eggDrawings = {}
+
+local function getCharacterParts()
+    local character = LocalPlayer.Character
+    if not character then
+        return nil, nil, nil
+    end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    return character, humanoid, rootPart
+end
+
+local function isEggModel(instance)
+    return instance:IsA("Model")
+        and (instance.Name:lower():find("egg") ~= nil or instance:FindFirstChild("Egg") ~= nil)
+end
+
+local function removeTraps()
+    local debris = Workspace:FindFirstChild("__DEBRIS")
+    if debris then
+        debris:Destroy()
+    end
+end
+
+local function removeGuards()
+    local objects = Workspace:FindFirstChild("__OBJECTS")
+    if not objects then
+        return
+    end
+
+    local areas = objects:FindFirstChild("Areas")
+    if not areas then
+        return
+    end
+
+    local guardAreas = areas:FindFirstChild("GuardAreas")
+    if not guardAreas then
+        return
+    end
+
+    for _, model in pairs(guardAreas:GetChildren()) do
+        if model:IsA("Model") then
+            local guard = model:FindFirstChild("Guard")
+            if guard then
+                guard:Destroy()
+            end
+        end
+    end
+end
+
+local function bypassAntiCheat()
+    local character = LocalPlayer.Character
+    if not character then
+        return
+    end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid:Destroy()
+    end
+
+    Instance.new("Humanoid", character)
+end
+
+GameGroup:AddButton({
+    Text = "Remove Traps",
+    Func = removeTraps,
+})
+
+GameGroup:AddButton({
+    Text = "Remove Guards",
+    Func = removeGuards,
+})
+
+GameGroup:AddButton({
+    Text = "Bypass Anti Cheat",
+    Func = bypassAntiCheat,
+})
+
+GameGroup:AddToggle("InstantPickup", {
+    Text = "Instant Pickup",
+    Default = false,
+})
+
+ProximityPromptService.PromptShown:Connect(function(prompt)
+    if Toggles.InstantPickup.Value then
+        prompt.HoldDuration = 0
+    end
+end)
+
+GameGroup:AddToggle("AutoPickup", {
+    Text = "Auto Pickup",
+    Default = false,
+})
+
+GameGroup:AddLabel("Auto Fire Key"):AddKeyPicker("AutoFireKey", {
+    Default = "E",
+    Text = "Hold Key",
+    Mode = "Hold",
+})
+
+local function fireNearestPrompt()
+    local character = LocalPlayer.Character
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        return
+    end
+
+    local nearestPrompt = nil
+    local nearestDistance = 15
+
+    for _, descendant in pairs(Workspace:GetDescendants()) do
+        if descendant:IsA("ProximityPrompt") and descendant.Enabled then
+            local parent = descendant.Parent
+            local part
+
+            if parent and parent:IsA("BasePart") then
+                part = parent
+            elseif parent then
+                part = parent:FindFirstChildWhichIsA("BasePart")
+            end
+
+            if part then
+                local distance = (rootPart.Position - part.Position).Magnitude
+                if distance < nearestDistance
+                    and distance <= (descendant.MaxActivationDistance or 10) then
+                    nearestDistance = distance
+                    nearestPrompt = descendant
+                end
+            end
+        end
+    end
+
+    if nearestPrompt then
+        fireproximityprompt(nearestPrompt)
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+    local keyHeld = false
+    if Options.AutoFireKey then
+        keyHeld = Options.AutoFireKey:GetState()
+    end
+
+    if Toggles.AutoPickup.Value and (keyHeld or mobileAutoFire) then
+        fireNearestPrompt()
+    end
+end)
+
+local function expandEggHitbox(model)
+    if not isEggModel(model) then
+        return
+    end
+
+    local hitbox = model:FindFirstChild("Hitbox")
+    if hitbox and hitbox:IsA("BasePart") then
+        local size = hitbox.Size
+        if size.X < 20 or size.Y < 20 or size.Z < 20 then
+            hitbox.Size = Vector3.new(20, 20, 20)
+        end
+    end
+end
+
+GameGroup:AddToggle("ExpandHitbox", {
+    Text = "Expand Hitboxes",
+    Default = false,
+    Callback = function(enabled)
+        if not enabled then
+            return
+        end
+
+        for _, descendant in pairs(Workspace:GetDescendants()) do
+            if descendant:IsA("Model") then
+                expandEggHitbox(descendant)
+            end
+        end
+    end,
+})
+
+Workspace.DescendantAdded:Connect(function(descendant)
+    if not Toggles.ExpandHitbox.Value then
+        return
+    end
+
+    if descendant.Name ~= "Hitbox" or not descendant:IsA("BasePart") then
+        return
+    end
+
+    local model = descendant.Parent
+    if not model or not model:IsA("Model") then
+        return
+    end
+
+    if not isEggModel(model) then
+        return
+    end
+
+    local size = descendant.Size
+    if size.X < 20 or size.Y < 20 or size.Z < 20 then
+        descendant.Size = Vector3.new(20, 20, 20)
+    end
+end)
+
+local function setMobileAutoFireButtonEnabled(enabled)
+    if enabled then
+        if PlayerGui:FindFirstChild("SyscallMobileBtn") then
+            return
+        end
+
+        local gui = Instance.new("ScreenGui")
+        gui.Name = "SyscallMobileBtn"
+        gui.ResetOnSpawn = false
+        gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        gui.Parent = PlayerGui
+
+        local button = Instance.new("TextButton")
+        button.Name = "AutoFireBtn"
+        button.Size = UDim2.new(0, 70, 0, 70)
+        button.Position = UDim2.new(0.85, 0, 0.7, 0)
+        button.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+        button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        button.Text = "AUTO\nOFF"
+        button.TextSize = 12
+        button.Font = Enum.Font.GothamBold
+        button.AutoButtonColor = false
+        button.Parent = gui
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 12)
+        corner.Parent = button
+
+        local stroke = Instance.new("UIStroke")
+        stroke.Color = Color3.fromRGB(80, 80, 90)
+        stroke.Thickness = 1.5
+        stroke.Parent = button
+
+        local dragging = false
+        local dragStart
+        local startPosition
+
+        button.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1
+                or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                dragStart = input.Position
+                startPosition = button.Position
+
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then
+                        dragging = false
+                    end
+                end)
+            end
+        end)
+
+        UserInputService.InputChanged:Connect(function(input)
+            if not dragging then
+                return
+            end
+
+            if input.UserInputType == Enum.UserInputType.MouseMovement
+                or input.UserInputType == Enum.UserInputType.Touch then
+                local delta = input.Position - dragStart
+                button.Position = UDim2.new(
+                    startPosition.X.Scale,
+                    startPosition.X.Offset + delta.X,
+                    startPosition.Y.Scale,
+                    startPosition.Y.Offset + delta.Y
+                )
+            end
+        end)
+
+        button.MouseButton1Click:Connect(function()
+            if dragging then
+                return
+            end
+
+            mobileAutoFire = not mobileAutoFire
+
+            if mobileAutoFire then
+                button.Text = "AUTO\nON"
+                button.BackgroundColor3 = Color3.fromRGB(40, 120, 70)
+                stroke.Color = Color3.fromRGB(60, 180, 100)
+            else
+                button.Text = "AUTO\nOFF"
+                button.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+                stroke.Color = Color3.fromRGB(80, 80, 90)
+            end
+        end)
+    else
+        local gui = PlayerGui:FindFirstChild("SyscallMobileBtn")
+        if gui then
+            gui:Destroy()
+        end
+
+        mobileAutoFire = false
+    end
+end
+
+GameGroup:AddToggle("MobileAutoFireBtn", {
+    Text = "Mobile Auto Fire Button",
+    Default = false,
+    Callback = setMobileAutoFireButtonEnabled,
+})
+
+PlayerGroup:AddToggle("WalkSpeedEnabled", {
+    Text = "WalkSpeed",
+    Default = false,
+})
+
+PlayerGroup:AddSlider("WalkSpeedValue", {
+    Text = "Speed",
+    Default = 16,
+    Min = 16,
+    Max = 800,
+    Rounding = 0,
+})
+
+task.spawn(function()
+    while task.wait(0.1) do
+        if Toggles.WalkSpeedEnabled.Value then
+            local character = LocalPlayer.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = Options.WalkSpeedValue.Value
+            end
+        end
+    end
+end)
+
+PlayerGroup:AddToggle("JumpPowerEnabled", {
+    Text = "JumpPower",
+    Default = false,
+})
+
+PlayerGroup:AddSlider("JumpPowerValue", {
+    Text = "Power",
+    Default = 50,
+    Min = 50,
+    Max = 500,
+    Rounding = 0,
+})
+
+task.spawn(function()
+    while task.wait(0.1) do
+        if Toggles.JumpPowerEnabled.Value then
+            local character = LocalPlayer.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.JumpPower = Options.JumpPowerValue.Value
+            end
+        end
+    end
+end)
+
+PlayerGroup:AddToggle("InfiniteJump", {
+    Text = "Infinite Jump",
+    Default = false,
+})
+
+UserInputService.JumpRequest:Connect(function()
+    if not Toggles.InfiniteJump.Value then
+        return
+    end
+
+    local character = LocalPlayer.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+local function setFlyEnabled(enabled)
+    flyEnabled = enabled
+
+    local character = LocalPlayer.Character
+    if not character then
+        return
+    end
+
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    if enabled then
+        if rootPart and humanoid then
+            humanoid.PlatformStand = true
+
+            bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.MaxForce = Vector3.new(9000000000, 9000000000, 9000000000)
+            bodyVelocity.Velocity = Vector3.zero
+            bodyVelocity.Parent = rootPart
+
+            bodyGyro = Instance.new("BodyGyro")
+            bodyGyro.MaxTorque = Vector3.new(9000000000, 9000000000, 9000000000)
+            bodyGyro.P = 90000
+            bodyGyro.Parent = rootPart
+        end
+    else
+        if bodyVelocity then
+            bodyVelocity:Destroy()
+            bodyVelocity = nil
+        end
+
+        if bodyGyro then
+            bodyGyro:Destroy()
+            bodyGyro = nil
+        end
+
+        if humanoid then
+            humanoid.PlatformStand = false
+        end
+    end
+end
+
+PlayerGroup:AddToggle("Fly", {
+    Text = "Fly",
+    Default = false,
+    Callback = setFlyEnabled,
+})
+
+PlayerGroup:AddSlider("FlySpeed", {
+    Text = "Fly Speed",
+    Default = 50,
+    Min = 10,
+    Max = 300,
+    Rounding = 0,
+})
+
+RunService.RenderStepped:Connect(function()
+    if not flyEnabled or not bodyVelocity or not bodyGyro then
+        return
+    end
+
+    local character = LocalPlayer.Character
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        return
+    end
+
+    local cameraCFrame = Camera.CFrame
+    local direction = Vector3.zero
+
+    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+        direction = direction + cameraCFrame.LookVector
+    end
+
+    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+        direction = direction - cameraCFrame.LookVector
+    end
+
+    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+        direction = direction - cameraCFrame.RightVector
+    end
+
+    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+        direction = direction + cameraCFrame.RightVector
+    end
+
+    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+        direction = direction + Vector3.new(0, 1, 0)
+    end
+
+    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+        direction = direction - Vector3.new(0, 1, 0)
+    end
+
+    if direction.Magnitude > 0 then
+        bodyVelocity.Velocity = direction.Unit * Options.FlySpeed.Value
+    else
+        bodyVelocity.Velocity = Vector3.zero
+    end
+
+    bodyGyro.CFrame = cameraCFrame
+end)
+
+PlayerGroup:AddToggle("TPWalk", {
+    Text = "TP Walk",
+    Default = false,
+    Callback = function(enabled)
+        tpWalkEnabled = enabled
+    end,
+})
+
+PlayerGroup:AddSlider("TPWalkSpeed", {
+    Text = "TP Speed",
+    Default = 50,
+    Min = 1,
+    Max = 300,
+    Rounding = 0,
+    Callback = function(value)
+        tpWalkSpeed = value
+    end,
+})
+
+RunService.Heartbeat:Connect(function(deltaTime)
+    if not tpWalkEnabled then
+        return
+    end
+
+    local character = LocalPlayer.Character
+    if not character then
+        return
+    end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+
+    if humanoid and rootPart and humanoid.MoveDirection.Magnitude > 0 then
+        rootPart.CFrame = rootPart.CFrame + humanoid.MoveDirection * (tpWalkSpeed * deltaTime)
+    end
+end)
+
+local PlayerESPGroup = Tabs.ESPPlayer:AddLeftGroupbox("Player ESP")
+local PlayerESPColors = Tabs.ESPPlayer:AddRightGroupbox("Colors")
+
+PlayerESPGroup:AddToggle("PlayerESPEnabled", {
+    Text = "ESP Enabled",
+    Default = false,
+})
+
+PlayerESPGroup:AddDropdown("PlayerESPBoxType", {
+    Values = { "2D", "3D", "None" },
+    Default = 1,
+    Text = "Box Type",
+})
+
+PlayerESPGroup:AddToggle("PlayerESPTracer", {
+    Text = "Tracer",
+    Default = false,
+})
+
+PlayerESPGroup:AddToggle("PlayerESPName", {
+    Text = "Name",
+    Default = false,
+})
+
+PlayerESPColors:AddLabel("Box Color"):AddColorPicker("PlayerBoxColor", {
+    Default = Color3.fromRGB(255, 0, 0),
+    Title = "Box",
+})
+
+PlayerESPColors:AddLabel("Tracer Color"):AddColorPicker("PlayerTracerColor", {
+    Default = Color3.fromRGB(255, 255, 0),
+    Title = "Tracer",
+})
+
+PlayerESPColors:AddLabel("Name Color"):AddColorPicker("PlayerNameColor", {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = "Name",
+})
+
+local function removeDrawingObject(object)
+    if object and object.Remove then
+        object:Remove()
+    end
+end
+
+local function removePlayerESP(player)
+    local drawings = playerDrawings[player]
+    if not drawings then
+        return
+    end
+
+    for _, drawing in pairs(drawings) do
+        removeDrawingObject(drawing)
+    end
+
+    playerDrawings[player] = nil
+end
+
+local function setupPlayerESP(player)
+    if player == LocalPlayer then
+        return
+    end
+
+    local drawings = {}
+
+    drawings.box = Drawing.new("Square")
+    drawings.box.Thickness = 1
+    drawings.box.Filled = false
+    drawings.box.Visible = false
+
+    drawings.tracer = Drawing.new("Line")
+    drawings.tracer.Thickness = 1
+    drawings.tracer.Visible = false
+
+    drawings.name = Drawing.new("Text")
+    drawings.name.Size = 14
+    drawings.name.Center = true
+    drawings.name.Outline = true
+    drawings.name.Visible = false
+
+    playerDrawings[player] = drawings
+end
+
+for _, player in pairs(Players:GetPlayers()) do
+    setupPlayerESP(player)
+end
+
+Players.PlayerAdded:Connect(setupPlayerESP)
+Players.PlayerRemoving:Connect(removePlayerESP)
+
+RunService.RenderStepped:Connect(function()
+    if not Toggles.PlayerESPEnabled.Value then
+        for _, drawings in pairs(playerDrawings) do
+            drawings.box.Visible = false
+            drawings.tracer.Visible = false
+            drawings.name.Visible = false
+        end
+        return
+    end
+
+    local boxType = Options.PlayerESPBoxType.Value
+    local boxColor = Options.PlayerBoxColor.Value
+    local tracerColor = Options.PlayerTracerColor.Value
+    local nameColor = Options.PlayerNameColor.Value
+
+    for player, drawings in pairs(playerDrawings) do
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+
+        if character and humanoid and humanoid.Health > 0 and rootPart then
+            local screenPosition, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
+
+            if onScreen then
+                local boxSize = Vector2.new(2000 / screenPosition.Z, 3000 / screenPosition.Z)
+
+                if boxType == "2D" or boxType == "3D" then
+                    drawings.box.Size = boxSize
+                    drawings.box.Position = Vector2.new(
+                        screenPosition.X - boxSize.X / 2,
+                        screenPosition.Y - boxSize.Y / 2
+                    )
+                    drawings.box.Color = boxColor
+                    drawings.box.Visible = true
+                else
+                    drawings.box.Visible = false
+                end
+
+                if Toggles.PlayerESPTracer.Value then
+                    drawings.tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                    drawings.tracer.To = Vector2.new(screenPosition.X, screenPosition.Y)
+                    drawings.tracer.Color = tracerColor
+                    drawings.tracer.Visible = true
+                else
+                    drawings.tracer.Visible = false
+                end
+
+                if Toggles.PlayerESPName.Value then
+                    drawings.name.Text = player.Name
+                    drawings.name.Position = Vector2.new(
+                        screenPosition.X,
+                        screenPosition.Y - boxSize.Y / 2 - 15
+                    )
+                    drawings.name.Color = nameColor
+                    drawings.name.Visible = true
+                else
+                    drawings.name.Visible = false
+                end
+            else
+                drawings.box.Visible = false
+                drawings.tracer.Visible = false
+                drawings.name.Visible = false
+            end
+        else
+            drawings.box.Visible = false
+            drawings.tracer.Visible = false
+            drawings.name.Visible = false
+        end
+    end
+end)
+
+local EggESPGroup = Tabs.ESPEgg:AddLeftGroupbox("Egg ESP")
+local EggESPColors = Tabs.ESPEgg:AddRightGroupbox("Colors")
+
+EggESPGroup:AddToggle("EggESPEnabled", {
+    Text = "ESP Enabled",
+    Default = false,
+})
+
+EggESPGroup:AddDropdown("EggESPBoxType", {
+    Values = { "2D", "3D", "None" },
+    Default = 1,
+    Text = "Box Type",
+})
+
+EggESPGroup:AddToggle("EggESPTracer", {
+    Text = "Tracer",
+    Default = false,
+})
+
+EggESPGroup:AddToggle("EggESPDistance", {
+    Text = "Distance",
+    Default = false,
+})
+
+EggESPColors:AddLabel("Box Color"):AddColorPicker("EggBoxColor", {
+    Default = Color3.fromRGB(0, 255, 100),
+    Title = "Box",
+})
+
+EggESPColors:AddLabel("Tracer Color"):AddColorPicker("EggTracerColor", {
+    Default = Color3.fromRGB(0, 200, 255),
+    Title = "Tracer",
+})
+
+EggESPColors:AddLabel("Distance Color"):AddColorPicker("EggDistColor", {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = "Distance",
+})
+
+local function findEggs()
+    local eggs = {}
+
+    for _, descendant in pairs(Workspace:GetDescendants()) do
+        if isEggModel(descendant) then
+            table.insert(eggs, descendant)
+        end
+    end
+
+    return eggs
+end
+
+RunService.RenderStepped:Connect(function()
+    for _, drawings in pairs(eggDrawings) do
+        if drawings.box then
+            drawings.box.Visible = false
+        end
+        if drawings.tracer then
+            drawings.tracer.Visible = false
+        end
+        if drawings.dist then
+            drawings.dist.Visible = false
+        end
+    end
+
+    if not Toggles.EggESPEnabled.Value then
+        return
+    end
+
+    local eggs = findEggs()
+    local boxType = Options.EggESPBoxType.Value
+    local boxColor = Options.EggBoxColor.Value
+    local tracerColor = Options.EggTracerColor.Value
+    local distanceColor = Options.EggDistColor.Value
+
+    local character = LocalPlayer.Character
+    local localRootPart = character and character:FindFirstChild("HumanoidRootPart")
+
+    for _, egg in pairs(eggs) do
+        local drawings = eggDrawings[egg]
+
+        if not drawings then
+            drawings = {
+                box = Drawing.new("Square"),
+                tracer = Drawing.new("Line"),
+                dist = Drawing.new("Text"),
+            }
+            eggDrawings[egg] = drawings
+
+            drawings.box.Thickness = 1
+            drawings.box.Filled = false
+            drawings.tracer.Thickness = 1
+            drawings.dist.Size = 13
+            drawings.dist.Center = true
+            drawings.dist.Outline = true
+        end
+
+        local part = egg.PrimaryPart or egg:FindFirstChildWhichIsA("BasePart")
+        if part then
+            local screenPosition, onScreen = Camera:WorldToViewportPoint(part.Position)
+
+            if onScreen then
+                local boxSize = Vector2.new(1500 / screenPosition.Z, 1500 / screenPosition.Z)
+
+                if boxType ~= "None" then
+                    drawings.box.Size = boxSize
+                    drawings.box.Position = Vector2.new(
+                        screenPosition.X - boxSize.X / 2,
+                        screenPosition.Y - boxSize.Y / 2
+                    )
+                    drawings.box.Color = boxColor
+                    drawings.box.Visible = true
+                end
+
+                if Toggles.EggESPTracer.Value then
+                    drawings.tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                    drawings.tracer.To = Vector2.new(screenPosition.X, screenPosition.Y)
+                    drawings.tracer.Color = tracerColor
+                    drawings.tracer.Visible = true
+                end
+
+                if Toggles.EggESPDistance.Value and localRootPart then
+                    local distance = math.floor((localRootPart.Position - part.Position).Magnitude)
+                    drawings.dist.Text = distance .. " studs"
+                    drawings.dist.Position = Vector2.new(
+                        screenPosition.X,
+                        screenPosition.Y + boxSize.Y / 2 + 5
+                    )
+                    drawings.dist.Color = distanceColor
+                    drawings.dist.Visible = true
+                end
+            end
+        end
+    end
+end)
+
+local function cleanupAllDrawings()
+    for player in pairs(playerDrawings) do
+        removePlayerESP(player)
+    end
+
+    for _, drawings in pairs(eggDrawings) do
+        if drawings.box then
+            drawings.box:Remove()
+        end
+        if drawings.tracer then
+            drawings.tracer:Remove()
+        end
+        if drawings.dist then
+            drawings.dist:Remove()
+        end
+    end
+
+    table.clear(eggDrawings)
+end
+
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
+ThemeManager:SetFolder("Syscall")
+SaveManager:SetFolder("Syscall/Config")
+ThemeManager:ApplyToTab(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Library:OnUnload(function()
+    cleanupAllDrawings()
+
+    flyEnabled = false
+
+    if bodyVelocity then
+        bodyVelocity:Destroy()
+    end
+
+    if bodyGyro then
+        bodyGyro:Destroy()
+    end
+
+    local mobileGui = PlayerGui:FindFirstChild("SyscallMobileBtn")
+    if mobileGui then
+        mobileGui:Destroy()
+    end
+end)
+
+SaveManager:LoadAutoloadConfig()
