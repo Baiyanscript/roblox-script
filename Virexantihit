@@ -1,0 +1,372 @@
+local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Replace this with the uploaded logo asset ID
+local LogoId = "rbxassetid://YOUR_IMAGE_ASSET_ID"
+
+local targetParent = (gethui and gethui()) or PlayerGui
+
+if targetParent:FindFirstChild("VirexHubGui") then
+    targetParent.VirexHubGui:Destroy()
+end
+
+local AntiHitEnabled = false
+local IsTeleporting = false
+
+local TeleportPoints = {
+    Vector3.new(500.62, 241.28, -366.64),
+    Vector3.new(504.45, 155.80, -366.35),
+    Vector3.new(508.30, 70.28, -366.03),
+    Vector3.new(513.86, 70.28, -366.25),
+    Vector3.new(519.43, 70.28, -366.47),
+    Vector3.new(524.32, 70.28, -366.59),
+    Vector3.new(529.22, 70.28, -366.71),
+    Vector3.new(538.01, 70.28, -365.55),
+    Vector3.new(546.80, 70.28, -364.40)
+}
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "VirexHubGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.DisplayOrder = 1000
+screenGui.Parent = targetParent
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 240, 0, 170)
+mainFrame.Position = UDim2.new(0.5, -120, 0.5, -85)
+mainFrame.BackgroundColor3 = Color3.fromRGB(18, 10, 10)
+mainFrame.BackgroundTransparency = 0.55
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local uiScale = Instance.new("UIScale")
+uiScale.Scale = 1.0
+uiScale.Parent = mainFrame
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 10)
+uiCorner.Parent = mainFrame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(255, 40, 40)
+uiStroke.Thickness = 1.5
+uiStroke.Parent = mainFrame
+
+local bgImage = Instance.new("ImageLabel")
+bgImage.Name = "VirexBackgroundImage"
+bgImage.Size = UDim2.fromScale(1, 1)
+bgImage.BackgroundTransparency = 1
+bgImage.Image = LogoId
+bgImage.ScaleType = Enum.ScaleType.Crop
+bgImage.ImageTransparency = 0.22
+bgImage.Visible = true
+bgImage.Parent = mainFrame
+
+local bgCorner = Instance.new("UICorner")
+bgCorner.CornerRadius = UDim.new(0, 10)
+bgCorner.Parent = bgImage
+
+local titleLogo = Instance.new("ImageLabel")
+titleLogo.Size = UDim2.fromOffset(30, 30)
+titleLogo.Position = UDim2.new(0, 10, 0, 5)
+titleLogo.BackgroundTransparency = 1
+titleLogo.Image = LogoId
+titleLogo.ScaleType = Enum.ScaleType.Fit
+titleLogo.Parent = mainFrame
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, -75, 0, 35)
+titleLabel.Position = UDim2.new(0, 46, 0, 2)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "VIREX HUB SAE"
+titleLabel.TextColor3 = Color3.fromRGB(255, 210, 210)
+titleLabel.TextSize = 16
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = mainFrame
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 24, 0, 24)
+closeBtn.Position = UDim2.new(1, -28, 0, 6)
+closeBtn.BackgroundColor3 = Color3.fromRGB(220, 30, 30)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.TextSize = 11
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.Parent = mainFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.Parent = closeBtn
+
+closeBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+local tabMainBtn = Instance.new("TextButton")
+tabMainBtn.Size = UDim2.new(0.5, -12, 0, 22)
+tabMainBtn.Position = UDim2.new(0, 8, 0, 38)
+tabMainBtn.BackgroundColor3 = Color3.fromRGB(255, 35, 35)
+tabMainBtn.Text = "Main"
+tabMainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tabMainBtn.TextSize = 12
+tabMainBtn.Font = Enum.Font.GothamBold
+tabMainBtn.Parent = mainFrame
+
+local tabMainCorner = Instance.new("UICorner")
+tabMainCorner.CornerRadius = UDim.new(0, 5)
+tabMainCorner.Parent = tabMainBtn
+
+local tabMiscBtn = Instance.new("TextButton")
+tabMiscBtn.Size = UDim2.new(0.5, -12, 0, 22)
+tabMiscBtn.Position = UDim2.new(0.5, 4, 0, 38)
+tabMiscBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+tabMiscBtn.Text = "Misc"
+tabMiscBtn.TextColor3 = Color3.fromRGB(210, 210, 220)
+tabMiscBtn.TextSize = 12
+tabMiscBtn.Font = Enum.Font.GothamSemibold
+tabMiscBtn.Parent = mainFrame
+
+local tabMiscCorner = Instance.new("UICorner")
+tabMiscCorner.CornerRadius = UDim.new(0, 5)
+tabMiscCorner.Parent = tabMiscBtn
+
+local mainTabContainer = Instance.new("Frame")
+mainTabContainer.Size = UDim2.new(1, 0, 1, -68)
+mainTabContainer.Position = UDim2.new(0, 0, 0, 66)
+mainTabContainer.BackgroundTransparency = 1
+mainTabContainer.Visible = true
+mainTabContainer.Parent = mainFrame
+
+local miscTabContainer = Instance.new("Frame")
+miscTabContainer.Size = UDim2.new(1, 0, 1, -68)
+miscTabContainer.Position = UDim2.new(0, 0, 0, 66)
+miscTabContainer.BackgroundTransparency = 1
+miscTabContainer.Visible = false
+miscTabContainer.Parent = mainFrame
+
+tabMainBtn.MouseButton1Click:Connect(function()
+    mainTabContainer.Visible = true
+    miscTabContainer.Visible = false
+    tabMainBtn.BackgroundColor3 = Color3.fromRGB(255, 35, 35)
+    tabMainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tabMainBtn.Font = Enum.Font.GothamBold
+    tabMiscBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    tabMiscBtn.TextColor3 = Color3.fromRGB(210, 210, 220)
+    tabMiscBtn.Font = Enum.Font.GothamSemibold
+end)
+
+tabMiscBtn.MouseButton1Click:Connect(function()
+    mainTabContainer.Visible = false
+    miscTabContainer.Visible = true
+    tabMiscBtn.BackgroundColor3 = Color3.fromRGB(255, 35, 35)
+    tabMiscBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tabMiscBtn.Font = Enum.Font.GothamBold
+    tabMainBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    tabMainBtn.TextColor3 = Color3.fromRGB(210, 210, 220)
+    tabMainBtn.Font = Enum.Font.GothamSemibold
+end)
+
+-- Anti-Hit stays exactly the same
+local antiHitBtn = Instance.new("TextButton")
+antiHitBtn.Name = "AntiHitBtn"
+antiHitBtn.Size = UDim2.new(1, -20, 0, 32)
+antiHitBtn.Position = UDim2.new(0, 10, 0, 8)
+antiHitBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+antiHitBtn.BackgroundTransparency = 0.2
+antiHitBtn.Text = "Anti-Hit: OFF"
+antiHitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiHitBtn.TextSize = 12
+antiHitBtn.Font = Enum.Font.GothamSemibold
+antiHitBtn.Parent = mainTabContainer
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 6)
+btnCorner.Parent = antiHitBtn
+
+-- Background style selector
+local bgStyleBtn = Instance.new("TextButton")
+bgStyleBtn.Name = "BgStyleBtn"
+bgStyleBtn.Size = UDim2.new(1, -20, 0, 32)
+bgStyleBtn.Position = UDim2.new(0, 10, 0, 8)
+bgStyleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+bgStyleBtn.BackgroundTransparency = 0.2
+bgStyleBtn.Text = "Background: Virex Background"
+bgStyleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+bgStyleBtn.TextSize = 12
+bgStyleBtn.Font = Enum.Font.GothamSemibold
+bgStyleBtn.Parent = miscTabContainer
+
+local bgBtnCorner = Instance.new("UICorner")
+bgBtnCorner.CornerRadius = UDim.new(0, 6)
+bgBtnCorner.Parent = bgStyleBtn
+
+local bgMode = 3
+bgStyleBtn.MouseButton1Click:Connect(function()
+    bgMode = bgMode + 1
+    if bgMode > 3 then bgMode = 1 end
+
+    if bgMode == 1 then
+        bgStyleBtn.Text = "Background: Plain Black"
+        bgImage.Visible = false
+        mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+        mainFrame.BackgroundTransparency = 0.2
+    elseif bgMode == 2 then
+        bgStyleBtn.Text = "Background: Transparent"
+        bgImage.Visible = false
+        mainFrame.BackgroundTransparency = 1
+    elseif bgMode == 3 then
+        bgStyleBtn.Text = "Background: Virex Background"
+        mainFrame.BackgroundTransparency = 0.55
+        bgImage.Visible = true
+    end
+end)
+
+local scaleBtn = Instance.new("TextButton")
+scaleBtn.Name = "ScaleBtn"
+scaleBtn.Size = UDim2.new(1, -20, 0, 32)
+scaleBtn.Position = UDim2.new(0, 10, 0, 46)
+scaleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+scaleBtn.BackgroundTransparency = 0.2
+scaleBtn.Text = "GUI Scale: 1.0x"
+scaleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+scaleBtn.TextSize = 12
+scaleBtn.Font = Enum.Font.GothamSemibold
+scaleBtn.Parent = miscTabContainer
+
+local scaleBtnCorner = Instance.new("UICorner")
+scaleBtnCorner.CornerRadius = UDim.new(0, 6)
+scaleBtnCorner.Parent = scaleBtn
+
+local scales = {0.8, 1.0, 1.2, 1.4}
+local scaleIndex = 2
+scaleBtn.MouseButton1Click:Connect(function()
+    scaleIndex = scaleIndex + 1
+    if scaleIndex > #scales then scaleIndex = 1 end
+    local currentScale = scales[scaleIndex]
+    uiScale.Scale = currentScale
+    scaleBtn.Text = "GUI Scale: " .. currentScale .. "x"
+end)
+
+local teleportOverlay = Instance.new("Frame")
+teleportOverlay.Name = "TeleportOverlay"
+teleportOverlay.Size = UDim2.fromScale(1, 1)
+teleportOverlay.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+teleportOverlay.BackgroundTransparency = 1
+teleportOverlay.Visible = false
+teleportOverlay.ZIndex = 5000
+teleportOverlay.Parent = screenGui
+
+local overlayLogo = Instance.new("ImageLabel")
+overlayLogo.AnchorPoint = Vector2.new(0.5, 0.5)
+overlayLogo.Position = UDim2.new(0.5, 0, 0.42, 0)
+overlayLogo.Size = UDim2.fromOffset(90, 90)
+overlayLogo.BackgroundTransparency = 1
+overlayLogo.Image = LogoId
+overlayLogo.ScaleType = Enum.ScaleType.Fit
+overlayLogo.ZIndex = 5001
+overlayLogo.Parent = teleportOverlay
+
+local loadingText = Instance.new("TextLabel")
+loadingText.AnchorPoint = Vector2.new(0.5, 0)
+loadingText.Position = UDim2.new(0.5, 0, 0.52, 10)
+loadingText.Size = UDim2.fromOffset(300, 30)
+loadingText.BackgroundTransparency = 1
+loadingText.Text = "anti hit almost loaded"
+loadingText.TextColor3 = Color3.fromRGB(255, 180, 180)
+loadingText.Font = Enum.Font.GothamBold
+loadingText.TextSize = 15
+loadingText.ZIndex = 5001
+loadingText.Parent = teleportOverlay
+
+local loadingBarBg = Instance.new("Frame")
+loadingBarBg.AnchorPoint = Vector2.new(0.5, 0)
+loadingBarBg.Position = UDim2.new(0.5, 0, 0.58, 10)
+loadingBarBg.Size = UDim2.fromOffset(220, 4)
+loadingBarBg.BackgroundColor3 = Color3.fromRGB(50, 35, 35)
+loadingBarBg.BorderSizePixel = 0
+loadingBarBg.ZIndex = 5001
+loadingBarBg.Parent = teleportOverlay
+
+local barBgCorner = Instance.new("UICorner")
+barBgCorner.CornerRadius = UDim.new(1, 0)
+barBgCorner.Parent = loadingBarBg
+
+local loadingBarFill = Instance.new("Frame")
+loadingBarFill.Size = UDim2.new(0, 0, 1, 0)
+loadingBarFill.BackgroundColor3 = Color3.fromRGB(255, 35, 35)
+loadingBarFill.BorderSizePixel = 0
+loadingBarFill.ZIndex = 5002
+loadingBarFill.Parent = loadingBarBg
+
+local barFillCorner = Instance.new("UICorner")
+barFillCorner.CornerRadius = UDim.new(1, 0)
+barFillCorner.Parent = loadingBarFill
+
+local function TeleportRoute(Character)
+    if not AntiHitEnabled then return end
+    if not Character or not Character.Parent then return end
+
+    teleportOverlay.Visible = true
+    teleportOverlay.BackgroundTransparency = 0
+    loadingBarFill.Size = UDim2.new(0, 0, 1, 0)
+    loadingText.Text = "anti hit almost loaded"
+
+    local totalPoints = #TeleportPoints
+    for Index, Position in ipairs(TeleportPoints) do
+        if not AntiHitEnabled then
+            teleportOverlay.Visible = false
+            return
+        end
+
+        local progress = Index / totalPoints
+        TweenService:Create(loadingBarFill, TweenInfo.new(0.12), {Size = UDim2.new(progress, 0, 1, 0)}):Play()
+
+        if Index == totalPoints then
+            loadingText.Text = "anti hit loaded!"
+        end
+
+        Character:PivotTo(CFrame.new(Position))
+        if Index < totalPoints then
+            RunService.Heartbeat:Wait()
+        end
+    end
+
+    task.wait(0.25)
+    local fadeOut = TweenService:Create(teleportOverlay, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1})
+    fadeOut:Play()
+    fadeOut.Completed:Wait()
+    teleportOverlay.Visible = false
+end
+
+antiHitBtn.MouseButton1Click:Connect(function()
+    AntiHitEnabled = not AntiHitEnabled
+    if AntiHitEnabled then
+        antiHitBtn.Text = "Anti-Hit: ON"
+        antiHitBtn.BackgroundColor3 = Color3.fromRGB(255, 35, 35)
+    else
+        antiHitBtn.Text = "Anti-Hit: OFF"
+        antiHitBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    end
+end)
+
+ProximityPromptService.PromptTriggered:Connect(function(Prompt, TriggeredPlayer)
+    if TriggeredPlayer ~= LocalPlayer then return end
+    if not AntiHitEnabled or IsTeleporting then return end
+    local Character = LocalPlayer.Character
+    if not Character then return end
+    IsTeleporting = true
+    TeleportRoute(Character)
+    IsTeleporting = false
+end)
