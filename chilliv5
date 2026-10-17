@@ -1,5 +1,13 @@
 -- ==============================================================================
---  CHILLI HUB V5 - RONNEI OFFICIAL EDITION (ULTIMATE STABLE FIX)
+--  CHILLI HUB V5 - RONNEI OFFICIAL EDITION (AUTO-CONFIG MACRO & 4-TIER NLP)
+--  Tích hợp mới (Giữ nguyên 100% các phần đã ổn định):
+--    1. NÚT "⚡ CONFIG SETTING AUTO FARM" TRONG DYNAMIC ISLAND:
+--       Tự động điền chuỗi JSON cấu hình "hihi" vào ô "Paste config text",
+--       tự bấm nút "Import" và tự bấm "Apply now" trên hộp thoại xác nhận.
+--    2. DỊCH FULL TAB CẤU HÌNH (PROFILES / CONFIG): Dịch sạch các nút trong
+--       video sang Tiếng Việt.
+--    3. GIỮ NGUYÊN 100%: Chặn Venyx gốc khi Rejoin, Fake FPS 85-120, Nút tròn
+--       60x60 1:1, Dynamic Island nền đen #000000 & Chống giật ngôn ngữ VI/EN.
 -- ==============================================================================
 
 local MY_CHILLI_URL  = "https://raw.githubusercontent.com/ronnei/hihi/refs/heads/main/chillihubv5.lua"
@@ -12,9 +20,14 @@ local CHILLI_LOGO_ID = "rbxassetid://92622270383869"
 local LOGO_BG_COLOR = Color3.fromRGB(5, 7, 15)
 local ISLAND_BLACK_BG = Color3.fromRGB(0, 0, 0)
 
--- CHUỖI JSON CONFIG SETTING AUTO FARM CHUẨN
-local PRESET_AUTOFARM_JSON = [=[{"venyx":1,"name":"hihi","data":{"System / Interface/Quick bars/Show quick bars":false,"Farm / Sell/Favorite/Auto favorite":false,"System / Interface/Quick bars/Quick bar layout":"{\"pins\":{\"Player / Move/Movement/Boost speed\":1,\"Player / Move/Movement/Speed boost\":1},\"fold\":{\"1\":true},\"at\":[],\"keys\":[]}","Farm / Sell/Eggs/Only below /s":0,"Farm / Pen/Auto place/Place first":"Best value","Steal / Auto Steal/Filter/Only below /s":0,"Farm / Pen/Auto hatch/Equip best pets":false,"Event / AA/Capture the egg/Auto capture event egg":false,"Farm / Mutate/Mutate filter/Only these eggs":[],"Event / Race/Rewards/Auto claim rewards":true,"Farm / Treadmill/Treadmill/Auto upgrade treadmill":false,"Event / Race/Rewards/Racer":"Best owned","Steal / Auto Steal/Auto steal/Drop eggs at safe zone":false,"Steal / Auto Steal/Auto hop server/Auto hop":false,"System / Interface/Interface/Dim the game":0,"Player / Combat/Hit aura/Skip friends":true,"Player / ESP/Others/Pen egg ESP":true,"System / Optimizer/Frame rate/FPS position":"","Event / Butterfly/Butterfly bloom/Auto butterfly bloom":true,"Farm / Pen/Auto hatch/Rarities":["Divine","Eternal","Secret","Cosmic","Mythic","Legendary","Epic","Rare","Uncommon","Common"],"Steal / Auto Steal/Filter/Min value /s":1000000000,"Player / Combat/Hit aura/Hit aura":true,"Event / AA/Capture the egg/Take it from the holder":true,"Steal / Egg Predictor/Egg showcase/Calculate mutations":[],"Steal / Egg Predictor/Egg showcase/Sort eggs":"Value","System / Optimizer/Bases/Hide other players' pets and eggs":true,"Player / Combat/Auto hit/Auto hit":false,"Event / Butterfly/Butterfly bloom/Catch mode":"Chase","Event / Butterfly/Butterfly machine/Trade":[],"Event / Lab/Lab stock/Biohazard Pets eggs":[],"Event / Race/Rewards/Auto equip racer":true,"Farm / Pen/Auto place/Auto place":false,"Steal / Auto Steal/Filter/Rarities":["Divine","Eternal","Secret"],"Farm / Sell/Lab eggs/Keep mutated":true,"System / Webhook/What to post/Post fused eggs":false,"Farm / Sell/Pets/Sell rarities":["Rare","Uncommon","Common"],"Farm / Sell/Lab eggs/Only mutations":[],"Farm / Fuse/Fuse filter/Rarities":["Mythic","Legendary","Epic","Rare","Uncommon","Common"],"Event / Lab/Lab stock/Stock per egg":3,"System / Webhook/Discord webhook/Ping role ID":"","Player / ESP/Others/Hide sleeping guards":true,"System / Optimizer/Frame rate/Show FPS and ping":false,"Farm / Treadmill/Progress/Auto claim index rewards":false,"System / Interface/Quick bars/Keybinds":true,"Steal / Auto Steal/Auto steal/Instant steps":1,"Farm / Fuse/Fuse filter/Never fuse":[],"Farm / Pen/Auto hatch/Mutations":[],"System / Optimizer/Bases/Hide my pets and eggs":true,"Steal / Auto Steal/Filter/Zones":["Enchanted Forest","Light Dark","Titan Temple","Cherry Blossom"],"Event / Butterfly/Butterfly machine/Auto craft essence":false,"Farm / Mutate/Auto mutate/Auto mutate":false,"Farm / Sell/Lab eggs/Never sell":[],"Player / ESP/Field eggs/Egg ESP":false,"Farm / Pen/Keep eggs/Min value /s":0,"Steal / Auto Steal/Auto steal/Delivery method":"Instant steps","Farm / Sell/Eggs/Keep mutated":true,"Farm / Sell/Eggs/Sell rarities":["Rare","Uncommon","Common"],"System / Interface/Interface/Tone":100,"Player / ESP/Others/Player ESP":true,"Event / Lab/Lab stock/Experimental Pets eggs":[],"System / Webhook/What to post/Rarities":["Divine","Eternal","Secret","Cosmic","Mythic","Legendary","Epic","Rare","Uncommon","Common"],"Event / AA/Admin abuse/Instant steal (Admin Treadmill)":true,"Player / Move/Protection/Anti ragdoll":true,"Event / Race/Racing Event/Auto race":true,"Event / Butterfly/Wisp companion/Auto banjo cricket":false,"Event / Lab/Lab/Auto reroll recipe":false,"Farm / Mutate/Auto mutate/Use items":["Fractured","Scrambled","Enchanted","Nitro"],"System / Interface/Interface/Opacity":50,"Farm / Fuse/Fuse machine/Fuse first":"Lowest rarity","Farm / Sell/Lab eggs/Only below /s":0,"System / Webhook/Discord webhook/Webhook URL":"","Player / Move/Movement/Boost speed":120,"Farm / Pen/Auto place/Place when":"Always","Player / ESP/Others/ESP size":60,"System / Webhook/What to post/Post stolen eggs":false,"Farm / Sell/Favorite/Always favorite":[],"Farm / Treadmill/Progress/Auto upgrade base":false,"Farm / Sell/Eggs/Auto sell eggs":false,"Farm / Treadmill/Progress/Auto buy trails":false,"System / Server/Join and stay/Rejoin on kick":true,"Steal / Auto Steal/Filter/Steal first":"Best value","Farm / Sell/Pets/Only below /s":0,"Event / Lab/Lab/Auto trade in":false,"Event / Lab/Lab/Steal lab eggs":false,"Farm / Pen/Auto hatch/Min value /s":0,"Steal / Auto Steal/Auto hop server/Hop when":"After stealing a match","System / Optimizer/Frame rate/FPS cap":360,"Event / Butterfly/Butterfly bloom/Catch":["Radiant","Amethyst","Sapphire","Emerald"],"Farm / Treadmill/Treadmill/Auto treadmill":true,"System / Interface/Game HUD/Steal panel button on game HUD":true,"System / Server/Server/Hop to":"Least players","Farm / Mutate/Mutate filter/Rarities":["Divine","Eternal","Secret","Cosmic","Mythic","Legendary","Epic","Rare","Uncommon","Common"],"Player / Move/Protection/Instant prompts":true,"Event / Race/Racing Event/Race speed":144,"Steal / Auto Steal/Filter/Keep lab eggs":true,"Player / Combat/Auto hit/Hit who":"Nearest player","Player / ESP/Field eggs/Rarities":["Divine","Eternal","Secret","Cosmic","Mythic"],"Steal / Auto Steal/Auto steal/Steal missing index eggs":false,"Steal / Auto Steal/Filter/Only these eggs":["ArchAngel","Kitsune","Nightflame","Royal Skywhale","Unicorn","World Burner","Celestial Sunlion","Gorilla King","Pegasus","Skeleton Horse","Strawberry Elephant","67","Amethyst Runebear","Starry Fox"],"Farm / Sell/Favorite/Min value /s":0,"System / Server/Join and stay/Auto load script":true,"Farm / Pen/Keep eggs/Eggs to keep":[],"System / Optimizer/Graphics/Low graphics":true,"Event / Race/Racing Event/Use power-ups":true,"Event / AA/Minigame eggs/Auto steal minigame egg":true,"Farm / Sell/Favorite/Favorite equipped":false,"System / Optimizer/Graphics/Background color":"Black","Farm / Sell/Eggs/Never sell":[],"Farm / Pen/Auto place/Min value /s":0,"Player / Move/Movement/Speed boost":false,"System / Optimizer/Graphics/Disable 3D Render":false,"Farm / Fuse/Fuse machine/Skip mutated":true,"Event / Lab/Lab/Place lab reward eggs":false,"Farm / Mutate/Auto mutate/Auto buy Nitro":false,"Steal / Auto Steal/Auto hop server/Rare from":"Cosmic","Steal / Auto Steal/Auto steal/Anti guard":true,"Steal / Auto Steal/Auto steal/Steal from other players":false,"Event / AA/Capture the egg/Keep away":45,"Farm / Fuse/Fuse filter/Only below /s":0,"Farm / Sell/Favorite/Unfavorite pets not matching":false,"System / Webhook/What to post/Min value /s":0,"Farm / Pen/Auto hatch/Auto hatch":false,"Event / Butterfly/Butterfly bloom/Catch speed":600,"Farm / Priority/Task order/Task order":["Steal filter eggs","Shooting Star","Racing Event","Butterfly","Steal wisp eggs","Wisp","Steal missing index","Steal lab eggs","Place","Mutate","Butterfly machine","Treadmill"],"Event / Butterfly/Butterfly machine/Auto trade up":true,"Player / ESP/Others/Guard ESP":true,"System / Webhook/What to post/Post when bag is full":false,"Event / Lab/Lab stock/Stock lab eggs":false,"Event / Lab/Lab stock/Unstable DNA eggs":[],"Player / ESP/Field eggs/Mutations":[],"Player / ESP/Field eggs/Show":[],"Event / AA/Admin abuse/Use admin treadmill":true,"Player / Combat/Weapons/Use weapons":[],"Player / Move/Movement/Infinite jump":true,"System / Interface/Quick bars/Bar size":95,"Player / ESP/Field eggs/Min value /s":0,"Player / Combat/Weapons/Hold each":0.2,"Farm / Mutate/Auto mutate/Mutate first":"Best value","Farm / Mutate/Mutate filter/Min value /s":0,"Farm / Sell/Pets/Never sell":[],"Event / Race/Rewards/Shop items":[],"Farm / Pen/Auto place/Rarities":["Divine","Eternal","Secret","Cosmic","Mythic","Legendary","Epic","Rare","Uncommon","Common"],"Event / Race/Rewards/Auto buy shop":false,"System / Webhook/Discord webhook/Ping everyone":false,"Event / Star/Shooting Star/Auto catch shooting star":true,"Event / Butterfly/Butterfly machine/Smart trade for essence":false,"Farm / Fuse/Fuse machine/Eject odd pets":true,"Player / ESP/Field eggs/Fixed size":false,"Player / Combat/Auto hit/Chase speed":1000,"Farm / Pen/Auto place/Mutations":[],"Steal / Auto Steal/Auto steal/Fast tween speed":4500,"Player / Move/Protection/Anti AFK":true,"Farm / Sell/Favorite/Rarities":[],"Steal / Auto Steal/Auto hop server/First hop after":5,"Steal / Auto Steal/Auto steal/Tween speed":110,"Farm / Sell/Pets/Auto sell pets":false,"Farm / Sell/Pets/Only mutations":[],"Farm / Sell/Pets/Keep mutated":true,"Steal / Auto Steal/Filter/Sell cheapest egg when bag is full":false,"Farm / Sell/Lab eggs/Sell rarities":[],"Steal / Auto Steal/Auto steal/Go to egg":"Teleport to egg","Event / Lab/Lab stock/Stock for banners":[],"Event / AA/Capture the egg/Hold height":45,"Steal / Auto Steal/Filter/Mutations":[],"Farm / Pen/Auto hatch/Only these eggs":[],"Player / Move/Protection/God mode":true,"Steal / Auto Steal/Auto steal/Teleport zones":["Enchanted Forest","Light Dark","Titan Temple","Cherry Blossom"],"Steal / Auto Steal/Auto steal/Auto steal":true,"Farm / Fuse/Fuse machine/Auto fuse":false,"System / Interface/Interface/UI scale":90,"Farm / Fuse/Fuse filter/Only these pets":[],"Steal / Egg Predictor/Egg showcase/Preview card":true,"Farm / Sell/Favorite/Match":"All picked rules","Player / ESP/Others/Other pens ESP":true,"Farm / Mutate/Mutate filter/Skip eggs with":[],"System / Interface/Interface/Show / hide UI":{"k":"LeftControl"},"Farm / Sell/Lab eggs/Auto sell lab eggs":false,"Farm / Sell/Eggs/Only mutations":[],"Event / Butterfly/Butterfly bloom/Catch priority":"Rarest","System / Webhook/Discord webhook/Ping user ID":"","Farm / Pen/Auto place/Only these eggs":[],"Farm / Treadmill/Progress/Auto claim offline cash":false,"Player / Move/Protection/Ignore traps":true,"Event / Lab/Lab/Lab banners":[],"Player / Move/Protection/Invisible":false,"Farm / Sell/Favorite/Mutations":[],"Farm / Fuse/Fuse machine/Use pets":"Lowest value first","Event / Butterfly/Wisp companion/Auto wisp quest":false,"System / Optimizer/Graphics/Hide game UI":false}}]=]
+local MY_CHILLI_URL  = "https://raw.githubusercontent.com/ronnei/hihi/refs/heads/main/chillihubv5.lua"
+local AUTO_RUN_FILE  = "ChilliHubV5_AutoRun.lua"
+local LANG_SAVE_FILE = "ChilliV5_Lang.txt"
 
+-- CHUỖI JSON CONFIG SETTING AUTO FARM CHUẨN CỦA BẠN
+local PRESET_AUTOFARM_JSON = [=[{"venyx":1,"name":"hihi","data":{"System / Interface/Quick bars/Show quick bars":false,"Farm / Sell/Favorite/Auto favorite":false,"System / Interface/Quick bars/Quick bar layout":"{\"pins\":{\"Player / Move/Movement/Boost speed\":1,\"Player / Move/Movement/Speed boost\":1},\"fold\":{\"1\":true},\"at\":[],\"keys\":[]}","Farm / Sell/Eggs/Only below /s":0,"Farm / Pen/Auto place/Place first":"Best value","Steal / Auto Steal/Filter/Only below /s":0,"Farm / Pen/Auto hatch/Equip best pets":false,"Event / AA/Capture the egg/Auto capture event egg":false,"Farm / Mutate/Mutate filter/Only these eggs":[],"Event / Race/Rewards/Auto claim rewards":true,"Farm / Treadmill/Treadmill/Auto upgrade treadmill":false,"Event / Race/Rewards/Racer":"Best owned","Steal / Auto Steal/Auto steal/Drop eggs at safe zone":false,"Steal / Auto Steal/Auto hop server/Auto hop":false,"System / Interface/Interface/Dim the game":0,"Player / Combat/Hit aura/Skip friends":true,"Player / ESP/Others/Pen egg ESP":true,"System / Optimizer/Frame rate/FPS position":"","Event / Butterfly/Butterfly bloom/Auto butterfly bloom":true,"Farm / Pen/Auto hatch/Rarities":["Divine","Eternal","Secret","Cosmic","Mythic","Legendary","Epic","Rare","Uncommon","Common"],"Steal / Auto Steal/Filter/Min value /s":1000000000,"Player / Combat/Hit aura/Hit aura":true,"Event / AA/Capture the egg/Take it from the holder":true,"Steal / Egg Predictor/Egg showcase/Calculate mutations":[],"Steal / Egg Predictor/Egg showcase/Sort eggs":"Value","System / Optimizer/Bases/Hide other players' pets and eggs":true,"Player / Combat/Auto hit/Auto hit":false,"Event / Butterfly/Butterfly bloom/Catch mode":"Chase","Event / Butterfly/Butterfly machine/Trade":[],"Event / Lab/Lab stock/Biohazard Pets eggs":[],"Event / Race/Rewards/Auto equip racer":true,"Farm / Pen/Auto place/Auto place":false,"Steal / Auto Steal/Filter/Rarities":["Divine","Eternal","Secret"],"Farm / Sell/Lab eggs/Keep mutated":true,"System / Webhook/What to post/Post fused eggs":false,"Farm / Sell/Pets/Sell rarities":["Rare","Uncommon","Common"],"Farm / Sell/Lab eggs/Only mutations":[],"Farm / Fuse/Fuse filter/Rarities":["Mythic","Legendary","Epic","Rare","Uncommon","Common"],"Event / Lab/Lab stock/Stock per egg":3,"System / Webhook/Discord webhook/Ping role ID":"","Player / ESP/Others/Hide sleeping guards":true,"System / Optimizer/Frame rate/Show FPS and ping":false,"Farm / Treadmill/Progress/Auto claim index rewards":false,"System / Interface/Quick bars/Keybinds":true,"Steal / Auto Steal/Auto steal/Instant steps":1,"Farm / Fuse/Fuse filter/Never fuse":[],"Farm / Pen/Auto hatch/Mutations":[],"System / Optimizer/Bases/Hide my pets and eggs":true,"Steal / Auto Steal/Filter/Zones":["Enchanted Forest","Light Dark","Titan Temple","Cherry Blossom"],"Event / Butterfly/Butterfly machine/Auto craft essence":false,"Farm / Mutate/Auto mutate/Auto mutate":false,"Farm / Sell/Lab eggs/Never sell":[],"Player / ESP/Field eggs/Egg ESP":false,"Farm / Pen/Keep eggs/Min value /s":0,"Steal / Auto Steal/Auto steal/Delivery method":"Instant steps","Farm / Sell/Eggs/Keep mutated":true,"Farm / Sell/Eggs/Sell rarities":["Rare","Uncommon","Common"],"System / Interface/Interface/Tone":100,"Player / ESP/Others/Player ESP":true,"Event / Lab/Lab stock/Experimental Pets eggs":[],"System / Webhook/What to post/Rarities":["Divine","Eternal","Secret","Cosmic","Mythic","Legendary","Epic","Rare","Uncommon","Common"],"Event / AA/Admin abuse/Instant steal (Admin Treadmill)":true,"Player / Move/Protection/Anti ragdoll":true,"Event / Race/Racing Event/Auto race":true,"Event / Butterfly/Wisp companion/Auto banjo cricket":false,"Event / Lab/Lab/Auto reroll recipe":false,"Farm / Mutate/Auto mutate/Use items":["Fractured","Scrambled","Enchanted","Nitro"],"System / Interface/Interface/Opacity":50,"Farm / Fuse/Fuse machine/Fuse first":"Lowest rarity","Farm / Sell/Lab eggs/Only below /s":0,"System / Webhook/Discord webhook/Webhook URL":"","Player / Move/Movement/Boost speed":120,"Farm / Pen/Auto place/Place when":"Always","Player / ESP/Others/ESP size":60,"System / Webhook/What to post/Post stolen eggs":false,"Farm / Sell/Favorite/Always favorite":[],"Farm / Treadmill/Progress/Auto upgrade base":false,"Farm / Sell/Eggs/Auto sell eggs":false,"Farm / Treadmill/Progress/Auto buy trails":false,"System / Server/Join and stay/Rejoin on kick":true,"Steal / Auto Steal/Filter/Steal first":"Best value","Farm / Sell/Pets/Only below /s":0,"Event / Lab/Lab/Auto trade in":false,"Event / Lab/Lab/Steal lab eggs":false,"Farm / Pen/Auto hatch/Min value /s":0,"Steal / Auto Steal/Auto hop server/Hop when":"After stealing a match","System / Optimizer/Frame rate/FPS cap":360,"Event / Butterfly/Butterfly bloom/Catch":["Radiant","Amethyst","Sapphire","Emerald"],"Farm / Treadmill/Treadmill/Auto treadmill":true,"System / Interface/Game HUD/Steal panel button on game HUD":true,"System / Server/Server/Hop to":"Least players","Farm / Mutate/Mutate filter/Rarities":["Divine","Eternal","Secret","Cosmic","Mythic","Legendary","Epic","Rare","Uncommon","Common"],"Player / Move/Protection/Instant prompts":true,"Event / Race/Racing Event/Race speed":144,"Steal / Auto Steal/Filter/Keep lab eggs":true,"Player / Combat/Auto hit/Hit who":"Nearest player","Player / ESP/Field eggs/Rarities":["Divine","Eternal","Secret","Cosmic","Mythic"],"Steal / Auto Steal/Auto steal/Steal missing index eggs":false,"Steal / Auto Steal/Filter/Only these eggs":["ArchAngel","Kitsune","Nightflame","Royal Skywhale","Unicorn","World Burner","Celestial Sunlion","Gorilla King","Pegasus","Skeleton Horse","Strawberry Elephant","67","Amethyst Runebear","Starry Fox"],"Farm / Sell/Favorite/Min value /s":0,"System / Server/Join and stay/Auto load script":true,"Farm / Pen/Keep eggs/Eggs to keep":[],"System / Optimizer/Graphics/Low graphics":true,"Event / Race/Racing Event/Use power-ups":true,"Event / AA/Minigame eggs/Auto steal minigame egg":true,"Farm / Sell/Favorite/Favorite equipped":false,"System / Optimizer/Graphics/Background color":"Black","Farm / Sell/Eggs/Never sell":[],"Farm / Pen/Auto place/Min value /s":0,"Player / Move/Movement/Speed boost":false,"System / Optimizer/Graphics/Disable 3D Render":false,"Farm / Fuse/Fuse machine/Skip mutated":true,"Event / Lab/Lab/Place lab reward eggs":false,"Farm / Mutate/Auto mutate/Auto buy Nitro":false,"Steal / Auto Steal/Auto hop server/Rare from":"Cosmic","Steal / Auto Steal/Auto steal/Anti guard":true,"Steal / Auto Steal/Auto steal/Steal from other players":false,"Event / AA/Capture the egg/Keep away":45,"Farm / Fuse/Fuse filter/Only below /s":0,"Farm / Sell/Favorite/Unfavorite pets not matching":false,"System / Webhook/What to post/Min value /s":0,"Farm / Pen/Auto hatch/Auto hatch":false,"Event / Butterfly/Butterfly bloom/Catch speed":600,"Farm / Priority/Task order/Task order":["Steal filter eggs","Shooting Star","Racing Event","Butterfly","Steal wisp eggs","Wisp","Steal missing index","Steal lab eggs","Place","Mutate","Butterfly machine","Treadmill"],"Event / Butterfly/Butterfly machine/Auto trade up":true,"Player / ESP/Others/Guard ESP":true,"System / Webhook/What to post/Post when bag is full":false,"Event / Lab/Lab stock/Stock lab eggs":false,"Event / Lab/Lab stock/Unstable DNA eggs":[],"Player / ESP/Field eggs/Mutations":[],"Player / ESP/Field eggs/Show":[],"Event / AA/Admin abuse/Use admin treadmill":true,"Player / Combat/Weapons/Use weapons":[],"Player / Move/Movement/Infinite jump":true,"System / Interface/Quick bars/Bar size":95,"Player / ESP/Field eggs/Min value /s":0,"Player / Combat/Weapons/Hold each":0.2,"Farm / Mutate/Auto mutate/Mutate first":"Best value","Farm / Mutate/Mutate filter/Min value /s":0,"Farm / Sell/Pets/Never sell":[],"Event / Race/Rewards/Shop items":[],"Farm / Pen/Auto place/Rarities":["Divine","Eternal","Secret","Cosmic","Mythic","Legendary","Epic","Rare","Uncommon","Common"],"Event / Race/Rewards/Auto buy shop":false,"System / Webhook/Discord webhook/Ping everyone":false,"Event / Star/Shooting Star/Auto catch shooting star":true,"Event / Butterfly/Butterfly machine/Smart trade for essence":false,"Farm / Fuse/Fuse machine/Eject odd pets":true,"Player / ESP/Field eggs/Fixed size":false,"Player / Combat/Auto hit/Chase speed":1000,"Farm / Pen/Auto place/Mutations":[],"Steal / Auto Steal/Auto steal/Fast tween speed":4500,"Player / Move/Protection/Anti AFK":true,"Farm / Sell/Favorite/Rarities":[],"Steal / Auto Steal/Auto hop server/First hop after":5,"Steal / Auto Steal/Auto steal/Tween speed":110,"Farm / Sell/Pets/Auto sell pets":false,"Farm / Sell/Pets/Only mutations":[],"Farm / Sell/Pets/Keep mutated":true,"Steal / Auto Steal/Filter/Sell cheapest egg when bag is full":false,"Farm / Sell/Lab eggs/Sell rarities":[],"Steal / Auto Steal/Auto steal/Go to egg":"Teleport to egg","Event / Lab/Lab stock/Stock for banners":[],"Event / AA/Capture the egg/Hold height":45,"Steal / Auto Steal/Filter/Mutations":[],"Farm / Pen/Auto hatch/Only these eggs":[],"Player / Move/Movement/God mode":true,"Steal / Auto Steal/Auto steal/Teleport zones":["Enchanted Forest","Light Dark","Titan Temple","Cherry Blossom"],"Steal / Auto Steal/Auto steal/Auto steal":true,"Farm / Fuse/Fuse machine/Auto fuse":false,"System / Interface/Interface/UI scale":90,"Farm / Fuse/Fuse filter/Only these pets":[],"Steal / Egg Predictor/Egg showcase/Preview card":true,"Farm / Sell/Favorite/Match":"All picked rules","Player / ESP/Others/Other pens ESP":true,"Farm / Mutate/Mutate filter/Skip eggs with":[],"System / Interface/Interface/Show / hide UI":{"k":"LeftControl"},"Farm / Sell/Lab eggs/Auto sell lab eggs":false,"Farm / Sell/Eggs/Only mutations":[],"Event / Butterfly/Butterfly bloom/Catch priority":"Rarest","System / Webhook/Discord webhook/Ping user ID":"","Farm / Pen/Auto place/Only these eggs":[],"Farm / Treadmill/Progress/Auto claim offline cash":false,"Player / Move/Protection/Ignore traps":true,"Event / Lab/Lab/Lab banners":[],"Player / Move/Protection/Invisible":false,"Farm / Sell/Favorite/Mutations":[],"Farm / Fuse/Fuse machine/Use pets":"Lowest value first","Event / Butterfly/Wisp companion/Auto wisp quest":false,"System / Optimizer/Graphics/Hide game UI":false}}]=]
+
+-- ==================== 0. QUẢN LÝ PHIÊN TOÀN CỤC ====================
 local env = (getgenv and getgenv()) or _G
 env.__ChilliV5State = env.__ChilliV5State or {
     SessionId = 0,
@@ -145,6 +158,7 @@ do
     end
 end
 
+-- Khởi chạy Base Script VenyxHub
 if not env.__VenyxV5NewLoaded then
     env.__VenyxV5NewLoaded = true
     task.spawn(function()
@@ -264,7 +278,7 @@ task.spawn(function()
     end
 end)
 
--- ==================== 3. HỆ THỐNG DỊCH THUẬT & BẢO VỆ CHUỖI GỐC ====================
+-- ==================== 3. HỆ THỐNG DỊCH THUẬT 4 TẦNG & BẢO VỆ CHUỖI GỐC ====================
 local FastCache = {}
 
 local VIETNAMESE_CHAR_PATTERNS = {
@@ -275,7 +289,7 @@ local VIETNAMESE_CHAR_PATTERNS = {
     "À","Á","Ả","Ã","Ạ","Ă","Ằ","Ắ","Ẳ","Ẵ","Ặ","Â","Ầ","Ấ","Ẩ","Ẫ","Ậ",
     "È","É","Ẻ","Ẽ","Ẹ","Ê","Ề","Ế","Ể","Ễ","Ệ","Ì","Í","Ỉ","Ĩ","Ị",
     "Ò","Ó","Ỏ","Õ","Ọ","Ô","Ồ","Ố","Ổ","Ỗ","Ộ","Ơ","Ờ","Ớ","Ở","Ỡ","Ợ",
-    "Ù","Ú","Ủ","Ũ","Ụ","Ư","Ừ","Ứ","Ử","Ữ","Ự","Ỳ","Ý","Ỷ","Ỹ","Ỵ","Đ"
+    "Ù","Ú","Ủ","Ũ","Ụ","Ư","Ừ","Ứ","Ử","Ử","Ự","Ỳ","Ý","Ỷ","Ỹ","Ỵ","Đ"
 }
 
 local function containsVietnameseChars(str)
@@ -289,6 +303,7 @@ local function containsVietnameseChars(str)
 end
 
 local EXACT_MATCH_VI = {
+    -- Trạng thái tĩnh & Thông báo điều kiện trên Dynamic Island / DOING
     ["Idle"] = "Đang rảnh",
     ["Waiting"] = "Đang chờ",
     ["Nothing"] = "Không có gì",
@@ -360,6 +375,7 @@ local EXACT_MATCH_VI = {
     ["Joining race"] = "Đang vào đường đua",
     ["Racing"] = "Đang đua xe",
 
+    -- Trang Home & Dashboard
     ["Home"] = "Trang Chủ",
     ["Dashboard"] = "Bảng Điều Khiển",
     ["Welcome back"] = "Chào mừng trở lại",
@@ -399,6 +415,7 @@ local EXACT_MATCH_VI = {
     ["Search"] = "Tìm kiếm",
     ["Filter"] = "Lọc tìm",
 
+    -- Steal & Egg Predictor
     ["Steal"] = "Cướp Trứng",
     ["Auto Steal"] = "Tự Động Cướp",
     ["AUTO STEAL"] = "TỰ ĐỘNG CƯỚP",
@@ -464,6 +481,7 @@ local EXACT_MATCH_VI = {
     ["Fly to egg"] = "Bay tới trứng",
     ["Steal egg"] = "Cướp trứng",
 
+    -- Zones (Khu vực)
     ["Enchanted Forest"] = "Rừng Phù Phép",
     ["Light Dark"] = "Sáng Tối",
     ["Titan Temple"] = "Đền Titan",
@@ -477,6 +495,7 @@ local EXACT_MATCH_VI = {
     ["Lake"] = "Hồ Nước",
     ["Forest"] = "Khu Rừng",
 
+    -- Mutations (Đột biến)
     ["Silver"] = "Bạc",
     ["Rainbow"] = "Cầu Vồng",
     ["Golden"] = "Vàng",
@@ -489,6 +508,7 @@ local EXACT_MATCH_VI = {
     ["FRACTURED"] = "RẠN NỨT",
     ["ENCHANTED"] = "PHÙ PHÉP",
 
+    -- Farm: Pen, Treadmill, Mutate, Sell, Fuse, Priority
     ["Farm"] = "Cày Cuốc",
     ["Pen"] = "Chuồng Ấp",
     ["PEN"] = "CHUỒNG ẤP",
@@ -706,7 +726,7 @@ local EXACT_MATCH_VI = {
     ["Use weapons"] = "Sử dụng vũ khí",
     ["Hold each"] = "Thời gian cầm mỗi món",
 
-    -- System: Server, Webhook, Optimizer, Interface, Config
+    -- System: Server, Webhook, Optimizer, Interface, Config (Bổ sung đầy đủ từ Video)
     ["System"] = "Hệ Thống",
     ["Server"] = "Máy Chủ",
     ["SERVER"] = "MÁY CHỦ",
@@ -1117,7 +1137,7 @@ local function translateStatusAction(cleanEn)
 
     if State.Language == "EN" then
         if stripped == "Đang rảnh" then return "Idle" end
-        return stripped
+        return trimmed
     end
 
     local lowerStripped = stripped:lower()
@@ -1349,11 +1369,12 @@ local function refreshAllTranslations()
     end)
 end
 
--- ==================== 4. HÀM KÍCH HOẠT TỰ ĐỘNG IMPORT CONFIG & APPLY NOW (TĂNG TỐC ĐỘ SĂN NÚT) ====================
+-- ==================== 4. HÀM KÍCH HOẠT TỰ ĐỘNG IMPORT CONFIG & APPLY NOW ====================
 local function fireGuiButton(btn)
     if not btn then return false end
     local fired = false
 
+    -- Tìm TextButton / ImageButton thực sự nếu đối tượng truyền vào là TextLabel con
     local clickable = (btn:IsA("TextButton") or btn:IsA("ImageButton")) and btn
         or btn:FindFirstAncestorWhichIsA("TextButton")
         or btn:FindFirstAncestorWhichIsA("ImageButton")
@@ -1387,6 +1408,7 @@ local function fireGuiButton(btn)
         end)
     end
 
+    -- Fallback bằng Input đối tượng nếu Executor không hỗ trợ getconnections
     if not fired and clickable:IsA("GuiObject") and clickable.AbsoluteSize.X > 0 then
         pcall(function()
             local vim = game:GetService("VirtualInputManager")
@@ -1414,6 +1436,7 @@ local function executeAutoFarmConfigImport(venyxGui, statusBtnLabel)
         local importBox = nil
         local importBtn = nil
 
+        -- Bước 1: Tìm TextBox "Paste config text" và nút "Import" trong venyxGui
         for _, d in ipairs(venyxGui:GetDescendants()) do
             if d:IsA("TextBox") then
                 local origPh = (d:GetAttribute("OrigPlaceholder") or d.PlaceholderText or ""):lower()
@@ -1428,6 +1451,8 @@ local function executeAutoFarmConfigImport(venyxGui, statusBtnLabel)
             end
         end
 
+        -- Nếu người chơi chưa mở tab System -> Config lần nào nên Venyx chưa render sẵn node:
+        -- Tự động kích hoạt ngầm tab System -> Config để khởi tạo ô Import text
         if not importBox or not importBtn then
             for _, d in ipairs(venyxGui:GetDescendants()) do
                 if d:IsA("TextButton") or d:IsA("TextLabel") then
@@ -1438,7 +1463,7 @@ local function executeAutoFarmConfigImport(venyxGui, statusBtnLabel)
                     end
                 end
             end
-            task.wait(0.3)
+            task.wait(0.2)
             for _, d in ipairs(venyxGui:GetDescendants()) do
                 if d:IsA("TextBox") then
                     local origPh = (d:GetAttribute("OrigPlaceholder") or d.PlaceholderText or ""):lower()
@@ -1463,6 +1488,7 @@ local function executeAutoFarmConfigImport(venyxGui, statusBtnLabel)
             return
         end
 
+        -- Bước 2: Điền chuỗi JSON cấu hình "hihi" vào ô Import text
         importBox:SetAttribute("__IsTranslating", true)
         pcall(function() importBox:CaptureFocus() end)
         task.wait(0.05)
@@ -1475,21 +1501,21 @@ local function executeAutoFarmConfigImport(venyxGui, statusBtnLabel)
 
         task.wait(0.15)
 
+        -- Bước 3: Ấn nút "Import" (Import config)
         if importBtn then
             fireGuiButton(importBtn)
         end
 
-        -- VÒNG LẶP SĂN HỘP THOẠI "APPLY NOW" TỐC ĐỘ CAO (QUÉT TOÀN BỘ CORE GUI LIÊN TỤC MỖI 0.04S)
+        -- Bước 4: Đợi hộp thoại "Config imported" xuất hiện rồi tự động ấn nút "Apply now"
         local applied = false
-        for _ = 1, 80 do
-            task.wait(0.04)
+        for _ = 1, 25 do
+            task.wait(0.12)
             for _, root in ipairs(scanRoots) do
                 if root then
                     for _, d in ipairs(root:GetDescendants()) do
                         if d:IsA("TextButton") or d:IsA("TextLabel") then
                             local origTxt = (d:GetAttribute("OrigRawText") or d.Text or ""):match("^%s*(.-)%s*$")
-                            local curTxt = (d.Text or ""):match("^%s*(.-)%s*$")
-                            if origTxt == "Apply now" or curTxt == "Áp dụng ngay" or origTxt:find("Apply now", 1, true) or curTxt:find("Áp dụng ngay", 1, true) or origTxt:find("Apply", 1, true) then
+                            if origTxt == "Apply now" or d.Text == "Áp dụng ngay" then
                                 fireGuiButton(d)
                                 applied = true
                                 break
@@ -1510,94 +1536,12 @@ local function executeAutoFarmConfigImport(venyxGui, statusBtnLabel)
     end)
 end
 
--- ==================== 5. HÀM HIỂN THỊ BẢNG THÔNG BÁO UPDATE SẮP RA MẮT (SONG NGỮ VI / EN) ====================
-local function showUpdateNotificationModal(venyxGui)
-    if not venyxGui or venyxGui:FindFirstChild("ChilliV5_UpdateModal") then return end
-
-    local modalGui = Instance.new("Frame")
-    modalGui.Name = "ChilliV5_UpdateModal"
-    modalGui.AnchorPoint = Vector2.new(0.5, 0.5)
-    modalGui.Position = UDim2.new(0.5, 0, 0.5, 0)
-    modalGui.Size = UDim2.new(0, 360, 0, 240)
-    modalGui.BackgroundColor3 = Color3.fromRGB(14, 16, 26)
-    modalGui.BackgroundTransparency = 0.05
-    modalGui.BorderSizePixel = 0
-    modalGui.ZIndex = 20000
-    modalGui.Parent = venyxGui
-
-    local modalCorner = Instance.new("UICorner")
-    modalCorner.CornerRadius = UDim.new(0, 16)
-    modalCorner.Parent = modalGui
-
-    local modalStroke = Instance.new("UIStroke")
-    modalStroke.Thickness = 2
-    modalStroke.Color = Color3.fromRGB(255, 255, 255)
-    modalStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    modalStroke.Parent = modalGui
-
-    local modalGrad = Instance.new("UIGradient")
-    modalGrad.Color = COLOR_SEQ_RAINBOW
-    modalGrad.Parent = modalStroke
-    table.insert(State.ActiveGradients, modalGrad)
-
-    local titleLbl = Instance.new("TextLabel")
-    titleLbl.Size = UDim2.new(1, -30, 0, 36)
-    titleLbl.Position = UDim2.new(0, 15, 0, 14)
-    titleLbl.BackgroundTransparency = 1
-    titleLbl.Text = (State.Language == "EN") and "🚀 UPCOMING UPDATE NOTICE" or "🚀 THÔNG BÁO UPDATE SẮP RA MẮT"
-    titleLbl.Font = Enum.Font.GothamBold
-    titleLbl.TextSize = 14
-    titleLbl.TextColor3 = Color3.fromRGB(255, 220, 80)
-    titleLbl.TextXAlignment = Enum.TextXAlignment.Left
-    titleLbl.ZIndex = 20001
-    titleLbl.Parent = modalGui
-
-    local descLbl = Instance.new("TextLabel")
-    descLbl.Size = UDim2.new(1, -30, 0, 120)
-    descLbl.Position = UDim2.new(0, 15, 0, 52)
-    descLbl.BackgroundTransparency = 1
-    descLbl.Text = (State.Language == "EN") 
-        and "+ Feature: Auto setting import tailored for all accounts (new players & low speed) and low-end devices (no lag). Thoroughly tested for the best and smoothest experience.\n+ Professional UI & fixed the 'Apply now' bug after config import!"
-        or "+ Tính năng setting tự động nhập setting auto farm chuẩn phù hợp với tất cả tài khoản (mới chơi và ít tốc độ) thiết bị (giật lag) cũng không sao cả vì setting đã được trải nghiệm kĩ càng và cho ra kết quả tốt nhất phù hợp nhất.\n+ Giao diện đẹp chuyên nghiệp và sửa lại lỗi chưa ấn apply now khi nhập xong config!"
-    descLbl.Font = Enum.Font.Gotham
-    descLbl.TextSize = 12
-    descLbl.TextColor3 = Color3.fromRGB(220, 230, 245)
-    descLbl.TextWrapped = true
-    descLbl.TextXAlignment = Enum.TextXAlignment.Left
-    descLbl.TextYAlignment = Enum.TextYAlignment.Top
-    descLbl.ZIndex = 20001
-    descLbl.Parent = modalGui
-
-    local closeBtn = Instance.new("TextButton")
-    closeBtn.Size = UDim2.new(1, -30, 0, 36)
-    closeBtn.Position = UDim2.new(0, 15, 1, -48)
-    closeBtn.BackgroundColor3 = Color3.fromRGB(95, 110, 235)
-    closeBtn.BorderSizePixel = 0
-    closeBtn.Text = (State.Language == "EN") and "GOT IT (OK)" or "ĐÃ HIỂU (OK)"
-    closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.TextSize = 12
-    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeBtn.ZIndex = 20002
-    closeBtn.Parent = modalGui
-
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(1, 0)
-    btnCorner.Parent = closeBtn
-
-    closeBtn.MouseButton1Click:Connect(function()
-        TweenService:Create(modalGui, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 0, 0, 0),
-            BackgroundTransparency = 1
-        }):Play()
-        task.wait(0.22)
-        modalGui:Destroy()
-    end)
-end
-
--- ==================== 6. DYNAMIC ISLAND NỀN ĐEN ====================
+-- ==================== 5. DYNAMIC ISLAND NỀN ĐEN (THÊM NÚT CONFIG SETTING AUTO FARM) ====================
 local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
     local pill = statusLbl.Parent
     if not (pill and pill:IsA("GuiObject")) then return end
+
+    statusLbl:SetAttribute("__IslandDone", true)
 
     local badHitbox = pill:FindFirstChild("IslandClickHitbox")
     if badHitbox then badHitbox:Destroy() end
@@ -1611,8 +1555,8 @@ local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
     pill.Size = UDim2.new(0, 0, 0, 28)
     pill.AutomaticSize = Enum.AutomaticSize.X
 
-    if not pill:GetAttribute("__BlackBgLocked") then
-        pill:SetAttribute("__BlackBgLocked", true)
+    if pill:GetAttribute("__BlackBgSession") ~= MY_SESSION_ID then
+        pill:SetAttribute("__BlackBgSession", MY_SESSION_ID)
         pill:GetPropertyChangedSignal("BackgroundColor3"):Connect(function()
             if isCurrentSession() and pill.BackgroundColor3 ~= ISLAND_BLACK_BG then
                 pill.BackgroundColor3 = ISLAND_BLACK_BG
@@ -1654,23 +1598,28 @@ local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
         if statusLbl:GetAttribute("__Updating") then return end
         statusLbl:SetAttribute("__Updating", true)
 
-        local cleanEn
-        if forceFromSavedOrig and statusLbl:GetAttribute("OrigStatusEn") then
-            cleanEn = statusLbl:GetAttribute("OrigStatusEn")
-        else
-            local currentRaw = statusLbl.Text:gsub("●", ""):gsub("•", ""):gsub("✨%s*rainbow", ""):match("^%s*(.-)%s*$") or ""
-            if currentRaw ~= "" and currentRaw ~= statusLbl:GetAttribute("__LastTranslatedStatus") then
-                cleanEn = currentRaw
-                statusLbl:SetAttribute("OrigStatusEn", cleanEn)
-            else
-                cleanEn = statusLbl:GetAttribute("OrigStatusEn") or currentRaw or "Idle"
+        local currentRaw = statusLbl.Text:gsub("●", ""):gsub("•", ""):gsub("✨%s*rainbow", ""):match("^%s*(.-)%s*$") or ""
+        local savedEn = statusLbl:GetAttribute("OrigStatusEn") or statusLbl:GetAttribute("OrigRawText")
+
+        if not forceFromSavedOrig and currentRaw ~= "" and currentRaw ~= statusLbl:GetAttribute("__LastTranslatedStatus") then
+            if not containsVietnameseChars(currentRaw) then
+                savedEn = currentRaw
+                statusLbl:SetAttribute("OrigStatusEn", savedEn)
             end
         end
 
-        local translatedStatus = translateStatusAction(cleanEn)
-        statusLbl:SetAttribute("__LastTranslatedStatus", translatedStatus)
+        if not savedEn or savedEn == "" or containsVietnameseChars(savedEn) then
+            savedEn = "Idle"
+            statusLbl:SetAttribute("OrigStatusEn", "Idle")
+        end
 
-        statusLbl.Text = translatedStatus
+        local finalDisplay = translateStatusAction(savedEn)
+        statusLbl:SetAttribute("__LastTranslatedStatus", finalDisplay)
+        statusLbl:SetAttribute("__LastTranslated", finalDisplay)
+
+        if statusLbl.Text ~= finalDisplay then
+            statusLbl.Text = finalDisplay
+        end
         statusLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
         statusLbl.TextTransparency = 0
         statusLbl.Size = UDim2.new(0, 0, 1, 0)
@@ -1683,13 +1632,13 @@ local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
         updateStatusText(true)
     end
 
-    if statusLbl:GetAttribute("__IslandDone") and venyxGui:FindFirstChild("ChilliV5_ExpandedIsland") then
-        updateStatusText(false)
+    updateStatusText(false)
+
+    local ExpandedIsland = venyxGui:FindFirstChild("ChilliV5_ExpandedIsland")
+    if statusLbl:GetAttribute("__IslandSession") == MY_SESSION_ID and ExpandedIsland then
         return
     end
-    statusLbl:SetAttribute("__IslandDone", true)
-
-    updateStatusText(false)
+    statusLbl:SetAttribute("__IslandSession", MY_SESSION_ID)
 
     local txtGrad = statusLbl:FindFirstChild("TextRainbow") or Instance.new("UIGradient")
     txtGrad.Name = "TextRainbow"
@@ -1723,10 +1672,10 @@ local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
     strokeGrad.Parent = pillStroke
     table.insert(State.ActiveGradients, strokeGrad)
 
-    local oldExp = venyxGui:FindFirstChild("ChilliV5_ExpandedIsland")
-    if oldExp then oldExp:Destroy() end
+    if ExpandedIsland then ExpandedIsland:Destroy() end
 
-    local ExpandedIsland = Instance.new("Frame")
+    -- BẢNG DYNAMIC ISLAND MỞ RỘNG (268 x 118 px ĐỂ CHỨA NÚT CONFIG SETTING AUTO FARM)
+    ExpandedIsland = Instance.new("Frame")
     ExpandedIsland.Name = "ChilliV5_ExpandedIsland"
     ExpandedIsland.AnchorPoint = Vector2.new(0.5, 0)
     ExpandedIsland.Position = pill.Position
@@ -1782,6 +1731,7 @@ local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
     CollapseCorner.CornerRadius = UDim.new(1, 0)
     CollapseCorner.Parent = CollapseBtn
 
+    -- Hàng 1: Thanh gạt đổi ngôn ngữ (Tiếng Việt / English)
     local LangCapsule = Instance.new("Frame")
     LangCapsule.Size = UDim2.new(1, -20, 0, 32)
     LangCapsule.Position = UDim2.new(0, 10, 0, 34)
@@ -1828,6 +1778,7 @@ local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
     BtnEN.ZIndex = 10003
     BtnEN.Parent = LangCapsule
 
+    -- Hàng 2: NÚT "⚡ CONFIG SETTING AUTO FARM"
     local ConfigMacroBtn = Instance.new("TextButton")
     ConfigMacroBtn.Name = "AutoFarmConfigBtn"
     ConfigMacroBtn.Size = UDim2.new(1, -20, 0, 34)
@@ -1964,7 +1915,7 @@ local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
     end)
 end
 
--- ==================== 7. NÚT TRÒN NỔI & HEADER LOGO ====================
+-- ==================== 6. NÚT TRÒN NỔI 1:1 & HEADER LOGO (GIỮ NGUYÊN) ====================
 local function setupUnclippedCircularLogo(targetObj)
     local topPanel = targetObj
     while topPanel.Parent and topPanel.Parent:IsA("GuiObject") and not topPanel.Parent:IsA("ScreenGui") do
@@ -2036,7 +1987,7 @@ local function setupUnclippedCircularLogo(targetObj)
     stroke.Color = Color3.fromRGB(255, 255, 255)
     stroke.Parent = container
 
-    local strokeGrad = stroke:FindFirstChild("UIGradient") or Instance.new("UIGradient")
+    local strokeGrad = stroke:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
     strokeGrad.Color = COLOR_SEQ_RAINBOW
     strokeGrad.Parent = stroke
     table.insert(State.ActiveGradients, strokeGrad)
@@ -2096,7 +2047,7 @@ local function patchHeaderLogoLeftOfTitle(headerContainer, titleLbl)
     end
 end
 
--- ==================== 8. BỘ QUÉT BẤT TỬ & KÍCH HOẠT BẢNG THÔNG BÁO UPDATE ====================
+-- ==================== 7. BỘ QUÉT BẤT TỬ & ĐỊNH VỊ CHÍNH XÁC ====================
 local function patchVenyxScreenGui(gui, titleLbl)
     if titleLbl.Text ~= NEW_TITLE then
         titleLbl:SetAttribute("__IsTranslating", true)
@@ -2127,14 +2078,6 @@ local function patchVenyxScreenGui(gui, titleLbl)
         and not topChild:FindFirstChild("IslandExpandHint") then
             setupUnclippedCircularLogo(topChild)
         end
-    end
-
-    if not gui:GetAttribute("__UpdateModalShown") then
-        gui:SetAttribute("__UpdateModalShown", true)
-        task.defer(function()
-            task.wait(0.5)
-            showUpdateNotificationModal(gui)
-        end)
     end
 
     local allDescendants = gui:GetDescendants()
@@ -2287,6 +2230,7 @@ task.spawn(function()
 end)
 ]===]
 
+-- LƯU BẢN MỚI NHẤT VÀO MÁY ĐỂ KHI REJOIN / SERVER HOP LUÔN CHẠY BẢN NÀY
 if writefile then
     pcall(function()
         local selfReplicatingWrapper = "local CHILLI_CORE_PAYLOAD = [===[" .. CHILLI_CORE_PAYLOAD .. "]===]\n" .. [[
