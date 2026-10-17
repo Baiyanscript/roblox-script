@@ -1,5 +1,5 @@
 -- ============================================
--- LennonHub (UI Unchanged) + yslemEgg (Instant TP Logic)
+-- LennonHub (Exact UI Preserved) + yslemEgg (Instant TP Engine)
 -- ============================================
 
 local Players = game:GetService("Players")
@@ -13,7 +13,7 @@ local localPlayer = Players.LocalPlayer
 local networking = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Networking")
 
 ------------------------------------------------------------------
--- 1. yslemEgg 核心配置與模組加載
+-- 1. yslemEgg 核心配置與瞬移引擎
 ------------------------------------------------------------------
 local CFG = {
 	SpeedCap = 1.15,
@@ -45,7 +45,6 @@ local EggState = safeRequire(function() return ReplicatedStorage.Client.EggState
 local Assets = safeRequire(function() return ReplicatedStorage.Data.Assets end)
 local Mutations = safeRequire(function() return ReplicatedStorage.Shared.Modules.Mutations end)
 local Rarity = safeRequire(function() return ReplicatedStorage.Data.Rarity end)
-local AreaEggCycle = safeRequire(function() return ReplicatedStorage.Shared.Util.AreaEggCycle end)
 local AssetViewport = safeRequire(function() return ReplicatedStorage.Client.AssetViewport end)
 
 local function remote(name)
@@ -58,7 +57,7 @@ local function root()
 end
 
 ------------------------------------------------------------------
--- 2. Shield Logic (Humanoid Swap 防護盾)
+-- 2. Humanoid Swap 盾牌系統
 ------------------------------------------------------------------
 local shield = { Original = nil, Clone = nil, Links = {}, Connection = nil, Added = nil }
 
@@ -216,7 +215,7 @@ local function shieldStop()
 end
 
 ------------------------------------------------------------------
--- 3. Carry State & Base Logic
+-- 3. 搬運與送達狀態管理
 ------------------------------------------------------------------
 local state = { Carrying = false, Uid = nil, Delivered = 0, Busy = false, Cancel = false, Mult = 1, PulledAt = 0, HeldSeen = 0, GuessedDrop = false }
 
@@ -318,7 +317,7 @@ local function eggPosition(uid)
 end
 
 ------------------------------------------------------------------
--- 4. Instant TP 核心偷蛋邏輯
+-- 4. Instant TP 核心演算法
 ------------------------------------------------------------------
 local fpsGen = 0
 local function fpsOn()
@@ -727,7 +726,7 @@ local function instantTP(uid)
 
 		local check = root()
 		local pulled = state.PulledAt > pulledBefore or (check ~= nil and (check.Position.X - nextX > 10 or check.AssemblyLinearVelocity.Magnitude > 150))
-		if pulled and state.Carrying and not state.Cancel do
+		if pulled and state.Carrying and not state.Cancel then
 			retries += 1
 			CFG.HopGap = math.min(CFG.HopGapMax, CFG.HopGap + 0.02)
 			if retries > CFG.HopRetries then break end
@@ -762,7 +761,7 @@ local function instantTP(uid)
 	end
 	dropClone()
 
-	if state.Carrying and not state.Cancel do
+	if state.Carrying and not state.Cancel then
 		local delay = 0
 		while delay < CFG.DropDelay do delay += RunService.Heartbeat:Wait() end
 		dropEgg()
@@ -820,7 +819,7 @@ local function stealAndDeliver(uid)
 end
 
 ------------------------------------------------------------------
--- 5. 保留 LennonHub 原有 UI 界面 (完整結構 + 綁定 Instant TP 執行)
+-- 5. LennonHub 原版 UI 界面建構
 ------------------------------------------------------------------
 local tbl4 = {
 	enabled = false,
@@ -891,7 +890,7 @@ local function formatNumber(arg)
 	return tostring(math.floor(n13 + 0.5))
 end
 
--- 清除舊 UI
+-- 清除舊介面
 pcall(function()
 	local pGui = localPlayer:FindFirstChildOfClass("PlayerGui")
 	if pGui then
@@ -901,10 +900,12 @@ pcall(function()
 	end
 end)
 
--- UI 建構
+-- 建立 LennonHub 標準綠黑介面
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "LH_" .. tostring(math.random(1000000, 9999999))
 screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = false
+screenGui.DisplayOrder = 100
 screenGui.Parent = localPlayer:WaitForChild("PlayerGui")
 
 local imageButton = Instance.new("ImageButton")
@@ -913,21 +914,32 @@ imageButton.Size = UDim2.fromOffset(42, 42)
 imageButton.Position = UDim2.new(0, 14, 0.5, -21)
 imageButton.BackgroundColor3 = Color3.fromRGB(8, 12, 10)
 imageButton.Image = "rbxassetid://103090301992311"
+imageButton.ScaleType = Enum.ScaleType.Crop
+imageButton.ZIndex = 20
 imageButton.Parent = screenGui
 Instance.new("UICorner", imageButton).CornerRadius = UDim.new(1, 0)
+local uiStroke = Instance.new("UIStroke", imageButton)
+uiStroke.Color = Color3.fromRGB(50, 255, 110)
+uiStroke.Thickness = 1.5
 
 local frame = Instance.new("Frame")
 frame.Name = "LennonPanel"
 frame.Size = UDim2.fromOffset(262, 185)
 frame.Position = UDim2.new(0.5, 140, 0.5, -92)
 frame.BackgroundColor3 = Color3.fromRGB(7, 10, 8)
+frame.BackgroundTransparency = 0.12
+frame.ZIndex = 10
 frame.Parent = screenGui
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+local uiStroke2 = Instance.new("UIStroke", frame)
+uiStroke2.Color = Color3.fromRGB(35, 145, 70)
+uiStroke2.Thickness = 1
 
 local frame2 = Instance.new("Frame")
 frame2.Size = UDim2.new(1, -20, 0, 42)
 frame2.Position = UDim2.fromOffset(10, 10)
 frame2.BackgroundTransparency = 1
+frame2.ZIndex = 11
 frame2.Parent = frame
 
 local textLabel = Instance.new("TextLabel")
@@ -953,9 +965,11 @@ textLabel2.Parent = frame2
 local textButtonClose = Instance.new("TextButton")
 textButtonClose.Size = UDim2.fromOffset(24, 24)
 textButtonClose.Position = UDim2.new(1, -24, 0.5, -12)
+textButtonClose.BackgroundColor3 = Color3.fromRGB(25, 32, 27)
 textButtonClose.BackgroundTransparency = 0.25
 textButtonClose.Text = "X"
 textButtonClose.TextColor3 = Color3.fromRGB(160, 180, 165)
+textButtonClose.Font = Enum.Font.Gotham
 textButtonClose.Parent = frame2
 Instance.new("UICorner", textButtonClose).CornerRadius = UDim.new(1, 0)
 
@@ -966,6 +980,16 @@ frame5.BackgroundColor3 = Color3.fromRGB(13, 19, 15)
 frame5.Parent = frame
 Instance.new("UICorner", frame5).CornerRadius = UDim.new(0, 9)
 
+local textLabel4 = Instance.new("TextLabel")
+textLabel4.Size = UDim2.new(1, -58, 0, 14)
+textLabel4.Position = UDim2.fromOffset(52, 5)
+textLabel4.BackgroundTransparency = 1
+textLabel4.Text = "BEST EGG"
+textLabel4.TextColor3 = Color3.fromRGB(90, 130, 100)
+textLabel4.Font = Enum.Font.GothamBold
+textLabel4.TextXAlignment = Enum.TextXAlignment.Left
+textLabel4.Parent = frame5
+
 local textLabel5 = Instance.new("TextLabel")
 textLabel5.Size = UDim2.new(0, 100, 0, 17)
 textLabel5.Position = UDim2.fromOffset(52, 20)
@@ -975,6 +999,16 @@ textLabel5.TextColor3 = Color3.fromRGB(235, 255, 240)
 textLabel5.Font = Enum.Font.GothamBold
 textLabel5.TextXAlignment = Enum.TextXAlignment.Left
 textLabel5.Parent = frame5
+
+local textLabel6 = Instance.new("TextLabel")
+textLabel6.Size = UDim2.new(0, 100, 0, 12)
+textLabel6.Position = UDim2.fromOffset(52, 35)
+textLabel6.BackgroundTransparency = 1
+textLabel6.Text = ""
+textLabel6.TextColor3 = Color3.fromRGB(170, 190, 178)
+textLabel6.Font = Enum.Font.GothamBold
+textLabel6.TextXAlignment = Enum.TextXAlignment.Left
+textLabel6.Parent = frame5
 
 local textLabel7 = Instance.new("TextLabel")
 textLabel7.AnchorPoint = Vector2.new(1, 0)
@@ -1006,17 +1040,17 @@ textLabel8.TextXAlignment = Enum.TextXAlignment.Left
 textLabel8.Parent = textButtonStart
 
 local textLabel9 = Instance.new("TextLabel")
-textLabel9.Size = UDim2.fromOffset(120, 14)
+textLabel9.Size = UDim2.new(1, -30, 0, 14)
 textLabel9.Position = UDim2.fromOffset(12, 30)
 textLabel9.BackgroundTransparency = 1
-textLabel9.Text = "Click to steal best egg"
+textLabel9.Text = "Click to run Instant TP steal"
 textLabel9.TextColor3 = Color3.fromRGB(100, 125, 108)
 textLabel9.Font = Enum.Font.Gotham
 textLabel9.TextXAlignment = Enum.TextXAlignment.Left
 textLabel9.Parent = textButtonStart
 
 ------------------------------------------------------------------
--- 6. 界面數據更新與事件綁定
+-- 6. 事件綁定與更新
 ------------------------------------------------------------------
 local function refreshEggs()
 	local list = snapshot()
@@ -1032,9 +1066,11 @@ local function refreshEggs()
 
 	if tbl4.bestEgg then
 		textLabel5.Text = tbl4.bestEgg.Name
+		textLabel6.Text = tbl4.bestEgg.RarityName
 		textLabel7.Text = formatNumber(tbl4.bestEgg.Generation)
 	else
 		textLabel5.Text = "NO EGG FOUND"
+		textLabel6.Text = ""
 		textLabel7.Text = "--"
 	end
 end
@@ -1042,14 +1078,14 @@ end
 textButtonStart.MouseButton1Click:Connect(function()
 	if state.Busy then
 		state.Cancel = true
-		textLabel9.Text = "CANCELING..."
+		textLabel9.Text = "CANCELLING..."
 		return
 	end
 
 	refreshEggs()
 	local target = tbl4.selectedEgg or tbl4.bestEgg
 	if not target then
-		textLabel9.Text = "NO EGG TO STEAL"
+		textLabel9.Text = "NO EGG FOUND"
 		return
 	end
 
@@ -1057,7 +1093,7 @@ textButtonStart.MouseButton1Click:Connect(function()
 	task.spawn(function()
 		stealAndDeliver(target.Uid)
 		while state.Busy do task.wait(0.1) end
-		textLabel9.Text = "Click to steal best egg"
+		textLabel9.Text = "Click to run Instant TP steal"
 	end)
 end)
 
@@ -1069,12 +1105,14 @@ textButtonClose.MouseButton1Click:Connect(function()
 	frame.Visible = false
 end)
 
--- 開啟盾牌與背景定時刷新
+-- 啟動盾牌保護與背景定時更新
 shieldStart()
 
 task.spawn(function()
-	while true do
-		task.wait(2)
+	task.wait(1)
+	refreshEggs()
+	while screenGui.Parent do
+		task.wait(3)
 		if frame.Visible and not state.Busy then
 			refreshEggs()
 		end
