@@ -1,0 +1,1360 @@
+-- [[ RECONSTRUCTED SOURCE: VERSION 10.0 ]] --
+-- [[ ACCURACY: 100% LITERAL LOG TRACE ]] --
+
+-- // [1] SERVICES //
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local Workspace = game:GetService("Workspace")
+local TeleportService = game:GetService("TeleportService")
+local Lighting = game:GetService("Lighting")
+
+local LocalPlayer = Players.LocalPlayer
+local CurrentCamera = Workspace.CurrentCamera
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- // [2] CONFIGURATION //
+local CONFIG = {
+    Window = {
+        Title = "EXE HUB",
+        Footer = "Steal An Egg",
+        NotifySide = "Right",
+        ShowCustomCursor = true,
+        AutoShow = true,
+        Center = true
+    },
+
+    FloatingButton = {
+        Size = UDim2.new(0, 80, 0, 40),
+        Position = UDim2.new(0.85, 0, 0.8, 0),
+        BackgroundColor = Color3.fromRGB(30, 30, 40),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        Text = "EXE HUB",
+        TextSize = 18,
+        Font = Enum.Font.GothamBold,
+        CornerRadius = UDim.new(0, 8),
+        StrokeColor = Color3.fromRGB(80, 80, 100),
+        StrokeThickness = 1.5
+    },
+
+    MobileAutoFire = {
+        Size = UDim2.new(0, 70, 0, 70),
+        Position = UDim2.new(0.85, 0, 0.7, 0),
+        OffColor = Color3.fromRGB(30, 30, 35),
+        OnColor = Color3.fromRGB(40, 120, 70),
+        OffStroke = Color3.fromRGB(80, 80, 90),
+        OnStroke = Color3.fromRGB(60, 180, 100)
+    },
+
+    Billboard = {
+        Size = UDim2.new(0, 300, 0, 60),
+        StudsOffset = Vector3.new(0, 3, 0),
+        Text = "EXE ON TOP !",
+        TextSize = 40,
+        Font = Enum.Font.GothamBlack
+    },
+
+    Defaults = {
+        WalkSpeed = 16,
+        JumpPower = 50,
+        FlySpeed = 50,
+        TPWalkSpeed = 50,
+        HideGuiKey = "H",
+        AutoFireKey = "E"
+    },
+
+    ESP = {
+        PlayerBox = Color3.fromRGB(255, 0, 0),
+        PlayerTracer = Color3.fromRGB(255, 255, 0),
+        PlayerName = Color3.fromRGB(255, 255, 255),
+        PlayerHealth = Color3.fromRGB(0, 255, 0),
+        EggBox = Color3.fromRGB(0, 255, 100),
+        EggTracer = Color3.fromRGB(0, 200, 255),
+        EggDistance = Color3.fromRGB(255, 255, 255),
+        GuardBox = Color3.fromRGB(255, 165, 0),
+        GuardTracer = Color3.fromRGB(255, 0, 255),
+        GuardName = Color3.fromRGB(255, 255, 255)
+    },
+
+    HitboxSize = Vector3.new(20, 20, 20),
+    MaxVelocity = 150
+}
+
+-- // [3] LIBRARY LOAD //
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/main/Library.lua"))()
+local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/main/addons/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/main/addons/SaveManager.lua"))()
+
+local Options = Library.Options
+local Toggles = Library.Toggles
+
+-- // [4] STATE //
+local State = {
+    AntiFling = false,
+    Unwalk = false,
+    Fly = false,
+    TPWalk = false,
+    TPWalkSpeed = CONFIG.Defaults.TPWalkSpeed,
+    MobileAutoFire = false,
+    BodyVelocity = nil,
+    BodyGyro = nil,
+    FloatingGui = nil,
+    MobileGui = nil,
+    PlayerESP = {},
+    EggESP = {},
+    GuardESP = {}
+}
+
+-- // [5] UTILITY FUNCTIONS //
+local function isEgg(model)
+    if not model:IsA("Model") then return false end
+    local nameLower = model.Name:lower()
+    return nameLower:find("egg") or model:FindFirstChild("Egg")
+end
+
+local function expandHitbox(model)
+    if not isEgg(model) then return end
+
+    local hitbox = model:FindFirstChild("Hitbox")
+    if hitbox and hitbox:IsA("BasePart") then
+        if hitbox.Size.X < 20 or hitbox.Size.Y < 20 or hitbox.Size.Z < 20 then
+            hitbox.Size = CONFIG.HitboxSize
+        end
+    end
+end
+
+local function getClosestPrompt(maxDistance)
+    local character = LocalPlayer.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not root then return nil end
+
+    local closest, closestDist = nil, maxDistance or 15
+
+    for _, descendant in pairs(Workspace:GetDescendants()) do
+        if descendant:IsA("ProximityPrompt") and descendant.Enabled then
+            local parent = descendant.Parent
+            local part = parent and ((parent:IsA("BasePart") and parent) or parent:FindFirstChildWhichIsA("BasePart"))
+
+            if part then
+                local dist = (root.Position - part.Position).Magnitude
+                local maxAct = descendant.MaxActivationDistance or 10
+                if dist < closestDist and dist <= maxAct then
+                    closestDist = dist
+                    closest = descendant
+                end
+            end
+        end
+    end
+
+    return closest
+end
+
+local function fireClosestPrompt()
+    local prompt = getClosestPrompt(15)
+    if prompt then
+        fireproximityprompt(prompt)
+    end
+end
+
+local function createBillboard()
+    local character = LocalPlayer.Character
+    if not character then return nil end
+
+    local head = character:FindFirstChild("Head")
+    if not head then return nil end
+
+    local existing = head:FindFirstChild("ExeOnTop")
+    if existing then existing:Destroy() end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ExeOnTop"
+    billboard.Size = CONFIG.Billboard.Size
+    billboard.Adornee = head
+    billboard.AlwaysOnTop = true
+    billboard.StudsOffset = CONFIG.Billboard.StudsOffset
+    billboard.Parent = head
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = CONFIG.Billboard.Text
+    label.TextSize = CONFIG.Billboard.TextSize
+    label.Font = CONFIG.Billboard.Font
+    label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    label.TextStrokeTransparency = 0.2
+    label.TextScaled = true
+    label.RichText = true
+    label.Parent = billboard
+
+    task.spawn(function()
+        local hue = 0
+        while billboard and billboard.Parent do
+            hue = (hue + 0.008) % 1
+            label.TextColor3 = Color3.fromHSV(hue, 1, 1)
+
+            if math.random() < 0.05 then
+                label.Position = UDim2.new(math.random(-2, 2) / 100, 0, math.random(-2, 2) / 100, 0)
+                label.TextSize = CONFIG.Billboard.TextSize + math.random(-2, 2)
+            else
+                label.Position = UDim2.new(0, 0, 0, 0)
+                label.TextSize = CONFIG.Billboard.TextSize
+            end
+
+            task.wait(0.05)
+        end
+    end)
+
+    return billboard
+end
+
+local function removeDrawing(obj)
+    if obj and obj.Remove then
+        obj:Remove()
+    end
+end
+
+local function clearPlayerESP(player)
+    local drawings = State.PlayerESP[player]
+    if not drawings then return end
+    for _, d in pairs(drawings) do
+        removeDrawing(d)
+    end
+    State.PlayerESP[player] = nil
+end
+
+local function createPlayerESP(player)
+    if player == LocalPlayer then return end
+
+    local drawings = {
+        box = Drawing.new("Square"),
+        tracer = Drawing.new("Line"),
+        name = Drawing.new("Text"),
+        health = Drawing.new("Square")
+    }
+
+    drawings.box.Thickness = 2
+    drawings.box.Filled = false
+    drawings.box.Visible = false
+
+    drawings.tracer.Thickness = 1.5
+    drawings.tracer.Visible = false
+
+    drawings.name.Size = 16
+    drawings.name.Center = true
+    drawings.name.Outline = true
+    drawings.name.Visible = false
+
+    drawings.health.Thickness = 0
+    drawings.health.Filled = true
+    drawings.health.Visible = false
+
+    State.PlayerESP[player] = drawings
+end
+
+local function findGuards()
+    local list = {}
+    for _, model in pairs(Workspace:GetDescendants()) do
+        if model:IsA("Model") then
+            local humanoid = model:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                local nameLower = model.Name:lower()
+                local parentName = model.Parent and model.Parent.Name:lower() or ""
+                if nameLower:find("guard") or parentName:find("guard") then
+                    table.insert(list, model)
+                end
+            end
+        end
+    end
+    return list
+end
+
+local function findEggs()
+    local list = {}
+    for _, model in pairs(Workspace:GetDescendants()) do
+        if isEgg(model) then
+            table.insert(list, model)
+        end
+    end
+    return list
+end
+
+local function clearAllESP()
+    for player in pairs(State.PlayerESP) do
+        clearPlayerESP(player)
+    end
+
+    for _, drawings in pairs(State.EggESP) do
+        removeDrawing(drawings.box)
+        removeDrawing(drawings.tracer)
+        removeDrawing(drawings.dist)
+    end
+    table.clear(State.EggESP)
+
+    for _, drawings in pairs(State.GuardESP) do
+        removeDrawing(drawings.box)
+        removeDrawing(drawings.tracer)
+        removeDrawing(drawings.name)
+    end
+    table.clear(State.GuardESP)
+end
+
+-- // [6] GUI CREATION //
+local Window = Library:CreateWindow(CONFIG.Window)
+
+local Tabs = {
+    Main = Window:AddTab("Main", "home")
+}
+
+local Groupboxes = {
+    Game = Tabs.Main:AddLeftGroupbox("Game"),
+    Player = Tabs.Main:AddRightGroupbox("Player"),
+    Utility = Tabs.Main:AddLeftGroupbox("Utility"),
+    Graphics = Tabs.Main:AddRightGroupbox("Graphics"),
+    Misc = Tabs.Main:AddLeftGroupbox("Misc"),
+    ESP = Tabs.Main:AddRightGroupbox("ESP")
+}
+
+-- Floating button
+local function createFloatingButton()
+    if State.FloatingGui then return end
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "ExeFloatingBtn"
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.Parent = PlayerGui
+
+    local button = Instance.new("TextButton")
+    button.Size = CONFIG.FloatingButton.Size
+    button.Position = CONFIG.FloatingButton.Position
+    button.BackgroundColor3 = CONFIG.FloatingButton.BackgroundColor
+    button.TextColor3 = CONFIG.FloatingButton.TextColor
+    button.Text = CONFIG.FloatingButton.Text
+    button.TextSize = CONFIG.FloatingButton.TextSize
+    button.Font = CONFIG.FloatingButton.Font
+    button.AutoButtonColor = false
+    button.Parent = gui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = CONFIG.FloatingButton.CornerRadius
+    corner.Parent = button
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = CONFIG.FloatingButton.StrokeColor
+    stroke.Thickness = CONFIG.FloatingButton.StrokeThickness
+    stroke.Parent = button
+
+    local dragging = false
+    local dragStart, startPos
+
+    button.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = button.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if not dragging then return end
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+            local delta = input.Position - dragStart
+            button.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    button.MouseButton1Click:Connect(function()
+        if dragging then return end
+        Window:Toggle()
+        gui.Enabled = not Window.Visible
+    end)
+
+    gui.Enabled = false
+    State.FloatingGui = gui
+end
+
+-- Mobile auto-fire button
+local function createMobileAutoFireButton()
+    if PlayerGui:FindFirstChild("ExeMobileBtn") then return end
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "ExeMobileBtn"
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.Parent = PlayerGui
+
+    local button = Instance.new("TextButton")
+    button.Size = CONFIG.MobileAutoFire.Size
+    button.Position = CONFIG.MobileAutoFire.Position
+    button.BackgroundColor3 = CONFIG.MobileAutoFire.OffColor
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Text = "AUTO\nOFF"
+    button.TextSize = 12
+    button.Font = Enum.Font.GothamBold
+    button.AutoButtonColor = false
+    button.Parent = gui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = button
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = CONFIG.MobileAutoFire.OffStroke
+    stroke.Thickness = 1.5
+    stroke.Parent = button
+
+    local dragging = false
+    local dragStart, startPos
+
+    button.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = button.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if not dragging then return end
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+            local delta = input.Position - dragStart
+            button.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    button.MouseButton1Click:Connect(function()
+        if dragging then return end
+        State.MobileAutoFire = not State.MobileAutoFire
+
+        if State.MobileAutoFire then
+            button.Text = "AUTO\nON"
+            button.BackgroundColor3 = CONFIG.MobileAutoFire.OnColor
+            stroke.Color = CONFIG.MobileAutoFire.OnStroke
+        else
+            button.Text = "AUTO\nOFF"
+            button.BackgroundColor3 = CONFIG.MobileAutoFire.OffColor
+            stroke.Color = CONFIG.MobileAutoFire.OffStroke
+        end
+    end)
+
+    State.MobileGui = gui
+end
+
+local function destroyMobileAutoFireButton()
+    local gui = PlayerGui:FindFirstChild("ExeMobileBtn")
+    if gui then gui:Destroy() end
+    State.MobileAutoFire = false
+    State.MobileGui = nil
+end
+
+-- // [7] FEATURE IMPLEMENTATIONS //
+
+-- Anti-fling
+RunService.Heartbeat:Connect(function()
+    if not State.AntiFling then return end
+
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local velocity = root.Velocity
+    if velocity.Magnitude > CONFIG.MaxVelocity then
+        root.Velocity = velocity.Unit * CONFIG.MaxVelocity
+    end
+end)
+
+-- WalkSpeed / JumpPower loops
+task.spawn(function()
+    while task.wait(0.1) do
+        local character = LocalPlayer.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then continue end
+
+        if State.Unwalk then
+            humanoid.WalkSpeed = 0
+        elseif Toggles.WalkSpeedEnabled and Toggles.WalkSpeedEnabled.Value then
+            humanoid.WalkSpeed = Options.WalkSpeedValue.Value
+        else
+            humanoid.WalkSpeed = CONFIG.Defaults.WalkSpeed
+        end
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.1) do
+        if Toggles.JumpPowerEnabled and Toggles.JumpPowerEnabled.Value then
+            local character = LocalPlayer.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.JumpPower = Options.JumpPowerValue.Value
+            end
+        end
+    end
+end)
+
+-- Infinite Jump
+UserInputService.JumpRequest:Connect(function()
+    if not (Toggles.InfiniteJump and Toggles.InfiniteJump.Value) then return end
+
+    local character = LocalPlayer.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+-- Fly render loop
+RunService.RenderStepped:Connect(function()
+    if not State.Fly or not State.BodyVelocity or not State.BodyGyro then return end
+
+    local character = LocalPlayer.Character
+    if not (character and character:FindFirstChild("HumanoidRootPart")) then return end
+
+    local cf = CurrentCamera.CFrame
+    local dir = Vector3.zero
+
+    if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir = dir + cf.LookVector end
+    if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir = dir - cf.LookVector end
+    if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir = dir - cf.RightVector end
+    if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir = dir + cf.RightVector end
+    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir = dir + Vector3.new(0, 1, 0) end
+    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then dir = dir - Vector3.new(0, 1, 0) end
+
+    if dir.Magnitude > 0 then
+        State.BodyVelocity.Velocity = dir.Unit * Options.FlySpeed.Value
+    else
+        State.BodyVelocity.Velocity = Vector3.zero
+    end
+
+    State.BodyGyro.CFrame = cf
+end)
+
+-- TP Walk
+RunService.Heartbeat:Connect(function(delta)
+    if not State.TPWalk then return end
+
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local root = character:FindFirstChild("HumanoidRootPart")
+
+    if humanoid and root and humanoid.MoveDirection.Magnitude > 0 then
+        root.CFrame = root.CFrame + humanoid.MoveDirection * (State.TPWalkSpeed * delta)
+    end
+end)
+
+-- Instant / Auto Pickup
+ProximityPromptService.PromptShown:Connect(function(prompt)
+    if Toggles.InstantPickup and Toggles.InstantPickup.Value then
+        prompt.HoldDuration = 0
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    local shouldFire = Toggles.AutoPickup and Toggles.AutoPickup.Value
+        and ((Options.AutoFireKey and Options.AutoFireKey:GetState()) or State.MobileAutoFire)
+
+    if shouldFire then
+        fireClosestPrompt()
+    end
+end)
+
+-- Expand Hitboxes (live)
+Workspace.DescendantAdded:Connect(function(descendant)
+    if not (Toggles.ExpandHitbox and Toggles.ExpandHitbox.Value) then return end
+
+    if descendant.Name == "Hitbox" and descendant:IsA("BasePart") then
+        local parent = descendant.Parent
+        if parent and parent:IsA("Model") and isEgg(parent) then
+            if descendant.Size.X < 20 or descendant.Size.Y < 20 or descendant.Size.Z < 20 then
+                descendant.Size = CONFIG.HitboxSize
+            end
+        end
+    end
+end)
+
+-- Hide GUI key
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if not Options.HideGuiKey then return end
+
+    if input.KeyCode == Enum.KeyCode[Options.HideGuiKey.Value] then
+        Window:Toggle()
+        if State.FloatingGui then
+            State.FloatingGui.Enabled = not Window.Visible
+        end
+    end
+end)
+
+-- ESP render loop
+RunService.RenderStepped:Connect(function()
+    -- Hide all first
+    for _, drawings in pairs(State.PlayerESP) do
+        if drawings.box then drawings.box.Visible = false end
+        if drawings.tracer then drawings.tracer.Visible = false end
+        if drawings.name then drawings.name.Visible = false end
+        if drawings.health then drawings.health.Visible = false end
+    end
+
+    for _, drawings in pairs(State.EggESP) do
+        if drawings.box then drawings.box.Visible = false end
+        if drawings.tracer then drawings.tracer.Visible = false end
+        if drawings.dist then drawings.dist.Visible = false end
+    end
+
+    for _, drawings in pairs(State.GuardESP) do
+        if drawings.box then drawings.box.Visible = false end
+        if drawings.tracer then drawings.tracer.Visible = false end
+        if drawings.name then drawings.name.Visible = false end
+    end
+
+    -- Player ESP
+    if Toggles.PlayerESPEnabled and Toggles.PlayerESPEnabled.Value then
+        local boxColor = Options.PlayerBoxColor.Value
+        local tracerColor = Options.PlayerTracerColor.Value
+        local nameColor = Options.PlayerNameColor.Value
+        local healthColor = Options.PlayerHealthColor.Value
+
+        for player, drawings in pairs(State.PlayerESP) do
+            local character = player.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+
+            if character and humanoid and humanoid.Health > 0 and root then
+                local pos, onScreen = CurrentCamera:WorldToViewportPoint(root.Position)
+                if onScreen then
+                    local dist = (CurrentCamera.CFrame.Position - root.Position).Magnitude
+                    local size = Vector2.new(2000 / pos.Z, 3000 / pos.Z)
+
+                    drawings.box.Size = size
+                    drawings.box.Position = Vector2.new(pos.X - size.X / 2, pos.Y - size.Y / 2)
+                    drawings.box.Color = boxColor
+                    drawings.box.Visible = true
+
+                    if Toggles.PlayerESPTracer and Toggles.PlayerESPTracer.Value then
+                        drawings.tracer.From = Vector2.new(CurrentCamera.ViewportSize.X / 2, CurrentCamera.ViewportSize.Y)
+                        drawings.tracer.To = Vector2.new(pos.X, pos.Y)
+                        drawings.tracer.Color = tracerColor
+                        drawings.tracer.Visible = true
+                    end
+
+                    if Toggles.PlayerESPName and Toggles.PlayerESPName.Value then
+                        drawings.name.Text = player.Name .. " [" .. math.floor(dist) .. "]"
+                        drawings.name.Position = Vector2.new(pos.X, pos.Y - size.Y / 2 - 20)
+                        drawings.name.Color = nameColor
+                        drawings.name.Visible = true
+                    end
+
+                    if Toggles.PlayerESPHealth and Toggles.PlayerESPHealth.Value then
+                        drawings.health.Size = Vector2.new(size.X * (humanoid.Health / humanoid.MaxHealth), 5)
+                        drawings.health.Position = Vector2.new(pos.X - size.X / 2, pos.Y + size.Y / 2 + 2)
+                        drawings.health.Color = healthColor
+                        drawings.health.Visible = true
+                    end
+                end
+            end
+        end
+    end
+
+    -- Egg ESP
+    if Toggles.EggESPEnabled and Toggles.EggESPEnabled.Value then
+        local boxColor = Options.EggBoxColor.Value
+        local tracerColor = Options.EggTracerColor.Value
+        local distColor = Options.EggDistColor.Value
+
+        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+        for _, egg in pairs(findEggs()) do
+            local drawings = State.EggESP[egg]
+            if not drawings then
+                drawings = {
+                    box = Drawing.new("Square"),
+                    tracer = Drawing.new("Line"),
+                    dist = Drawing.new("Text")
+                }
+                drawings.box.Thickness = 2
+                drawings.box.Filled = false
+                drawings.tracer.Thickness = 1.5
+                drawings.dist.Size = 14
+                drawings.dist.Center = true
+                drawings.dist.Outline = true
+                State.EggESP[egg] = drawings
+            end
+
+            local part = egg.PrimaryPart or egg:FindFirstChildWhichIsA("BasePart")
+            if part then
+                local pos, onScreen = CurrentCamera:WorldToViewportPoint(part.Position)
+                if onScreen then
+                    local size = Vector2.new(1500 / pos.Z, 1500 / pos.Z)
+
+                    drawings.box.Size = size
+                    drawings.box.Position = Vector2.new(pos.X - size.X / 2, pos.Y - size.Y / 2)
+                    drawings.box.Color = boxColor
+                    drawings.box.Visible = true
+
+                    if Toggles.EggESPTracer and Toggles.EggESPTracer.Value then
+                        drawings.tracer.From = Vector2.new(CurrentCamera.ViewportSize.X / 2, CurrentCamera.ViewportSize.Y)
+                        drawings.tracer.To = Vector2.new(pos.X, pos.Y)
+                        drawings.tracer.Color = tracerColor
+                        drawings.tracer.Visible = true
+                    end
+
+                    if Toggles.EggESPDistance and Toggles.EggESPDistance.Value and myRoot then
+                        local dist = math.floor((myRoot.Position - part.Position).Magnitude)
+                        drawings.dist.Text = dist .. " studs"
+                        drawings.dist.Position = Vector2.new(pos.X, pos.Y + size.Y / 2 + 10)
+                        drawings.dist.Color = distColor
+                        drawings.dist.Visible = true
+                    end
+                end
+            end
+        end
+    end
+
+    -- Guard ESP
+    if Toggles.GuardESPEnabled and Toggles.GuardESPEnabled.Value then
+        local boxColor = Options.GuardBoxColor.Value
+        local tracerColor = Options.GuardTracerColor.Value
+        local nameColor = Options.GuardNameColor.Value
+
+        for _, guard in pairs(findGuards()) do
+            local drawings = State.GuardESP[guard]
+            if not drawings then
+                drawings = {
+                    box = Drawing.new("Square"),
+                    tracer = Drawing.new("Line"),
+                    name = Drawing.new("Text")
+                }
+                drawings.box.Thickness = 2
+                drawings.box.Filled = false
+                drawings.tracer.Thickness = 1.5
+                drawings.name.Size = 14
+                drawings.name.Center = true
+                drawings.name.Outline = true
+                State.GuardESP[guard] = drawings
+            end
+
+            local part = guard:FindFirstChild("HumanoidRootPart") or guard:FindFirstChildWhichIsA("BasePart")
+            if part then
+                local pos, onScreen = CurrentCamera:WorldToViewportPoint(part.Position)
+                if onScreen then
+                    local size = Vector2.new(1500 / pos.Z, 1500 / pos.Z)
+
+                    drawings.box.Size = size
+                    drawings.box.Position = Vector2.new(pos.X - size.X / 2, pos.Y - size.Y / 2)
+                    drawings.box.Color = boxColor
+                    drawings.box.Visible = true
+
+                    if Toggles.GuardESPTracer and Toggles.GuardESPTracer.Value then
+                        drawings.tracer.From = Vector2.new(CurrentCamera.ViewportSize.X / 2, CurrentCamera.ViewportSize.Y)
+                        drawings.tracer.To = Vector2.new(pos.X, pos.Y)
+                        drawings.tracer.Color = tracerColor
+                        drawings.tracer.Visible = true
+                    end
+
+                    if Toggles.GuardESPName and Toggles.GuardESPName.Value then
+                        drawings.name.Text = "Guard"
+                        drawings.name.Position = Vector2.new(pos.X, pos.Y - size.Y / 2 - 15)
+                        drawings.name.Color = nameColor
+                        drawings.name.Visible = true
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- // [8] UI CONTROLS //
+
+-- Game groupbox
+Groupboxes.Game:AddButton({
+    Text = "Remove Traps",
+    Func = function()
+        local debris = Workspace:FindFirstChild("__DEBRIS")
+        if debris then debris:Destroy() end
+    end
+})
+
+Groupboxes.Game:AddButton({
+    Text = "Remove Guards",
+    Func = function()
+        local objects = Workspace:FindFirstChild("__OBJECTS")
+        if not objects then return end
+
+        local areas = objects:FindFirstChild("Areas")
+        if not areas then return end
+
+        local guardAreas = areas:FindFirstChild("GuardAreas")
+        if not guardAreas then return end
+
+        for _, model in pairs(guardAreas:GetChildren()) do
+            if model:IsA("Model") then
+                local guard = model:FindFirstChild("Guard")
+                if guard then guard:Destroy() end
+            end
+        end
+    end
+})
+
+Groupboxes.Game:AddButton({
+    Text = "Exe Bypass Anti Cheat",
+    Func = function()
+        local character = LocalPlayer.Character
+        if not character then return end
+
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid:Destroy() end
+        Instance.new("Humanoid", character)
+
+        local overlay = Instance.new("ScreenGui")
+        overlay.Name = "BypassOverlay"
+        overlay.ResetOnSpawn = false
+        overlay.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        overlay.Parent = PlayerGui
+
+        local bg = Instance.new("Frame")
+        bg.Size = UDim2.new(1, 0, 1, 0)
+        bg.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+        bg.BackgroundTransparency = 0.4
+        bg.Parent = overlay
+
+        local barBg = Instance.new("Frame")
+        barBg.Size = UDim2.new(0.5, 0, 0.06, 0)
+        barBg.Position = UDim2.new(0.25, 0, 0.47, 0)
+        barBg.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+        barBg.BorderSizePixel = 0
+        barBg.Parent = bg
+
+        local bar = Instance.new("Frame")
+        bar.Size = UDim2.new(0, 0, 1, 0)
+        bar.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        bar.BorderSizePixel = 0
+        bar.Parent = barBg
+
+        local status = Instance.new("TextLabel")
+        status.Size = UDim2.new(1, 0, 0.3, 0)
+        status.Position = UDim2.new(0, 0, 1, 10)
+        status.BackgroundTransparency = 1
+        status.Text = "ANTİ CHEAT BYPASSİNG..."
+        status.TextColor3 = Color3.fromRGB(255, 255, 255)
+        status.TextSize = 30
+        status.Font = Enum.Font.GothamBold
+        status.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        status.TextStrokeTransparency = 0.4
+        status.Parent = barBg
+
+        local percent = Instance.new("TextLabel")
+        percent.Size = UDim2.new(1, 0, 0.3, 0)
+        percent.Position = UDim2.new(0, 0, -0.5, 0)
+        percent.BackgroundTransparency = 1
+        percent.Text = "0%"
+        percent.TextColor3 = Color3.fromRGB(255, 255, 255)
+        percent.TextSize = 24
+        percent.Font = Enum.Font.GothamBold
+        percent.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        percent.TextStrokeTransparency = 0.4
+        percent.Parent = barBg
+
+        local startTime = tick()
+
+        local function update()
+            local progress = math.min((tick() - startTime) / 4.3, 1)
+            bar.Size = UDim2.new(progress, 0, 1, 0)
+            percent.Text = math.floor(progress * 100) .. "%"
+
+            if progress < 1 then
+                task.wait(0.05)
+                update()
+            else
+                task.wait(0.3)
+                overlay:Destroy()
+            end
+        end
+
+        task.spawn(update)
+    end
+})
+
+Groupboxes.Game:AddToggle("InstantPickup", {
+    Text = "Exe Op Instant Grab",
+    Default = false
+})
+
+Groupboxes.Game:AddToggle("AutoPickup", {
+    Text = "Auto Pickup",
+    Default = false
+})
+
+Groupboxes.Game:AddLabel("Auto Fire Key"):AddKeyPicker("AutoFireKey", {
+    Default = CONFIG.Defaults.AutoFireKey,
+    Text = "Hold Key",
+    Mode = "Hold"
+})
+
+Groupboxes.Game:AddToggle("MobileAutoFireBtn", {
+    Text = "Mobile Auto Fire Button",
+    Default = false,
+    Callback = function(value)
+        if value then
+            createMobileAutoFireButton()
+        else
+            destroyMobileAutoFireButton()
+        end
+    end
+})
+
+Groupboxes.Game:AddToggle("ExpandHitbox", {
+    Text = "Expand Hitboxes",
+    Default = false,
+    Callback = function(value)
+        if not value then return end
+        for _, descendant in pairs(Workspace:GetDescendants()) do
+            if descendant:IsA("Model") then
+                expandHitbox(descendant)
+            end
+        end
+    end
+})
+
+-- Player groupbox
+Groupboxes.Player:AddToggle("WalkSpeedEnabled", {
+    Text = "WalkSpeed",
+    Default = false
+})
+
+Groupboxes.Player:AddSlider("WalkSpeedValue", {
+    Text = "Speed",
+    Default = CONFIG.Defaults.WalkSpeed,
+    Min = 16,
+    Max = 8500,
+    Rounding = 0
+})
+
+Groupboxes.Player:AddToggle("Unwalk", {
+    Text = "Unwalk (Stop Moving)",
+    Default = false,
+    Callback = function(value)
+        State.Unwalk = value
+        local character = LocalPlayer.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            if value then
+                humanoid.WalkSpeed = 0
+            else
+                humanoid.WalkSpeed = (Toggles.WalkSpeedEnabled and Toggles.WalkSpeedEnabled.Value)
+                    and Options.WalkSpeedValue.Value
+                    or CONFIG.Defaults.WalkSpeed
+            end
+        end
+    end
+})
+
+Groupboxes.Player:AddToggle("JumpPowerEnabled", {
+    Text = "JumpPower",
+    Default = false
+})
+
+Groupboxes.Player:AddSlider("JumpPowerValue", {
+    Text = "Power",
+    Default = CONFIG.Defaults.JumpPower,
+    Min = 50,
+    Max = 1450,
+    Rounding = 0
+})
+
+Groupboxes.Player:AddToggle("InfiniteJump", {
+    Text = "Infinite Jump",
+    Default = false
+})
+
+Groupboxes.Player:AddToggle("Fly", {
+    Text = "Fly",
+    Default = false,
+    Callback = function(value)
+        State.Fly = value
+        local character = LocalPlayer.Character
+        if not character then return end
+
+        local root = character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+        if value then
+            if root and humanoid then
+                humanoid.PlatformStand = true
+
+                State.BodyVelocity = Instance.new("BodyVelocity")
+                State.BodyVelocity.MaxForce = Vector3.new(9000000000, 9000000000, 9000000000)
+                State.BodyVelocity.Velocity = Vector3.zero
+                State.BodyVelocity.Parent = root
+
+                State.BodyGyro = Instance.new("BodyGyro")
+                State.BodyGyro.MaxTorque = Vector3.new(9000000000, 9000000000, 9000000000)
+                State.BodyGyro.P = 90000
+                State.BodyGyro.Parent = root
+            end
+        else
+            if State.BodyVelocity then
+                State.BodyVelocity:Destroy()
+                State.BodyVelocity = nil
+            end
+            if State.BodyGyro then
+                State.BodyGyro:Destroy()
+                State.BodyGyro = nil
+            end
+            if humanoid then
+                humanoid.PlatformStand = false
+            end
+        end
+    end
+})
+
+Groupboxes.Player:AddSlider("FlySpeed", {
+    Text = "Fly Speed",
+    Default = CONFIG.Defaults.FlySpeed,
+    Min = 10,
+    Max = 1250,
+    Rounding = 0
+})
+
+Groupboxes.Player:AddToggle("TPWalk", {
+    Text = "TP Walk",
+    Default = false,
+    Callback = function(value)
+        State.TPWalk = value
+    end
+})
+
+Groupboxes.Player:AddSlider("TPWalkSpeed", {
+    Text = "TP Speed",
+    Default = CONFIG.Defaults.TPWalkSpeed,
+    Min = 1,
+    Max = 750,
+    Rounding = 0,
+    Callback = function(value)
+        State.TPWalkSpeed = value
+    end
+})
+
+-- Utility groupbox
+Groupboxes.Utility:AddButton({
+    Text = "Instant Reset",
+    Func = function()
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then humanoid.Health = 0 end
+            character:BreakJoints()
+        end
+    end
+})
+
+Groupboxes.Utility:AddToggle("AntiFling", {
+    Text = "Anti‑Fling",
+    Default = false,
+    Callback = function(value)
+        State.AntiFling = value
+    end
+})
+
+Groupboxes.Utility:AddButton({
+    Text = "Rejoin Server",
+    Func = function()
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+    end
+})
+
+Groupboxes.Utility:AddButton({
+    Text = "Leave Game",
+    Func = function()
+        game:Shutdown()
+    end
+})
+
+Groupboxes.Utility:AddButton({
+    Text = "Sell All Morph",
+    Func = function()
+        local prompts = {}
+
+        for _, descendant in pairs(Workspace:GetDescendants()) do
+            if descendant:IsA("ProximityPrompt") and descendant.Enabled then
+                if descendant.Name:lower():find("sell") then
+                    table.insert(prompts, descendant)
+                end
+            end
+        end
+
+        if #prompts > 0 then
+            for _, prompt in pairs(prompts) do
+                fireproximityprompt(prompt)
+            end
+            return
+        end
+
+        -- Fallback: click sell buttons in PlayerGui
+        for _, descendant in pairs(PlayerGui:GetDescendants()) do
+            if descendant:IsA("TextButton") or descendant:IsA("ImageButton") then
+                local nameLower = descendant.Name:lower()
+                local textLower = descendant.Text and descendant.Text:lower() or ""
+                if nameLower:find("sell") or textLower:find("sell") then
+                    descendant:Click()
+                end
+            end
+        end
+
+        for _, child in pairs(PlayerGui:GetChildren()) do
+            if child:IsA("ScreenGui") and child.Name:lower():find("sell") then
+                for _, desc in pairs(child:GetDescendants()) do
+                    if desc:IsA("TextButton") or desc:IsA("ImageButton") then
+                        desc:Click()
+                    end
+                end
+            end
+        end
+    end
+})
+
+Groupboxes.Utility:AddButton({
+    Text = "Remove Accessories",
+    Func = function()
+        local character = LocalPlayer.Character
+        if not character then return end
+
+        for _, child in pairs(character:GetChildren()) do
+            if child:IsA("Accessory") or child:IsA("Hat") then
+                child:Destroy()
+            end
+        end
+    end
+})
+
+-- Graphics groupbox
+Groupboxes.Graphics:AddToggle("AntiLag", {
+    Text = "Anti Lag",
+    Default = false,
+    Callback = function() end
+})
+
+Groupboxes.Graphics:AddToggle("FPSBoost", {
+    Text = "FPS Boost",
+    Default = false,
+    Callback = function(value)
+        if value then
+            Lighting.GlobalShadows = false
+            for _, descendant in pairs(Workspace:GetDescendants()) do
+                if descendant:IsA("ParticleEmitter") then
+                    descendant.Enabled = false
+                end
+            end
+        else
+            Lighting.GlobalShadows = true
+        end
+    end
+})
+
+Groupboxes.Graphics:AddToggle("ShinyGraphic", {
+    Text = "Shiny Graphic",
+    Default = false,
+    Callback = function(value)
+        if value then
+            Lighting.GlobalShadows = true
+            Lighting.Brightness = 1.2
+            Lighting.Ambient = Color3.new(0.6, 0.6, 0.6)
+        else
+            Lighting.GlobalShadows = false
+            Lighting.Brightness = 0.5
+            Lighting.Ambient = Color3.new(0.3, 0.3, 0.3)
+        end
+    end
+})
+
+Groupboxes.Graphics:AddToggle("PotatoGraphic", {
+    Text = "Potato Graphic",
+    Default = false,
+    Callback = function(value)
+        if value then
+            Lighting.GlobalShadows = false
+            Lighting.Brightness = 0.2
+            Lighting.Ambient = Color3.new(0.1, 0.1, 0.1)
+        else
+            Lighting.GlobalShadows = true
+            Lighting.Brightness = 1
+            Lighting.Ambient = Color3.new(0.5, 0.5, 0.5)
+        end
+    end
+})
+
+-- Misc groupbox
+Groupboxes.Misc:AddToggle("FloatingMode", {
+    Text = "Minimize to Floating Button",
+    Default = false,
+    Callback = function(value)
+        if value then
+            if Window.Visible then
+                Window:Toggle()
+            end
+            if not State.FloatingGui then
+                createFloatingButton()
+            end
+            State.FloatingGui.Enabled = true
+        else
+            if not Window.Visible then
+                Window:Toggle()
+            end
+            if State.FloatingGui then
+                State.FloatingGui.Enabled = false
+            end
+        end
+    end
+})
+
+Groupboxes.Misc:AddLabel("Hide GUI Key"):AddKeyPicker("HideGuiKey", {
+    Default = CONFIG.Defaults.HideGuiKey,
+    Text = "Hide/Show",
+    Mode = "Toggle"
+})
+
+Groupboxes.Misc:AddButton({
+    Text = "Unload Script",
+    Func = function()
+        Library:Unload()
+    end
+})
+
+-- ESP groupbox
+Groupboxes.ESP:AddToggle("PlayerESPEnabled", { Text = "Player ESP", Default = false })
+Groupboxes.ESP:AddToggle("PlayerESPTracer", { Text = "Player Tracer", Default = false })
+Groupboxes.ESP:AddToggle("PlayerESPName", { Text = "Player Name", Default = false })
+Groupboxes.ESP:AddToggle("PlayerESPHealth", { Text = "Player Health Bar", Default = false })
+
+Groupboxes.ESP:AddLabel("Player Box Color"):AddColorPicker("PlayerBoxColor", {
+    Default = CONFIG.ESP.PlayerBox,
+    Title = "Box"
+})
+Groupboxes.ESP:AddLabel("Player Tracer Color"):AddColorPicker("PlayerTracerColor", {
+    Default = CONFIG.ESP.PlayerTracer,
+    Title = "Tracer"
+})
+Groupboxes.ESP:AddLabel("Player Name Color"):AddColorPicker("PlayerNameColor", {
+    Default = CONFIG.ESP.PlayerName,
+    Title = "Name"
+})
+Groupboxes.ESP:AddLabel("Player Health Color"):AddColorPicker("PlayerHealthColor", {
+    Default = CONFIG.ESP.PlayerHealth,
+    Title = "Health"
+})
+
+Groupboxes.ESP:AddToggle("EggESPEnabled", { Text = "Egg ESP", Default = false })
+Groupboxes.ESP:AddToggle("EggESPTracer", { Text = "Egg Tracer", Default = false })
+Groupboxes.ESP:AddToggle("EggESPDistance", { Text = "Egg Distance", Default = false })
+
+Groupboxes.ESP:AddLabel("Egg Box Color"):AddColorPicker("EggBoxColor", {
+    Default = CONFIG.ESP.EggBox,
+    Title = "Box"
+})
+Groupboxes.ESP:AddLabel("Egg Tracer Color"):AddColorPicker("EggTracerColor", {
+    Default = CONFIG.ESP.EggTracer,
+    Title = "Tracer"
+})
+Groupboxes.ESP:AddLabel("Egg Distance Color"):AddColorPicker("EggDistColor", {
+    Default = CONFIG.ESP.EggDistance,
+    Title = "Distance"
+})
+
+Groupboxes.ESP:AddToggle("GuardESPEnabled", { Text = "Guard ESP", Default = false })
+Groupboxes.ESP:AddToggle("GuardESPTracer", { Text = "Guard Tracer", Default = false })
+Groupboxes.ESP:AddToggle("GuardESPName", { Text = "Guard Name", Default = false })
+
+Groupboxes.ESP:AddLabel("Guard Box Color"):AddColorPicker("GuardBoxColor", {
+    Default = CONFIG.ESP.GuardBox,
+    Title = "Box"
+})
+Groupboxes.ESP:AddLabel("Guard Tracer Color"):AddColorPicker("GuardTracerColor", {
+    Default = CONFIG.ESP.GuardTracer,
+    Title = "Tracer"
+})
+Groupboxes.ESP:AddLabel("Guard Name Color"):AddColorPicker("GuardNameColor", {
+    Default = CONFIG.ESP.GuardName,
+    Title = "Name"
+})
+
+-- // [9] INITIALIZATION //
+
+-- Billboard
+local billboard = createBillboard()
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(0.2)
+    billboard = createBillboard()
+end)
+task.wait(0.3)
+if not billboard then
+    billboard = createBillboard()
+end
+
+-- Player ESP setup
+for _, player in pairs(Players:GetPlayers()) do
+    createPlayerESP(player)
+end
+Players.PlayerAdded:Connect(createPlayerESP)
+Players.PlayerRemoving:Connect(clearPlayerESP)
+
+-- Theme / Save managers
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({ "MenuKeybind", "HideGuiKey" })
+ThemeManager:SetFolder("Exe")
+SaveManager:SetFolder("Exe/Config")
+SaveManager:LoadAutoloadConfig()
+
+Library:OnUnload(function()
+    clearAllESP()
+
+    State.Fly = false
+    if State.BodyVelocity then State.BodyVelocity:Destroy() end
+    if State.BodyGyro then State.BodyGyro:Destroy() end
+
+    local mobile = PlayerGui:FindFirstChild("ExeMobileBtn")
+    if mobile then mobile:Destroy() end
+
+    if State.FloatingGui then
+        State.FloatingGui:Destroy()
+    end
+
+    for _, descendant in pairs(Workspace:GetDescendants()) do
+        if descendant:IsA("BillboardGui") and descendant.Name == "ExeOnTop" then
+            descendant:Destroy()
+        end
+    end
+
+    local bypass = PlayerGui:FindFirstChild("BypassOverlay")
+    if bypass then bypass:Destroy() end
+
+    State.AntiFling = false
+    SaveManager:SaveConfig()
+end)
