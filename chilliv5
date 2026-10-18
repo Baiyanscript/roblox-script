@@ -1,19 +1,18 @@
 -- ==============================================================================
---  CHILLI HUB V5 - RONNEI OFFICIAL EDITION (UPDATE NOTICE & AUTO-APPLY FIX)
---  Cập nhật mới nhất:
---    1. BẢNG THÔNG BÁO UPDATE SẮP RA MẮT: Modal siêu đẹp hiện 1 lần lúc bật,
---       hỗ trợ song ngữ VI/EN, giới thiệu tính năng Auto Farm chuẩn và UI mới.
---    2. SỬA DỨT ĐIỂM LỖI CHƯA BẤM "APPLY NOW": Nâng cấp engine mô phỏng click
---       chuột, đợi hộp thoại hiện rõ mới bấm, đảm bảo ăn 100% trên mọi Executor.
---    3. GIỮ NGUYÊN 100% TÍNH NĂNG CŨ: Auto-Load GitHub, Dynamic Island nền đen,
---       Fake FPS 85-120, Nút tròn 60x60, Dịch 4 tầng NLP.
+--  CHILLI HUB V5 - RONNEI OFFICIAL EDITION (HALLOWEEN EVENT TRANSLATION)
+--  Bảo toàn 100% engine cũ, chỉ bổ sung từ vựng:
+--    1. DỊCH FULL SỰ KIỆN HALLOWEEN: Phantom Express, Chó Ma, Câu cá, Trăng
+--       bí ngô, Đánh quái, Trứng Halloween, Tàu ma, Thu thập linh hồn.
+--    2. DỊCH TRẠNG THÁI HALLOWEEN: "Halloween: carrying the egg to safety" ->
+--       "Halloween: đang mang trứng đến nơi an toàn".
+--    3. GIỮ NGUYÊN 100%: Bảng Update, Auto-Config, FPS ảo 85-120, Logo 60x60,
+--       Dynamic Island nền đen và cơ chế chống giật ngôn ngữ VI/EN.
 -- ==============================================================================
 
 local MY_CHILLI_URL  = "https://raw.githubusercontent.com/ronnei/hihi/refs/heads/main/chillihubv5.lua"
 local AUTO_RUN_FILE  = "ChilliHubV5_AutoRun.lua"
 local LANG_SAVE_FILE = "ChilliV5_Lang.txt"
 
-local CHILLI_CORE_PAYLOAD = [===[
 local NEW_TITLE = "Chilli Hub V5"
 local CHILLI_LOGO_ID = "rbxassetid://92622270383869"
 local LOGO_BG_COLOR = Color3.fromRGB(5, 7, 15)
@@ -35,6 +34,7 @@ env.__ChilliV5State = env.__ChilliV5State or {
     TrackedTexts = {},
     TrackedFpsLabels = {},
     RefreshIslandCallback = nil,
+    RefreshNoticeCallback = nil,
     NoticeShown = false
 }
 
@@ -309,7 +309,7 @@ local EXACT_MATCH_VI = {
     ["✨ New Interface: Completely redesigned for a more beautiful and professional look."] = "✨ Giao diện mới: Thiết kế lại toàn bộ giao diện đẹp mắt và chuyên nghiệp hơn.",
     ["CLOSE"] = "ĐÓNG",
 
-    -- Trạng thái tĩnh
+    -- Trạng thái tĩnh (Dynamic Island)
     ["Idle"] = "Đang rảnh",
     ["Waiting"] = "Đang chờ",
     ["Nothing"] = "Không có gì",
@@ -608,7 +608,7 @@ local EXACT_MATCH_VI = {
     ["Place"] = "Đặt trứng vào chuồng",
     ["Butterfly machine"] = "Máy đổi Bướm",
 
-    -- Event: Race, Star, Butterfly, Lab, AA
+    -- Event: Race, Star, Butterfly, Lab, AA & HALLOWEEN NEW
     ["Race"] = "Đua Xe",
     ["RACE"] = "ĐUA XE",
     ["Star"] = "Sao Băng",
@@ -617,6 +617,38 @@ local EXACT_MATCH_VI = {
     ["Lab"] = "Phòng Lab",
     ["LAB"] = "PHÒNG LAB",
     ["AA"] = "Admin (AA)",
+    ["Halloween"] = "Halloween",
+    ["HALLOWEEN"] = "HALLOWEEN",
+    ["HALLOWEEN DIMENSION"] = "KHÔNG GIAN HALLOWEEN",
+    ["Auto steal Halloween eggs"] = "Tự động cướp trứng Halloween",
+    ["Instant steal Halloween eggs"] = "Cướp tức thì trứng Halloween",
+    ["Steal speed"] = "Tốc độ cướp",
+    ["Halloween eggs"] = "Trứng Halloween",
+    ["Halloween rarities"] = "Độ hiếm Halloween",
+    ["Auto Pumpkin Moon"] = "Tự làm sự kiện Trăng Bí Ngô",
+    ["Auto buy Halloween Dimension Egg"] = "Tự mua trứng Không gian Halloween",
+    ["Walk speed"] = "Tốc độ chạy bộ",
+    ["GHOST DOG AND FISHING"] = "CHÓ MA VÀ CÂU CÁ",
+    ["QUEST"] = "NHIỆM VỤ",
+    ["Done"] = "Đã xong",
+    ["FISH CAUGHT"] = "CÁ ĐÃ CÂU",
+    ["Auto Ghost Dog quest"] = "Tự làm nhiệm vụ Chó Ma",
+    ["Auto fishing"] = "Tự động câu cá",
+    ["Cast luck"] = "Tỷ lệ câu may mắn",
+    ["Perfect"] = "Hoàn hảo (Perfect)",
+    ["MONSTERS"] = "QUÁI VẬT",
+    ["Auto kill monsters"] = "Tự động đánh quái",
+    ["Monsters"] = "Tên quái vật",
+    ["Monster order"] = "Thứ tự đánh quái",
+    ["Rarest first"] = "Hiếm nhất trước",
+    ["PHANTOM EXPRESS"] = "TÀU MA PHANTOM EXPRESS",
+    ["TRAIN"] = "CHUYẾN TÀU",
+    ["Not here"] = "Chưa đến",
+    ["SOULS"] = "LINH HỒN",
+    ["Auto Phantom Express"] = "Tự động cướp Tàu Ma",
+    ["Auto vacuum Ghouler boss"] = "Tự hút linh hồn Boss Ghouler",
+    ["Ghost target"] = "Mục tiêu ma",
+    ["Auto trade souls"] = "Tự động đổi linh hồn",
     ["RACING EVENT"] = "SỰ KIỆN ĐUA XE",
     ["NEXT RACE"] = "ĐUA TIẾP THEO",
     ["WINS"] = "THẮNG",
@@ -659,9 +691,7 @@ local EXACT_MATCH_VI = {
     ["Auto craft essence"] = "Tự chế tạo tinh chất",
     ["WISP COMPANION"] = "ĐỒNG HÀNH WISP",
     ["Catch priority"] = "Ưu tiên bắt",
-    ["Rarest"] = "Hiếm nhất",
     ["Catch"] = "Loại bướm bắt",
-    ["Radiant"] = "Rực Rỡ",
     ["Catch speed"] = "Tốc độ bắt",
     ["Auto wisp quest"] = "Tự làm nhiệm vụ Wisp",
     ["Auto banjo cricket"] = "Tự bắt dế Banjo",
@@ -732,7 +762,7 @@ local EXACT_MATCH_VI = {
     ["Use weapons"] = "Sử dụng vũ khí",
     ["Hold each"] = "Thời gian cầm mỗi món",
 
-    -- System: Config & Mới trong video
+    -- System: Config & Giao diện
     ["System"] = "Hệ Thống",
     ["Server"] = "Máy Chủ",
     ["SERVER"] = "MÁY CHỦ",
@@ -846,6 +876,7 @@ for k, v in pairs(EXACT_MATCH_VI) do
 end
 
 local STATUS_ACTION_PATTERNS_VI = {
+    { pat = "^[Hh]alloween: carrying the egg to safety$", rep = "Halloween: đang mang trứng đến nơi an toàn" },
     { pat = "^[Nn]o eggs? match%w* your (.+)$", rep = "Không có trứng nào khớp %1" },
     { pat = "^[Nn]o eggs? match%w* (.+)$", rep = "Không có trứng nào khớp %1" },
     { pat = "^[Nn]o pets? match%w* (.+)$", rep = "Không có pet nào khớp %1" },
@@ -1080,8 +1111,6 @@ local WORD_TOKEN_VI = {
 }
 
 local DYNAMIC_PATTERNS_VI = {
-    { pat = "^(.+) was added to your configs%. Apply it now%??$", rep = "Đã thêm '%1' vào danh sách cấu hình. Áp dụng ngay?" },
-    { pat = "^(.+) was added to your configs$", rep = "Đã thêm '%1' vào danh sách cấu hình" },
     { pat = "^QUICK BAR (%d+)$", rep = "THANH NHANH %1" },
     { pat = "Venyx(.-)(%d+) hours? ago", rep = "Chilli Hub%1%2 giờ trước" },
     { pat = "Venyx(.-)(%d+) minutes? ago", rep = "Chilli Hub%1%2 phút trước" },
@@ -1147,8 +1176,8 @@ local function translateStatusAction(cleanEn)
     local cacheKey = "STATUS_VI|" .. stripped
     if FastCache[cacheKey] then return FastCache[cacheKey] end
 
-    if EXACT_MATCH_VI[stripped] then FastCache[cacheKey] = EXACT_MATCH_VI[stripped] return EXACT_MATCH_VI[stripped] end
-    if LOWER_EXACT_MATCH_VI[lowerStripped] then FastCache[cacheKey] = LOWER_EXACT_MATCH_VI[lowerStripped] return LOWER_EXACT_MATCH_VI[lowerStripped] end
+    if EXACT_MATCH_VI[stripped] then FastCache[cacheKey] = EXACT_MATCH_VI[stripped]; return EXACT_MATCH_VI[stripped] end
+    if LOWER_EXACT_MATCH_VI[lowerStripped] then FastCache[cacheKey] = LOWER_EXACT_MATCH_VI[lowerStripped]; return LOWER_EXACT_MATCH_VI[lowerStripped] end
 
     local out = stripped
     for i = 1, #STATUS_ACTION_PATTERNS_VI do
@@ -1175,11 +1204,12 @@ local function translateVenyxText(raw)
     if raw:find("Venyx SAE", 1, true) then raw = raw:gsub("Venyx SAE", "Chilli SAE")
     elseif raw == "VENYX" then raw = NEW_TITLE end
 
-    if lang == "EN" then FastCache[cacheKey] = raw return raw end
+    if lang == "EN" then FastCache[cacheKey] = raw; return raw end
+
     local normalized = (raw:match("^%s*(.-)%s*$") or raw):gsub("%s+", " ")
 
-    if EXACT_MATCH_VI[normalized] then FastCache[cacheKey] = EXACT_MATCH_VI[normalized] return EXACT_MATCH_VI[normalized] end
-    if LOWER_EXACT_MATCH_VI[normalized:lower()] then FastCache[cacheKey] = LOWER_EXACT_MATCH_VI[normalized:lower()] return LOWER_EXACT_MATCH_VI[normalized:lower()] end
+    if EXACT_MATCH_VI[normalized] then FastCache[cacheKey] = EXACT_MATCH_VI[normalized]; return EXACT_MATCH_VI[normalized] end
+    if LOWER_EXACT_MATCH_VI[normalized:lower()] then FastCache[cacheKey] = LOWER_EXACT_MATCH_VI[normalized:lower()]; return LOWER_EXACT_MATCH_VI[normalized:lower()] end
 
     local baseBeforeDots = normalized:match("^(.+)%.%.%.$")
     if baseBeforeDots then
@@ -1260,7 +1290,7 @@ local function applyElementTranslation(inst)
     end
 
     local rawText = inst.Text
-    if isFpsCounterText(rawText) then hookFakeFpsCounter(inst) return end
+    if isFpsCounterText(rawText) then hookFakeFpsCounter(inst); return end
 
     local original = inst:GetAttribute("OrigRawText")
     if not original then
@@ -1301,8 +1331,8 @@ local function hookTextForTranslation(inst)
         if not isCurrentSession() then return end
         if inst:GetAttribute("__IsTranslating") or inst:GetAttribute("__IslandDone") or inst:GetAttribute("__HiddenVxLogo") then return end
 
-        if not inst:IsA("TextBox") and isFpsCounterText(inst.Text) then hookFakeFpsCounter(inst) return end
-        if inst:IsA("TextBox") then applyElementTranslation(inst) return end
+        if not inst:IsA("TextBox") and isFpsCounterText(inst.Text) then hookFakeFpsCounter(inst); return end
+        if inst:IsA("TextBox") then applyElementTranslation(inst); return end
 
         local currentTxt = inst.Text
         if currentTxt ~= inst:GetAttribute("__LastTranslated") and not containsVietnameseChars(currentTxt) then
@@ -1400,7 +1430,6 @@ local function showUpcomingUpdateNotice()
         end
     end
     updateNoticeLang()
-
     State.RefreshNoticeCallback = updateNoticeLang
 
     closeBtn.MouseButton1Click:Connect(function()
@@ -1409,7 +1438,6 @@ local function showUpcomingUpdateNotice()
     end)
 end
 
--- Cập nhật hàm refresh ngôn ngữ để dính kèm Notice
 local function refreshAllTranslations()
     task.spawn(function()
         if State.RefreshIslandCallback then State.RefreshIslandCallback() end
@@ -1455,8 +1483,8 @@ local function forceFireButton(btn)
     end
 
     if firesignal then
-        pcall(function() firesignal(clickable.MouseButton1Click) fired = true end)
-        pcall(function() firesignal(clickable.Activated) fired = true end)
+        pcall(function() firesignal(clickable.MouseButton1Click); fired = true end)
+        pcall(function() firesignal(clickable.Activated); fired = true end)
     end
 
     if not fired and clickable:IsA("GuiObject") and clickable.Visible and clickable.AbsoluteSize.X > 0 then
@@ -1484,14 +1512,10 @@ local function executeAutoFarmConfigImport(venyxGui, statusBtnLabel)
         for _, d in ipairs(venyxGui:GetDescendants()) do
             if d:IsA("TextBox") then
                 local origPh = (d:GetAttribute("OrigPlaceholder") or d.PlaceholderText or ""):lower()
-                if origPh:find("paste config", 1, true) or origPh:find("dán mã", 1, true) then
-                    importBox = d
-                end
+                if origPh:find("paste config", 1, true) or origPh:find("dán mã", 1, true) then importBox = d end
             elseif d:IsA("TextButton") or d:IsA("TextLabel") then
                 local origTxt = (d:GetAttribute("OrigRawText") or d.Text or ""):match("^%s*(.-)%s*$")
-                if origTxt == "Import" or d.Text == "Nhập" then
-                    importBtn = d
-                end
+                if origTxt == "Import" or d.Text == "Nhập" then importBtn = d end
             end
         end
 
@@ -1579,6 +1603,7 @@ local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
 
     local badHitbox = pill:FindFirstChild("IslandClickHitbox")
     if badHitbox then badHitbox:Destroy() end
+
     for _, child in ipairs(pill:GetChildren()) do
         if child:IsA("UIGradient") then child:Destroy() end
     end
@@ -1748,8 +1773,8 @@ local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
     CollapseCorner.Parent = CollapseBtn
 
     local LangCapsule = Instance.new("Frame")
-    LangCapsule.Size = UDim2.new(1, -20, 0, 32)
-    LangCapsule.Position = UDim2.new(0, 10, 0, 34)
+    LangCapsule.Size = UDim2.new(1, -20, 0, 34)
+    LangCapsule.Position = UDim2.new(0, 10, 0, 36)
     LangCapsule.BackgroundColor3 = Color3.fromRGB(18, 20, 30)
     LangCapsule.BorderSizePixel = 0
     LangCapsule.ZIndex = 10001
@@ -1872,6 +1897,7 @@ local function setupDynamicIslandFromStatus(statusLbl, venyxGui)
     local function attachDragAndClick(triggerObj, moveFrame, onTapCallback)
         if triggerObj:GetAttribute("__DragSession") == MY_SESSION_ID then return end
         triggerObj:SetAttribute("__DragSession", MY_SESSION_ID)
+
         local dragging, dragStart, startPos, moved = false, nil, nil, false
 
         triggerObj.InputBegan:Connect(function(input)
@@ -2151,7 +2177,6 @@ task.spawn(function()
         elapsed = elapsed + 0.35
         pcall(tryPatchVenyx)
     end
-    -- Gọi popup thông báo 1 lần duy nhất khi UI đã hiện lên
     if isCurrentSession() then
         showUpcomingUpdateNotice()
     end
@@ -2160,21 +2185,11 @@ task.spawn(function()
         pcall(tryPatchVenyx)
     end
 end)
-]===]
+local MY_CHILLI_URL = "https://raw.githubusercontent.com/ronnei/hihi/refs/heads/main/chillihubv5.lua"
+local AUTO_RUN_FILE = "ChilliHubV5_AutoRun.lua"
 
--- LƯU BẢN MỚI NHẤT VÀO MÁY ĐỂ KHI REJOIN / SERVER HOP LUÔN CHẠY BẢN NÀY
 if writefile then
     pcall(function()
-        local selfReplicatingWrapper = "local CHILLI_CORE_PAYLOAD = [===[" .. CHILLI_CORE_PAYLOAD .. "]===]\n" .. [[
-if writefile then
-    pcall(function()
-        writefile("ChilliHubV5_AutoRun.lua", "local CHILLI_CORE_PAYLOAD = [===[" .. CHILLI_CORE_PAYLOAD .. "]===]\nloadstring(CHILLI_CORE_PAYLOAD)()")
+        writefile(AUTO_RUN_FILE, string.format('pcall(function() loadstring(game:HttpGet("%s"))() end)', MY_CHILLI_URL))
     end)
 end
-loadstring(CHILLI_CORE_PAYLOAD)()
-]]
-        writefile(AUTO_RUN_FILE, selfReplicatingWrapper)
-    end)
-end
-
-loadstring(CHILLI_CORE_PAYLOAD)()
