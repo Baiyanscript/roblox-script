@@ -33050,7 +33050,6 @@ local function fn66()
 		end)
 	end
 
-	v28:AddTab({Name = "Donate", Icon = "donator", LayoutOrder = -1, StartActive = false, Gate = false}):AddSection("Support Sena", true):AddSupportCard({})
 	local v30 = v28:AddTab({Name = "Home", Icon = "home", LayoutOrder = 1})
 	local v31 = v28:AddTab({Name = "Windows", Icon = "app-window", LayoutOrder = 2})
 	local v32 = v28:AddTab({Name = "Steal", Icon = "hand", LayoutOrder = 3})
