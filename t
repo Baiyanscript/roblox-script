@@ -7,7 +7,7 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 local StarterGui = game:GetService("StarterGui")
 
---// LOCAL ALIASES & SECURITY
+--// LOCAL ALIASES & SECURITY (移植自 rivals_2)
 local _pcall = pcall
 local _osclock = os.clock
 local _type = type
@@ -185,7 +185,6 @@ local ESP = {}
 
 --// CORE MECHANICS
 local function isAlive(model)
-    if not model then return false end
     local hum = model:FindFirstChildOfClass("Humanoid")
     return hum and hum.Health > 0
 end
@@ -765,7 +764,7 @@ Instance.new("UICorner", ESPCloseBtn).CornerRadius = UDim.new(0, 6)
 ESPCloseBtn.MouseButton1Click:Connect(function()
     for id, _ in pairs(ESP) do removeESP(id) end
     clearAllMM2Highlights()
-    ESPFrame:Visible = false
+    ESPFrame.Visible = false
 end)
 
 local ESPContent = Instance.new("ScrollingFrame", ESPFrame)
@@ -893,7 +892,7 @@ Instance.new("UICorner", AimCloseBtn).CornerRadius = UDim.new(0, 6)
 
 AimCloseBtn.MouseButton1Click:Connect(function()
     if FOVCircle then pcall(function() FOVCircle:Remove() end) end
-    AimFrame:Visible = false
+    AimFrame.Visible = false
 end)
 
 local AimContent = Instance.new("ScrollingFrame", AimFrame)
@@ -953,7 +952,7 @@ CreateAimButton("AIM PART: HEAD", 133, function(btn)
     CurrentTarget = GetClosestPlayerToCrosshair()
 end)
 
--- 新增 Aim 面板內的 Team Check 按鈕（預設關閉）
+-- Aim 面板中的 Team Check 按鈕（預設關閉）
 CreateAimButton("TEAM CHECK: OFF", 165, function(btn)
     TeamCheck = not TeamCheck
     btn.Text = "TEAM CHECK: " .. (TeamCheck and "ON" or "OFF")
