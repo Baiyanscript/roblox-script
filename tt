@@ -153,7 +153,7 @@ local Smoothness = 0.16
 local AimBind = Enum.KeyCode.Q
 local SwitchTargetBind = Enum.KeyCode.E
 local HideKey = Enum.KeyCode.RightShift
-
+local TeamCheck = true          -- [MOD] Team check 全局开关
 local AimbotActive = false
 local StrongLock = false
 local WallcheckActive = true
@@ -199,6 +199,15 @@ end
 
 local function IsPlayerExcluded(player)
     return ExcludedPlayers[player] == true
+end
+
+-- [MOD] 判断是否队友
+local function IsTeammate(player)
+    if not TeamCheck then return false end
+    if not player or not LocalPlayer then return false end
+    local a = player.Team
+    local b = LocalPlayer.Team
+    return a ~= nil and b ~= nil and a == b
 end
 
 local function CreateNewESPBox()
@@ -248,8 +257,8 @@ local function UpdateESPForPlayer(player)
         RemoveESPBox(player)
         return
     end
-    -- 如果是在手動 Exclude 名單中，就不要顯示方框
-    if IsPlayerExcluded(player) then
+    -- [MOD] 使用 IsTeammate 统一处理
+    if IsPlayerExcluded(player) or IsTeammate(player) then
         RemoveESPBox(player)
         return
     end
@@ -310,23 +319,25 @@ local function GetClosestPlayerToCrosshair()
     local bestMag = math.huge
     local bestTarget = nil
     for _, player in ipairs(Players:GetPlayers()) do
-        -- 略過自己與被手動排除的玩家
         if player ~= LocalPlayer and IsAlive(player) and not IsPlayerExcluded(player) then
-            local bone = GetAimPart(player)
-            if bone then
-                local sp, onScreen = cam:WorldToViewportPoint(bone.Position)
-                if onScreen then
-                    local sp2 = Vector2.new(sp.X, sp.Y)
-                    local dist = (sp2 - center).Magnitude
-                    if dist < FOVRadius and dist < bestMag then
-                        if WallcheckActive then
-                            if CheckWallVisibility(bone, player.Character) then
+            -- [MOD] 使用 IsTeammate 统一判定
+            if not IsTeammate(player) then
+                local bone = GetAimPart(player)
+                if bone then
+                    local sp, onScreen = cam:WorldToViewportPoint(bone.Position)
+                    if onScreen then
+                        local sp2 = Vector2.new(sp.X, sp.Y)
+                        local dist = (sp2 - center).Magnitude
+                        if dist < FOVRadius and dist < bestMag then
+                            if WallcheckActive then
+                                if CheckWallVisibility(bone, player.Character) then
+                                    bestMag = dist
+                                    bestTarget = player
+                                end
+                            else
                                 bestMag = dist
                                 bestTarget = player
                             end
-                        else
-                            bestMag = dist
-                            bestTarget = player
                         end
                     end
                 end
@@ -601,6 +612,7 @@ corner(ToggleAimbotBtn, 17)
 livingStroke(ToggleAimbotBtn, 1, true)
 livingText(ToggleAimbotBtn)
 
+-- [MOD] 通用 toggle 行, 增加 TeamCheck 支持
 local function makeToggleRow(label, y, key)
     local row = make("Frame", {
         Size = UDim2.new(1, 0, 0, 32),
@@ -626,6 +638,7 @@ local function makeToggleRow(label, y, key)
         or (key == "Wallcheck" and WallcheckActive)
         or (key == "ESP" and ESPEnabled)
         or (key == "ShowFOV" and ShowFOVCircle)
+        or (key == "TeamCheck" and TeamCheck)
 
     local btn = make("TextButton", {
         Size = UDim2.fromOffset(38, 20),
@@ -664,6 +677,19 @@ local function makeToggleRow(label, y, key)
         elseif key == "ShowFOV" then
             ShowFOVCircle = not ShowFOVCircle
             newVal = ShowFOVCircle
+        elseif key == "TeamCheck" then
+            -- [MOD] 切换 TeamCheck 后立即刷新 ESP, 并清理队友目标
+            TeamCheck = not TeamCheck
+            newVal = TeamCheck
+            if TeamCheck and CurrentTarget then
+                if CurrentTarget.Team and LocalPlayer.Team
+                   and CurrentTarget.Team == LocalPlayer.Team then
+                    CurrentTarget = nil
+                end
+            end
+            for _, p in ipairs(Players:GetPlayers()) do
+                UpdateESPForPlayer(p)
+            end
         end
         TweenService:Create(btn, TweenInfo.new(0.2), { BackgroundColor3 = newVal and WHITE or BG }):Play()
         TweenService:Create(knob, TweenInfo.new(0.2), {
@@ -679,10 +705,11 @@ makeToggleRow("Strong Lock", 44, "StrongLock")
 makeToggleRow("Wallcheck",  82, "Wallcheck")
 makeToggleRow("ESP Boxes",  120, "ESP")
 makeToggleRow("FOV Circle", 158, "ShowFOV")
+makeToggleRow("Team Check", 196, "TeamCheck")   -- [MOD] 新增
 
 local TargetBoneBtn = make("TextButton", {
     Size = UDim2.new(1, 0, 0, 30),
-    Position = UDim2.fromOffset(0, 196),
+    Position = UDim2.fromOffset(0, 234),        -- [MOD] 下移
     BackgroundColor3 = BG,
     BorderSizePixel = 0,
     Font = Enum.Font.GothamBold,
@@ -698,7 +725,7 @@ livingText(TargetBoneBtn)
 
 local TargetStatusLabel = text(aimPage, {
     Size = UDim2.new(1, 0, 0, 18),
-    Position = UDim2.fromOffset(6, 232),
+    Position = UDim2.fromOffset(6, 270),        -- [MOD] 下移
     Font = Enum.Font.Gotham,
     TextSize = 10,
     TextColor3 = SILVER,
@@ -708,7 +735,7 @@ local TargetStatusLabel = text(aimPage, {
 
 local FOVSliderFrame = make("Frame", {
     Size = UDim2.new(1, 0, 0, 30),
-    Position = UDim2.fromOffset(0, 256),
+    Position = UDim2.fromOffset(0, 294),        -- [MOD] 下移
     BackgroundColor3 = BG,
     BorderSizePixel = 0
 })
@@ -881,6 +908,7 @@ local infoFOV    = makeInfoCard("FOV", tostring(FOVRadius), 3)
 local infoAim    = makeInfoCard("Aim Part", "Head", 4)
 local infoLock   = makeInfoCard("Lock", "Smooth", 5)
 local infoWall   = makeInfoCard("Wallcheck", "ON", 6)
+local infoTeam   = makeInfoCard("Team Check", "ON", 7)   -- [MOD] 新增
 
 local allTabs  = { tabAim, tabExclude, tabInfo }
 local allPages = { aimPage, excludePage, infoPage }
@@ -991,10 +1019,33 @@ local function RemovePlayerElement(player)
     RemoveESPBox(player)
 end
 
-for _, p in ipairs(Players:GetPlayers()) do CreatePlayerElement(p) end
-Players.PlayerAdded:Connect(CreatePlayerElement)
+-- [MOD] Team 变化时统一刷新
+local function OnTeamChanged()
+    if not TeamCheck then return end
+    for _, p in ipairs(Players:GetPlayers()) do
+        UpdateESPForPlayer(p)
+    end
+    if CurrentTarget then
+        if IsTeammate(CurrentTarget) then
+            CurrentTarget = nil
+        end
+    end
+end
+
+for _, p in ipairs(Players:GetPlayers()) do
+    CreatePlayerElement(p)
+    p:GetPropertyChangedSignal("Team"):Connect(OnTeamChanged)
+end
+
+Players.PlayerAdded:Connect(function(p)
+    CreatePlayerElement(p)
+    p:GetPropertyChangedSignal("Team"):Connect(OnTeamChanged)
+end)
+
 Players.PlayerRemoving:Connect(RemovePlayerElement)
+
 LocalPlayer.CharacterAdded:Connect(function() CameraWriteBlocked = false end)
+LocalPlayer:GetPropertyChangedSignal("Team"):Connect(OnTeamChanged)   -- [MOD]
 
 RunService.RenderStepped:Connect(function(dt)
     AccumulatedTime = AccumulatedTime + dt
@@ -1013,6 +1064,11 @@ RunService:BindToRenderStep("Aimbot_Nova", Enum.RenderPriority.Camera.Value + 1,
         infoStatus.Text = "Idle"
         infoTarget.Text = "None"
         return
+    end
+
+    -- [MOD] 若当前目标变队友, 立刻清除
+    if CurrentTarget and IsTeammate(CurrentTarget) then
+        CurrentTarget = nil
     end
 
     if CameraWriteBlocked then
@@ -1071,6 +1127,7 @@ task.spawn(function()
         infoLock.Text = StrongLock and "Strong" or "Smooth"
         infoWall.Text = WallcheckActive and "ON" or "OFF"
         infoAim.Text = TargetPart == "Head" and "Head" or "HRP"
+        infoTeam.Text = TeamCheck and "ON" or "OFF"   -- [MOD] 刷新显示
         task.wait(0.5)
     end
 end)
@@ -1149,7 +1206,7 @@ local pillDot = make("Frame", {
 pillDot.Parent = pill
 corner(pillDot, 3)
 
-let pillText = text(pill, {
+local pillText = text(pill, {
     Size = UDim2.new(1, -24, 1, 0),
     Position = UDim2.fromOffset(22, 0),
     Font = Enum.Font.GothamBold,
@@ -1181,4 +1238,4 @@ pcall(function()
     task.delay(3, function() pcall(function() snd:Destroy() end) end)
 end)
 
-print("[OK] AimbotUI Nova Complete (Exclude Mode) — RightShift to toggle, Q to toggle aimbot, E to switch target")
+print("[OK] AimbotUI Nova Complete — RightShift to toggle, Q to toggle aimbot, E to switch target (TeamCheck available)")
