@@ -1,0 +1,41 @@
+-- https://glot.io/snippets/h9wgykubaz
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerBackpack = LocalPlayer:FindFirstChildOfClass("Backpack") or LocalPlayer:WaitForChild("Backpack")
+
+local function touchPartAsync(part)
+	local character = LocalPlayer.Character
+	if not character then return end
+	for _, bodyPart in ipairs(character:GetDescendants()) do
+		if bodyPart:IsA("BasePart") then
+			task.spawn(function()
+				firetouchinterest(bodyPart, part, 0)
+				task.wait()
+				firetouchinterest(bodyPart, part, 1)
+			end)
+		end
+	end
+end
+
+local existingTool = PlayerBackpack:FindFirstChild("Fire Part") or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Fire Part"))
+if existingTool then
+	existingTool:Destroy()
+end
+
+local firePartTool = Instance.new("Tool")
+firePartTool.RequiresHandle = false
+firePartTool.Name = "Fire Part"
+firePartTool.Parent = PlayerBackpack
+
+firePartTool.Activated:Connect(function()
+	local mouse = LocalPlayer:GetMouse()
+	if mouse and mouse.Target and mouse.Target:IsA("BasePart") then
+		touchPartAsync(mouse.Target)
+	end
+end)
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+	Title = "Fire Part Tool",
+	Text = "Tool 'Fire Part' add to Inventory.",
+	Duration = 3
+})
