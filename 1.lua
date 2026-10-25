@@ -1,0 +1,1123 @@
+local v1 = game
+
+do
+end
+
+local v2 = v1.GetService(v1, "Players")
+
+do
+end
+
+local runService = (game:GetService("RunService"))
+local v3 = game
+local v4, v5, v6, v7, v8, v9, v10, v11, v12
+v3:GetService("ReplicatedStorage")
+local localPlayer = v2.LocalPlayer
+
+do
+end
+
+local workspace = (game:GetService("Workspace"))
+
+do
+end
+
+local userInputService = (game:GetService("UserInputService"))
+
+do
+end
+
+game:GetService("Lighting")
+local v13 = false
+local v14 = false
+local v15 = {}
+local v16 = false
+
+local piterHUB = Instance.new("ScreenGui")
+piterHUB.Name = "Piter HUB"
+piterHUB.ResetOnSpawn = false
+
+local v17 = localPlayer
+piterHUB.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local frame = (Instance.new("Frame"))
+frame.Size = UDim2.new(0, 65, 0, 65)
+frame.Position = UDim2.new(0.5, -32.5, 0.5, -32.5)
+frame.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
+frame.BackgroundTransparency = 0.4
+frame.BorderSizePixel = 0
+frame.Active = false
+frame.Draggable = false
+frame.Visible = true
+frame.Parent = piterHUB
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(1, 0)
+uiCorner.Parent = frame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(46, 139, 87)
+uiStroke.Thickness = 6
+uiStroke.Transparency = 4
+uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+uiStroke.Parent = mainFrame
+
+local textButton = (Instance.new("TextButton"))
+textButton.Size = UDim2.new(0, 60, 0, 60)
+textButton.Position = UDim2.new(0.5, -30, 0.5, -30)
+textButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+textButton.BackgroundTransparency = 0.1
+textButton.Text = "VoidX"
+textButton.Font = Enum.Font.Arcade
+textButton.TextSize = 20
+textButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton.Active = true
+textButton.Draggable = true
+textButton.Parent = piterHUB
+
+local uiCorner2 = Instance.new("UICorner")
+uiCorner2.CornerRadius = UDim.new(1, 0)
+uiCorner2.Parent = textButton
+
+local function f1()
+  frame.Position = textButton.Position - (UDim2.new(0, 2.5, 0, 2.5))
+  return
+end
+
+local connect
+
+local function f2()
+  local v18
+
+  if connect then
+    return
+  else
+    do
+    end
+
+    connect = (runService.Heartbeat:Connect(function()
+      local v19 = tick()
+      local v20 = ((math.sin(v19 * 3)) + 1) / 2
+
+      do
+      end
+
+      frame.BackgroundColor3 = (Color3.fromRGB(128 + 127 * v20, 0 + 255 * v20, 128 + 127 * v20))
+      frame.BackgroundTransparency = 0.4 + 0.3 * v20
+
+      f1()
+      return
+    end))
+
+    return
+  end
+end
+
+f2()
+
+local function f3(p1)
+  local v21 = p1
+  local inputBegan = p1.InputBegan
+  local v22, v23, v24, position, position2
+
+  inputBegan:Connect(function(p2)
+    local v25 = p2
+
+    do
+    end
+
+    local v26 = p2.UserInputType == Enum.UserInputType.MouseButton1
+      or p2.UserInputType == Enum.UserInputType.Touch
+
+    local v27
+
+    if v26 then
+      v24 = true
+      position = p2.Position
+      position2 = p1.Position
+
+      do
+      end
+
+      p2.Changed:Connect(function()
+        if p2.UserInputState == Enum.UserInputState.End then
+          v24 = false
+        end
+
+        return
+      end)
+    end
+
+    return
+  end)
+
+  do
+  end
+
+  local v28
+
+  p1.InputChanged:Connect(function(input)
+    local v29 = input
+
+    do
+    end
+
+    do
+    end
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+      or input.UserInputType == Enum.UserInputType.Touch then
+      v28 = input
+    end
+
+    return
+  end)
+
+  do
+  end
+
+  userInputService.InputChanged:Connect(function(input2)
+    local v30 = input2
+
+    do
+    end
+
+    local v31 = input2 == v28 and v24
+
+    if v31 then
+      local v32
+      v32 = input2.Position - position
+
+      p1.Position = UDim2.new(
+        position2.X.Scale, position2.X.Offset + v32.X, position2.Y.Scale,
+        position2.Y.Offset + v32.Y
+      )
+    end
+
+    return
+  end)
+
+  return
+end
+
+f3(textButton)
+
+local frame2 = (Instance.new("Frame"))
+frame2.Size = UDim2.new(0, 160, 0, 190)
+frame2.Position = UDim2.new(0, 5, 0, 5)
+frame2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame2.BackgroundTransparency = 0.3
+frame2.BorderSizePixel = 0
+frame2.Active = true
+frame2.Draggable = true
+frame2.Visible = false
+frame2.Parent = piterHUB
+
+local uiStroke2 = Instance.new("UIStroke")
+uiStroke2.Color = Color3.fromRGB(0, 190, 0)
+uiStroke2.Thickness = 2
+uiStroke2.Parent = frame2
+
+local uiCorner3 = Instance.new("UICorner")
+uiCorner3.CornerRadius = UDim.new(0, 12)
+uiCorner3.Parent = frame2
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 0, 25)
+textLabel.Position = UDim2.new(0, 0, 0, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "Piter Hub"
+textLabel.Font = Enum.Font.Arcade
+textLabel.TextSize = 16
+textLabel.TextColor3 = Color3.fromRGB(0, 190, 0)
+textLabel.TextStrokeTransparency = 0
+textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+textLabel.Parent = frame2
+
+local textLabel2 = Instance.new("TextLabel")
+textLabel2.Size = UDim2.new(1, 0, 0, 32)
+textLabel2.Position = UDim2.new(0, 0, 0, 20)
+textLabel2.BackgroundTransparency = 1
+
+textLabel2.Text = [[
+TIKTOK:
+@piterhub7]]
+
+textLabel2.Font = Enum.Font.Arcade
+textLabel2.TextSize = 14
+textLabel2.TextColor3 = Color3.fromRGB(0, 190, 0)
+textLabel2.TextStrokeTransparency = 0
+textLabel2.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+textLabel2.ZIndex = 5
+textLabel2.TextYAlignment = Enum.TextYAlignment.Center
+textLabel2.Parent = frame2
+
+local frame3 = (Instance.new("Frame"))
+frame3.Size = UDim2.new(1, -10, 0, 25)
+frame3.Position = UDim2.new(0, 5, 0, 55)
+frame3.BackgroundTransparency = 1
+frame3.Parent = frame2
+
+local function f4(p3, p4)
+  local v33 = p3
+  local v34 = p4
+
+  local textButton2 = Instance.new("TextButton")
+  textButton2.Size = UDim2.new(0, 70, 0, 22)
+  textButton2.Position = UDim2.new(0, p4, 0, 0)
+  textButton2.Text = p3
+  textButton2.Font = Enum.Font.Arcade
+  textButton2.TextSize = 12
+  textButton2.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textButton2.TextStrokeTransparency = 0.5
+  textButton2.TextStrokeColor3 = Color3.fromRGB(46, 139, 87)
+  textButton2.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+  textButton2.BackgroundTransparency = 0
+  textButton2.AutoButtonColor = false
+
+  local uiCorner4 = Instance.new("UICorner")
+  uiCorner4.CornerRadius = UDim.new(0, 6)
+  uiCorner4.Parent = textButton2
+
+  textButton2.Parent = frame3
+  return textButton2
+end
+
+local v35 = (f4("Esp Best", 0))
+local v36 = (f4("Esp Base", 75))
+
+local textButton3 = (Instance.new("TextButton"))
+textButton3.Size = UDim2.new(0, 140, 0, 28)
+textButton3.Position = UDim2.new(0, 10, 0, 82)
+textButton3.Text = "TP TO SAVED"
+textButton3.Font = Enum.Font.Arcade
+textButton3.TextSize = 16
+textButton3.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton3.TextStrokeTransparency = 0.5
+textButton3.TextStrokeColor3 = Color3.fromRGB(46, 139, 87)
+textButton3.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+textButton3.BackgroundTransparency = 0
+textButton3.AutoButtonColor = false
+
+local uiCorner5 = Instance.new("UICorner")
+uiCorner5.CornerRadius = UDim.new(0, 8)
+uiCorner5.Parent = textButton3
+
+textButton3.Parent = frame2
+
+local textButton4 = (Instance.new("TextButton"))
+textButton4.Size = UDim2.new(0, 140, 0, 28)
+textButton4.Position = UDim2.new(0, 10, 0, 117)
+textButton4.Text = "SAVE POSITION"
+textButton4.Font = Enum.Font.Arcade
+textButton4.TextSize = 16
+textButton4.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton4.TextStrokeTransparency = 0.5
+textButton4.TextStrokeColor3 = Color3.fromRGB(46, 139, 87)
+textButton4.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+textButton4.BackgroundTransparency = 0
+textButton4.AutoButtonColor = false
+
+local uiCorner6 = Instance.new("UICorner")
+uiCorner6.CornerRadius = UDim.new(0, 8)
+uiCorner6.Parent = textButton4
+
+local uiStroke3 = Instance.new("UIStroke")
+uiStroke3.Color = Color3.fromRGB(0, 85, 255)
+uiStroke3.Thickness = 4
+uiStroke3.Transparency = 1
+uiStroke3.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+uiStroke3.Parent = textButton4
+
+textButton4.Parent = frame2
+
+local textButton5 = (Instance.new("TextButton"))
+textButton5.Size = UDim2.new(0, 120, 0, 22)
+textButton5.Position = UDim2.new(0, 20, 0, 152)
+textButton5.Text = "Discord"
+textButton5.Font = Enum.Font.Arcade
+textButton5.TextSize = 14
+textButton5.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton5.TextStrokeTransparency = 0.7
+textButton5.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+textButton5.BackgroundColor3 = Color3.fromRGB(0, 190, 0)
+textButton5.BackgroundTransparency = 0.4
+textButton5.AutoButtonColor = false
+
+local uiCorner7 = Instance.new("UICorner")
+uiCorner7.CornerRadius = UDim.new(0, 6)
+uiCorner7.Parent = textButton5
+
+textButton5.Parent = frame2
+
+local espBEST = (Instance.new("Folder"))
+espBEST.Name = "ESP BEST"
+
+local v37 = localPlayer
+espBEST.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local espLines = (Instance.new("Folder"))
+espLines.Name = "ESP_Lines"
+espLines.Parent = workspace
+
+local v38
+
+local function f5(p5, p6, p7, p8)
+  local v39 = p5
+  local v40 = p6
+  local v41 = p8
+  local v42, v43
+
+  if v38 then
+    do
+    end
+
+    v38:Destroy()
+  end
+
+  local billboardGui = Instance.new("BillboardGui")
+  billboardGui.Size = UDim2.new(0, 150, 0, 50)
+  billboardGui.AlwaysOnTop = true
+  billboardGui.Adornee = p8
+  billboardGui.Parent = espBEST
+  billboardGui.StudsOffset = Vector3.new(0, 3, 0)
+
+  local textLabel3 = Instance.new("TextLabel")
+  textLabel3.Size = UDim2.new(1, 0, 1, 0)
+  textLabel3.BackgroundTransparency = 1
+  textLabel3.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textLabel3.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+  textLabel3.TextStrokeTransparency = 0
+  textLabel3.TextScaled = false
+  textLabel3.TextSize = 10
+  textLabel3.RichText = true
+
+  local format = string.format
+
+  do
+  end
+
+  textLabel3.Text = format([[
+<font color="rgb(251,255,0)">%s</font>
+<font color="rgb(13,255,0)">%s</font>]], p5, p6 or "")
+
+  textLabel3.Parent = billboardGui
+
+  v38 = billboardGui
+  return
+end
+
+local function f6(p9)
+  local v44 = p9
+
+  do
+  end
+
+  local v45, v46 = (p9:match("^%s*(.-)%s*$")):match("%$([%d%.]+)%s*([kKmMbB]?)%s*/?s?")
+  local v47 = v46
+  local v48 = (tonumber(v45)) or 0
+
+  if v46 then
+    local lower
+    lower = v46:lower()
+
+    if lower == "k" then
+      v48 = v48 * 1000
+    else
+      if lower == "m" then
+        v48 = v48 * 1000000
+      else
+        if lower == "b" then
+          v48 = v48 * 1000000000
+        end
+      end
+    end
+  end
+
+  return v48
+end
+
+local v49 = f5
+local v50, attachment, attachment2
+
+local function f7(p10)
+  local v51 = p10
+  local character = localPlayer.Character
+  local v52 = not character
+  local v53 = v52
+  local v54, v55, v56, v57, v58
+
+  if not v52 then
+    do
+    end
+
+    do
+    end
+
+    v53 = not (character:FindFirstChild("HumanoidRootPart")) or not p10
+  end
+
+  local beam
+
+  if v53 then
+    return
+  else
+    if v50 then
+      do
+      end
+
+      v50:Destroy()
+
+      if attachment then
+        do
+        end
+
+        attachment:Destroy()
+      end
+
+      if attachment2 then
+        do
+        end
+
+        attachment2:Destroy()
+      end
+    end
+
+    attachment = (Instance.new("Attachment"))
+    attachment.Parent = character.HumanoidRootPart
+
+    attachment2 = (Instance.new("Attachment"))
+    attachment2.Parent = p10
+
+    beam = (Instance.new("Beam"))
+    beam.Attachment0 = attachment
+    beam.Attachment1 = attachment2
+    beam.Width0 = 0.35
+    beam.Width1 = 0.35
+    beam.FaceCamera = true
+    beam.LightInfluence = 0
+    beam.Parent = espLines
+
+    v50 = beam
+
+    task.spawn(function()
+      while beam.Parent do
+        local v59
+        v59 = tick()
+
+        local color
+        color = Color3.fromHSV(v59 % 5 / 5, 1, 1)
+
+        beam.Color = ColorSequence.new(color)
+        task.wait(0.05)
+      end
+
+      return
+    end)
+
+    return
+  end
+end
+
+local function f8()
+  local v60, v61, v62, v63, v64, v65, v66, v67, v68, v69, v70, v71
+
+  for key, value in pairs(v15) do
+    if value then
+      value:Destroy()
+    end
+  end
+
+  v15 = {}
+
+  if not v14 then
+    return
+  else
+    do
+    end
+
+    for key2, value2 in pairs(workspace.Plots:GetChildren()) do
+      local plotSign
+      plotSign = value2:FindFirstChild("PlotSign")
+
+      local v72
+      v72 = plotSign
+
+      do
+      end
+
+      if plotSign and plotSign:FindFirstChild("SurfaceGui") then
+        do
+        end
+
+        local frame4
+        frame4 = plotSign.SurfaceGui:FindFirstChild("Frame")
+
+        local textLabel4
+        textLabel4 = frame4
+
+        if frame4 then
+          do
+          end
+
+          textLabel4 = plotSign.SurfaceGui.Frame:FindFirstChild("TextLabel")
+        end
+
+        if textLabel4 then
+          do
+          end
+
+          textLabel4.Text:match("^(.-)'s Base")
+        end
+      end
+
+      local findFirstChild
+      findFirstChild = value2:FindFirstChild("Purchases", true)
+
+      local v73
+      v73 = findFirstChild
+
+      if findFirstChild then
+        do
+        end
+
+        local findFirstChild2
+        findFirstChild2 = value2.Purchases:FindFirstChild("PlotBlock", true)
+
+        local v74
+        v74 = findFirstChild2
+
+        if findFirstChild2 then
+          do
+          end
+
+          local findFirstChild3
+          findFirstChild3 = value2.Purchases.PlotBlock.Main:FindFirstChild("BillboardGui", true)
+
+          local findFirstChild4
+          findFirstChild4 = findFirstChild3
+
+          if findFirstChild3 then
+            do
+            end
+
+            findFirstChild4 = value2.Purchases.PlotBlock.Main.BillboardGui:FindFirstChild(
+              "RemainingTime", true
+            )
+          end
+
+          v74 = findFirstChild4
+        end
+
+        v73 = v74
+      end
+
+      local v75
+      v75 = "No Lock"
+
+      local v76
+      v76 = v73
+
+      do
+      end
+
+      if v73 and v73:IsA("TextLabel") then
+        do
+        end
+
+        do
+        end
+
+        do
+        end
+
+        v75 = v73.Text == "0s" and "UNLOCKED" or "Lock: " .. v73.Text
+      end
+
+      local billboardGui2
+      billboardGui2 = Instance.new("BillboardGui")
+      billboardGui2.Name = "BaseESPLockTime_" .. value2.Name
+      billboardGui2.Size = UDim2.new(0, 250, 0, 60)
+      billboardGui2.StudsOffset = Vector3.new(0, 8, 0)
+      billboardGui2.AlwaysOnTop = true
+
+      do
+      end
+
+      do
+      end
+
+      billboardGui2.Adornee = (value2:FindFirstChild("PlotBlock")) or value2
+
+      local frame5
+      frame5 = Instance.new("Frame")
+      frame5.Size = UDim2.new(1, 0, 1, 0)
+      frame5.BackgroundTransparency = 1
+      frame5.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+      frame5.BorderSizePixel = 0
+      frame5.Parent = billboardGui2
+
+      ;(Instance.new("UICorner", frame5)).CornerRadius = UDim.new(0, 6)
+
+      local textLabel5
+      textLabel5 = Instance.new("TextLabel")
+      textLabel5.Size = UDim2.new(1, 0, 0.5, 0)
+      textLabel5.Position = UDim2.new(0, 0, 0.5, 0)
+      textLabel5.BackgroundTransparency = 1
+      textLabel5.Text = v75
+      textLabel5.TextScaled = true
+
+      if v75 == "UNLOCKED" then
+        textLabel5.TextColor3 = Color3.fromRGB(0, 255, 0)
+      else
+        if (v75:find("Lock:")) then
+          textLabel5.TextColor3 = Color3.fromRGB(255, 255, 0)
+        else
+          textLabel5.TextColor3 = Color3.fromRGB(255, 165, 0)
+        end
+      end
+
+      textLabel5.TextStrokeColor3 = Color3.new(0, 0, 0)
+      textLabel5.TextStrokeTransparency = 0
+      textLabel5.Font = Enum.Font.SourceSansBold
+      textLabel5.Parent = frame5
+
+      billboardGui2.Parent = value2
+      v15[value2.Name] = billboardGui2
+    end
+
+    return
+  end
+end
+
+local v77 = f7
+
+local function f9()
+  local v78 = workspace
+  local plots = workspace:FindFirstChild("Plots")
+  local v79, v80, v81, v82, v83
+
+  if not plots then
+    return
+  else
+    local v84
+    v84 = -1
+
+    local v85
+    v85 = nil
+
+    for index, value3 in ipairs(plots:GetChildren()) do
+      local animalPodiums
+      animalPodiums = value3:FindFirstChild("AnimalPodiums")
+
+      if animalPodiums then
+        for index2, value4 in ipairs(animalPodiums:GetChildren()) do
+          local base
+          base = value4:FindFirstChild("Base")
+
+          local spawn
+          spawn = base
+
+          if base then
+            do
+            end
+
+            spawn = value4.Base:FindFirstChild("Spawn")
+          end
+
+          if spawn then
+            local attachment3
+            attachment3 = spawn:FindFirstChild("Attachment")
+
+            local animalOverhead
+            animalOverhead = attachment3
+            animalOverhead = attachment3 and attachment3:FindFirstChild("AnimalOverhead")
+
+            if animalOverhead then
+              local displayName
+              displayName = animalOverhead:FindFirstChild("DisplayName")
+
+              local generation
+              generation = animalOverhead:FindFirstChild("Generation")
+
+              local mutation
+              mutation = animalOverhead:FindFirstChild("Mutation")
+
+              if generation then
+                do
+                end
+
+                local text
+                text = displayName and displayName.Text or "Unknown"
+
+                local text2
+                text2 = generation.Text
+
+                local v86
+                v86 = text2
+
+                do
+                end
+
+                local text3
+                text3 = mutation and mutation.Text or ""
+
+                local v87
+                v87 = f6
+
+                local v88
+                v88 = f6(text2)
+
+                local v89
+                v89 = (tonumber(text2:match("%d+"))) or 0
+
+                do
+                end
+
+                do
+                end
+
+                local v90
+                v90 = v88 > 0 and v88 or v89
+
+                if v90 > v84 then
+                  v84 = v90
+
+                  v85 = {
+                    name = text,
+                    info = text2,
+                    mutation = text3,
+                    part = spawn,
+                    value = v90,
+                  }
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+
+    return v85
+  end
+end
+
+local v91
+
+local function f10()
+  local v92, v93, v94, v95
+
+  if not v16 then
+    return
+  else
+    local v96
+    v96 = f9()
+
+    if v96 then
+      local v97
+      v97 = false
+
+      if not v38 then
+        v97 = true
+      else
+        if v91 then
+          do
+          end
+
+          do
+          end
+
+          if v96.value > v91.value or v96.mutation ~= v91.mutation then
+            v97 = true
+          end
+        end
+      end
+
+      if v97 then
+        v91 = v96
+        f5(v96.name, v96.info, v96.mutation, v96.part)
+        f7(v96.part)
+      end
+    else
+      if v38 then
+        do
+        end
+
+        v38:Destroy()
+        v38 = nil
+
+        v91 = nil
+      end
+
+      if v50 then
+        do
+        end
+
+        v50:Destroy()
+        v50 = nil
+      end
+    end
+
+    return
+  end
+end
+
+local v98 = f8
+
+do
+end
+
+local position3
+
+textButton4.MouseButton1Click:Connect(function()
+  local character2 = localPlayer.Character
+  local humanoidRootPart = character2
+  local v99
+
+  if character2 then
+    do
+    end
+
+    humanoidRootPart = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+  end
+
+  if humanoidRootPart then
+    position3 = localPlayer.Character.HumanoidRootPart.Position
+    v13 = true
+
+    local v100
+    v100 = textButton4
+
+    local text4
+    text4 = textButton4.Text
+
+    textButton4.Text = "Position Saved!"
+    textButton4.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+
+    math.floor(position3.X * 100)
+    math.floor(position3.Y * 100)
+    math.floor(position3.Z * 100)
+
+    textButton3.Text = "TP TO SAVED"
+    task.wait(2)
+
+    textButton4.Text = text4
+    textButton4.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+  else
+    local v101
+    v101 = textButton4
+
+    local text5
+    text5 = textButton4.Text
+
+    textButton4.Text = "No Character!"
+    textButton4.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+    task.wait(2)
+
+    textButton4.Text = text5
+    textButton4.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+  end
+
+  return
+end)
+
+do
+end
+
+textButton3.MouseButton1Click:Connect(function()
+  do
+  end
+
+  local v102 = v13 and position3
+
+  if v102 then
+    local character3
+    character3 = localPlayer.Character
+
+    local v103
+    v103 = character3
+
+    do
+    end
+
+    if character3 and character3:FindFirstChild("HumanoidRootPart") then
+      character3.HumanoidRootPart.CFrame = CFrame.new(position3)
+
+      local v104
+      v104 = textButton3
+
+      local text6
+      text6 = textButton3.Text
+
+      textButton3.Text = "Teleported!"
+      textButton3.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+
+      task.wait(1)
+
+      textButton3.Text = text6
+      textButton3.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    else
+      local v105
+      v105 = textButton3
+
+      local text7
+      text7 = textButton3.Text
+
+      textButton3.Text = "No Character!"
+      textButton3.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+      task.wait(2)
+
+      textButton3.Text = text7
+      textButton3.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end
+  else
+    textButton3.Text = "No Position!"
+    textButton3.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+
+    task.wait(2)
+
+    textButton3.Text = "TP TO SAVED"
+    textButton3.BackgroundColor3 = Color3.fromRGB(182, 78, 78)
+  end
+
+  return
+end)
+
+do
+end
+
+v35.MouseButton1Click:Connect(function()
+  local v106, v107, v108, v109
+  v16 = not v16
+
+  if v16 then
+    v35.Text = "BEST ON"
+    v35.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+
+    ;(coroutine.wrap(function()
+      while v16 do
+        f10()
+        task.wait(0.3)
+      end
+
+      return
+    end))()
+
+    print("ESP BEST ATIVADO!")
+  else
+    v35.Text = "ESP BEST"
+    v35.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+
+    if v38 then
+      do
+      end
+
+      v38:Destroy()
+      v38 = nil
+    end
+
+    if v50 then
+      do
+      end
+
+      v50:Destroy()
+      v50 = nil
+    end
+
+    if attachment then
+      do
+      end
+
+      attachment:Destroy()
+      attachment = nil
+    end
+
+    if attachment2 then
+      do
+      end
+
+      attachment2:Destroy()
+      attachment2 = nil
+    end
+
+    v91 = nil
+    print("ESP Best DESATIVADO!")
+  end
+
+  return
+end)
+
+do
+end
+
+v36.MouseButton1Click:Connect(function()
+  v14 = not v14
+
+  if v14 then
+    v36.Text = "BASE ON"
+    v36.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+
+    f8()
+
+    ;(coroutine.wrap(function()
+      while v14 do
+        f8()
+        task.wait(1)
+      end
+
+      return
+    end))()
+
+    print("ESP Base com Lock Time ATIVADO!")
+  else
+    v36.Text = "ESP BASE"
+    v36.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+
+    for key3, value5 in pairs(v15) do
+      if value5 then
+        value5:Destroy()
+      end
+    end
+
+    v15 = {}
+    print("ESP Base com Lock Time DESATIVADO!")
+  end
+
+  return
+end)
+
+do
+end
+
+textButton5.MouseButton1Click:Connect(function()
+  if setclipboard then
+    setclipboard("https://discord.gg/cRmbRpdN9k")
+  end
+
+  local v110 = textButton5
+  local text8 = textButton5.Text
+  textButton5.Text = "Link copiado"
+  task.wait(3)
+  textButton5.Text = text8
+  return
+end)
+
+local v111 = false
+
+do
+end
+
+textButton.MouseButton1Click:Connect(function()
+  v111 = not v111
+  frame2.Visible = v111
+  return
+end)
+
+print("Piter Hub Carregado com Sucesso! Sistema Save/Teleport 100% funcional!")
+print("ESP Best e ESP Base com Lock Time integrados!")
+print("Liphyr gostoso")
+print("Discord Liphyrxrc Para Contato")
+
+return
