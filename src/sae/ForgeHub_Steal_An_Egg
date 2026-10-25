@@ -1,0 +1,7564 @@
+if getgenv().fhExecuted then
+	return
+end
+getgenv().fhExecuted = true
+
+local Players
+Players = game:GetService("Players")
+local RunService
+RunService = game:GetService("RunService")
+local TweenService
+TweenService = game:GetService("TweenService")
+local ReplicatedStorage
+ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace
+Workspace = game:GetService("Workspace")
+local TextService
+TextService = game:GetService("TextService")
+local localPlayer
+localPlayer = Players.LocalPlayer
+local fn
+
+fn = function(arg)
+	if not arg then
+		return nil
+	end
+	local ok, result = pcall(require, arg)
+	if ok then
+		return result
+	end
+	return nil
+end
+
+local fn2
+
+fn2 = function(arg, ...)
+	for _, v in ipairs({ ... }) do
+		if not arg then
+			return nil
+		end
+		arg = arg:FindFirstChild(v)
+	end
+
+	return arg
+end
+
+local tbl
+
+do
+	local function fn3(...)
+		return fn2(ReplicatedStorage:FindFirstChild("Library"), ...)
+	end
+
+	local function fn4(arg, arg2)
+		return fn(fn2(ReplicatedStorage, table.unpack(arg))) or fn(fn3(table.unpack(arg2)))
+	end
+
+	tbl = {
+		EggCmds = fn4({ "Client", "EggState" }, { "Client", "EggCmds" }),
+		AssetCmds = fn4({ "Client", "AssetRoster" }, { "Client", "AssetCmds" }),
+		PlotCmds = fn4({ "Client", "PlotState" }, { "Client", "PlotCmds" }),
+		Save = fn4({ "Shared", "Save" }, { "Client", "Save" }),
+		BaseUpgrade = fn4({ "Client", "BaseUpgrade" }, { "Client", "BaseUpgradeClient" }),
+		CycleUtil = fn4({ "Shared", "Util", "AreaEggCycle" }, { "Util", "AreaEggResetTimeUtil" }),
+		AreaLookup = fn4({ "Shared", "Util", "GuardAreaGeometry" }, { "Util", "GuardAreaLookupUtil" }),
+		EggTypes = fn4({ "Shared", "Types", "Eggs" }, { "Types", "Eggs" }),
+		SlotIdentity = fn4({ "Shared", "Util", "AreaEggSlotIdentity" }, { "Client", "Eggs", "AreaEggSlotIdentity" }),
+		Mutations = fn4({ "Shared", "Modules", "Mutations" }, { "Modules", "Mutations" }),
+		ChasePolicy = fn4({ "Shared", "Modules", "GuardAreas", "GuardChasePolicy" }, { "Modules", "GuardAreas", "GuardChasePolicy" }),
+		EscapePred = fn4({ "Shared", "Modules", "GuardAreas", "GuardEscapePrediction" }, { "Modules", "GuardAreas", "GuardEscapePrediction" }),
+		SpeedProj = fn4({ "Client", "SpeedPowerProjection" }, { "Client", "SpeedPowerProjection" }),
+		TreadUtil = fn4({ "Shared", "Util", "TreadmillUtil" }, { "Util", "TreadmillUtil" }),
+		SpeedReq = fn4({ "Shared", "Utils", "GuardEscape" }, { "Functions", "ResolveGuardSpeedRequirement" }),
+	}
+
+	if type(tbl.SpeedReq) == "table" then
+		tbl.SpeedReq = tbl.SpeedReq.RequiredSpeedPower
+	end
+
+	if type(tbl.SpeedReq) ~= "function" then
+		tbl.SpeedReq = nil
+	end
+
+	tbl.Remotes = fn4({ "Shared", "Remotes" }, { "Client", "Remotes" })
+	tbl.Network = fn(fn3("Client", "Network"))
+end
+
+local shared = fn2(ReplicatedStorage, "Shared", "Eggs", "EggToolDisplay")
+tbl.EggToolDisplay = fn(shared)
+
+if not tbl.EggToolDisplay then
+	local library = ReplicatedStorage:FindFirstChild("Library")
+
+	if library then
+		for _, descendant in ipairs(library:GetDescendants()) do
+			if descendant.Name == "EggToolDisplay" and descendant:IsA("ModuleScript") then
+				tbl.EggToolDisplay = fn(descendant)
+				break
+			end
+		end
+	end
+end
+
+do
+	local data = ReplicatedStorage:FindFirstChild("Data") or ReplicatedStorage:FindFirstChild("Directory")
+	tbl.DirAreas = fn(data and data:FindFirstChild("Areas"))
+	tbl.DirAssets = fn(data and data:FindFirstChild("Assets"))
+	tbl.DirRarity = fn(data and data:FindFirstChild("Rarity"))
+	tbl.DirGuards = fn(data and data:FindFirstChild("Guards"))
+	tbl.DirTreadmill = fn(data and data:FindFirstChild("Treadmills"))
+	tbl.DirTrails = fn(data and data:FindFirstChild("Trails"))
+	tbl.DirRift = fn(data and data:FindFirstChild("Rift"))
+	local shared2 = fn2(ReplicatedStorage, "Shared", "Modules", "RiftRecipes")
+	tbl.RiftRecipes = fn(shared2)
+	local shared3 = fn2(ReplicatedStorage, "Shared", "Util", "RiftEligibility")
+	tbl.RiftElig = fn(shared3)
+	local shared4 = fn2(ReplicatedStorage, "Shared", "Flags", "RiftFlags")
+	tbl.RiftFlags = fn(shared4)
+	local shared5 = fn2(ReplicatedStorage, "Shared", "Util", "FuseKernel")
+	tbl.FuseKernel = fn(shared5)
+	tbl.DirBossMastery = fn(data and data:FindFirstChild("BossMastery"))
+	tbl.DirBossEvent = fn(data and data:FindFirstChild("BossEvent"))
+end
+
+local function fn3(arg, ...)
+	if type(arg) ~= "table" then
+		return nil
+	end
+
+	for _, v in ipairs({ ... }) do
+		if type(arg[v]) == "function" then
+			return arg[v]
+		end
+	end
+
+	return nil
+end
+
+if tbl.EggCmds then
+	local eggCmds = tbl.EggCmds
+
+	tbl.EggCmds = {
+		GetAreaEggSnapshot = fn3(eggCmds, "ReadFieldEggs", "GetAreaEggSnapshot"),
+		SyncAreaEggSnapshot = fn3(eggCmds, "SyncFieldEggs"),
+		GetAreaEggRecord = fn3(eggCmds, "ReadFieldEgg", "GetAreaEggRecord"),
+		GetOwnerRuntimeRecords = fn3(eggCmds, "ReadOwnerEggs", "GetOwnerRuntimeRecords"),
+		RequestCarryAreaEgg = fn3(eggCmds, "CarryFieldEgg", "RequestCarryAreaEgg"),
+		RequestDropHeldAreaEgg = fn3(eggCmds, "DropFieldEgg", "RequestDropHeldAreaEgg"),
+		IsLocalEggReady = fn3(eggCmds, "IsReadyToHatch", "IsLocalEggReady"),
+		RequestPlaceEgg = fn3(eggCmds, "PlantEgg", "RequestPlaceEgg"),
+		RequestHatchEgg = fn3(eggCmds, "BeginHatch", "RequestHatchEgg"),
+		RequestCompleteHatchEgg = fn3(eggCmds, "FinishHatch", "RequestCompleteHatchEgg"),
+		RequestEquipTool = fn3(eggCmds, "WearEggTool", "RequestEquipTool"),
+	}
+end
+
+if tbl.PlotCmds then
+	tbl.PlotCmds = { GetPlotData = fn3(tbl.PlotCmds, "ResolvePlot", "GetPlotData") }
+end
+
+if tbl.BaseUpgrade then
+	local baseUpgrade = tbl.BaseUpgrade
+
+	tbl.BaseUpgrade = {
+		CanAffordNext = fn3(baseUpgrade, "IsNextTierAffordable", "CanAffordNext"),
+		GetNextConfig = fn3(baseUpgrade, "ResolveNextTier", "GetNextConfig"),
+	}
+end
+
+if tbl.SpeedProj then
+	tbl.SpeedProj = { GetSpeedPower = fn3(tbl.SpeedProj, "ReadProjected", "GetSpeedPower") }
+end
+
+if tbl.AreaLookup then
+	tbl.AreaLookup = { IsInGameplaySide = fn3(tbl.AreaLookup, "IsPastLine", "IsInGameplaySide") }
+end
+
+if tbl.SlotIdentity then
+	local slotIdentity = tbl.SlotIdentity
+
+	tbl.SlotIdentity = {
+		IsFirstAreaUid = fn3(slotIdentity, "LooksLikeFirstAreaUid", "IsFirstAreaUid"),
+		BuildSlotKey = fn3(slotIdentity, "SlotKey", "BuildSlotKey"),
+	}
+end
+
+if tbl.CycleUtil then
+	local cycleUtil = tbl.CycleUtil
+
+	tbl.CycleUtil = {
+		IsNight = fn3(cycleUtil, "IsNightPhase", "IsNight"),
+		GetPhaseTimeLeft = fn3(cycleUtil, "SecondsUntilPhaseEnd", "GetPhaseTimeLeft"),
+		EndingSoonSeconds = cycleUtil.EndingSoonSeconds,
+	}
+end
+
+if tbl.Mutations then
+	tbl.Mutations = { GetMutations = fn3(tbl.Mutations, "GetMutations", "Ids") }
+end
+
+local fn4, fn5, fn6
+
+do
+	local netMap = tbl.Network and tbl.Network.NET_MAP or {}
+
+	local tbl2 = {
+		AssetInventory = { SELL_ASSET = { "PetSatchel", "SellPet" } },
+		Backpack = {
+			EQUIP_BEST = { "Haul", "WearBest" },
+			GET_AUTO_SELL_STATE = { "Haul", "FetchAutoSell" },
+			SET_AUTO_SELL_STATE = { "Haul", "WriteAutoSell" },
+		},
+		ClientCharacter = { REQUEST_CHARACTER_RESET = { "RigSync", "AskRigWipe" } },
+		Eggs = { REQUEST_AREA_EGG_SNAPSHOT = { "EggWorld", "AskFieldEggSnapshot" } },
+		FuseMachine = {
+			INSERT_MOB = { "Fusery", "LoadPet" },
+			START_FUSE = { "Fusery", "BeginFuse" },
+			COMPLETE_REVEAL = { "Fusery", "FinishReveal" },
+		},
+		Index = {
+			REQUEST_CLAIM_ALL = { "Codex", "AskRedeemAll" },
+			REQUEST_CLAIM_LIMITED_EGG_REWARD = { "Codex", "AskRedeemLimitedEgg" },
+		},
+		OfflineAssets = {
+			GET_SUMMARY = { "AwayEarnings", "FetchSummary" },
+			REQUEST_REDEEM = { "AwayEarnings", "AskCollect" },
+		},
+		LiveEvents = {
+			FETCH_RUNNING = { "LiveEvents", "FetchRunning" },
+			BEGAN = { "LiveEvents", "Began" },
+			ENDED = { "LiveEvents", "Ended" },
+		},
+		Rift = {
+			ASK_STATE = { "Rift", "AskState" },
+			ASK_TRADE_IN = { "Rift", "AskTradeIn" },
+			ASK_REFRESH = { "Rift", "AskRefresh" },
+			ASK_FINISH_REVEAL = { "Rift", "AskFinishReveal" },
+			BANNER_ROTATED = { "Rift", "BannerRotated" },
+		},
+		PetSatchel = { WRITE_FAVOURITE = { "PetSatchel", "WriteFavourite" } },
+		PenRoster = { ASK_DOFF = { "PenRoster", "AskDoff" } },
+		BossMastery = { ASK_CLAIM_MILESTONE = { "BossMastery", "AskClaimMilestone" } },
+		BossEvent = { ASK_SNAPSHOT = { "BossEvent", "AskSnapshot" } },
+		Plots = { REQUEST_BASE_UPGRADE = { "Homestead", "AskBaseTierRaise" } },
+		Trails = {
+			REQUEST_PURCHASE = { "Trailwear", "AskPurchase" },
+			REQUEST_SELECT = { "Trailwear", "AskChoose" },
+		},
+		Treadmills = {
+			REQUEST_EQUIP_STATIC = { "Treadmill", "AskWearStill" },
+			REQUEST_UNEQUIP = { "Treadmill", "AskDoff" },
+			REQUEST_UPGRADE = { "Treadmill", "AskTierRaise" },
+			ACTIVE_TREADMILL_EVENT = { "Treadmill", "AssignedBeltShifted" },
+		},
+	}
+
+	local function fn7(arg)
+		if type(arg) ~= "string" then
+			return false
+		end
+		local network = ReplicatedStorage:FindFirstChild("Network")
+		return network ~= nil and network:FindFirstChild(arg) ~= nil
+	end
+
+	fn4 = function(arg, arg2)
+		if tbl.Remotes then
+			local v = tbl2[arg]
+			v = v and v[arg2]
+			local v2 = v and tbl.Remotes[v[1]]
+			v2 = v2 and v2[v[2]]
+			if typeof(v2) == "Instance" then
+				return v2
+			end
+			return nil
+		end
+
+		local v = netMap[arg]
+		v = v and v[arg2]
+		if v and fn7(v) then
+			return v
+		end
+		return nil
+	end
+
+	fn5 = function(arg, arg2, ...)
+		local flag = typeof(arg) == "Instance"
+		if not flag and (not tbl.Network or not fn7(arg)) then
+			return false, "remote missing"
+		end
+		local v = table.pack(...)
+		local flag2 = false
+		local tbl3 = nil
+		if flag and not arg:IsA("RemoteFunction") then
+			return (pcall(arg.FireServer, arg, table.unpack(v, 1, v.n)))
+		end
+
+		task.spawn(function()
+			if setthreadidentity then
+				pcall(setthreadidentity, 8)
+			end
+
+			local ok, result, result2, result3
+
+			if flag then
+				ok, result, result2, result3 = pcall(function()
+					return arg:InvokeServer(table.unpack(v, 1, v.n))
+				end)
+			else
+				ok, result, result2, result3 = pcall(tbl.Network.Invoke, arg, table.unpack(v, 1, v.n))
+			end
+
+			tbl3 = { ok = ok, a = result, b = result2, c = result3 }
+			flag2 = true
+		end)
+
+		arg2 = arg2 or 6
+		local n = 0
+
+		while not flag2 and n < arg2 do
+			task.wait(0.1)
+			n += 0.1
+		end
+
+		if not flag2 then
+			return false, "timeout"
+		end
+
+		if not tbl3.ok then
+			return false, tostring(tbl3.a)
+		end
+		return tbl3.a, tbl3.b, tbl3.c
+	end
+
+	fn6 = function(arg, ...)
+		if typeof(arg) == "Instance" then
+			if arg:IsA("RemoteFunction") then
+				return fn5(arg, 6, ...) and true or false
+			end
+			return (pcall(arg.FireServer, arg, ...))
+		end
+
+		if not tbl.Network or not fn7(arg) then
+			return false
+		end
+		pcall(tbl.Network.Fire, arg, ...)
+		return true
+	end
+end
+
+local data
+
+data = {
+	AreaOrder = {
+		"Forest",
+		"Lake",
+		"Desert",
+		"Jungle",
+		"Snow",
+		"Volcano",
+		"Abyss Ocean",
+		"Prehistoric",
+		"Cosmic",
+		"Cherry Blossom",
+		"Titan Temple",
+	},
+	BestOption = "Best Recommended",
+}
+
+data.AreaChoices = { data.BestOption }
+
+for _, v in ipairs(data.AreaOrder) do
+	data.AreaChoices[#data.AreaChoices + 1] = v
+end
+
+local function fn7()
+	local tbl2 = {}
+
+	if not (tbl.DirAssets and tbl.DirRarity) then
+		return {
+			"Common",
+			"Uncommon",
+			"Rare",
+			"Epic",
+			"Legendary",
+			"Mythic",
+			"Cosmic",
+			"Secret",
+			"Eternal",
+			"Divine",
+		}
+	end
+
+	local tbl3 = {}
+	local v = pairs
+	local directory = tbl.DirAssets.Directory or {}
+
+	for _, v2 in v(directory) do
+		if type(v2) == "table" and type(v2.Rarity) == "table" then
+			local id = v2.Rarity._id
+
+			if id then
+				tbl3[id] = true
+			end
+		end
+	end
+
+	local tbl4 = {}
+
+	for k in pairs(tbl3) do
+		local rarities = tbl.DirRarity.Rarities and tbl.DirRarity.Rarities[k]
+		tbl4[#tbl4 + 1] = { id = k, n = rarities and rarities.RarityNumber or 99 }
+	end
+
+	table.sort(tbl4, function(arg, arg2)
+		if arg.n == arg2.n then
+			return arg.id < arg2.id
+		end
+		return arg.n < arg2.n
+	end)
+
+	for _, v2 in ipairs(tbl4) do
+		tbl2[#tbl2 + 1] = v2.id
+	end
+
+	return tbl2
+end
+
+data.Rarities = fn7()
+data.RarityRank = {}
+
+for i, rarity in ipairs(data.Rarities) do
+	data.RarityRank[rarity] = i
+end
+
+local function fn8()
+	local tbl2 = {}
+
+	if tbl.Mutations and tbl.Mutations.GetMutations then
+		local ok, result = pcall(tbl.Mutations.GetMutations)
+
+		if ok and type(result) == "table" then
+			for _, v in pairs(result) do
+				local name = type(v) == "table" and (v.Name or v._id) or tostring(v)
+
+				if name and name ~= "None" then
+					tbl2[#tbl2 + 1] = name
+				end
+			end
+		end
+	end
+
+	table.sort(tbl2)
+	return tbl2
+end
+
+data.Mutations = fn8()
+data.EggCap = tbl.EggTypes and tbl.EggTypes.MAX_INVENTORY or 115
+data.RiftPets = {}
+
+if tbl.DirRift and type(tbl.DirRift.Banners) == "table" then
+	for _, banner in pairs(tbl.DirRift.Banners) do
+		local v = ipairs
+		local pets = type(banner.Pets) == "table" and banner.Pets or {}
+
+		for _, pet in v(pets) do
+			if pet.AssetId then
+				data.RiftPets[pet.AssetId] = true
+			end
+		end
+	end
+end
+
+local tbl2
+
+tbl2 = {
+	AreasRoot = function()
+		local objects = Workspace:FindFirstChild("__OBJECTS")
+		return objects and objects:FindFirstChild("Areas")
+	end,
+	GuardAreas = function()
+		local v = tbl2.AreasRoot()
+		return v and v:FindFirstChild("GuardAreas")
+	end,
+	SeparationLine = function()
+		local v = tbl2.AreasRoot()
+		return v and v:FindFirstChild("SeparationLine")
+	end,
+	Area = function(arg)
+		if type(arg) ~= "string" or arg == "" then
+			return nil
+		end
+		local v = tbl2.GuardAreas()
+		return v and v:FindFirstChild(arg)
+	end,
+	Guard = function(arg)
+		local v = tbl2.Area(arg)
+		return v and v:FindFirstChild("Guard")
+	end,
+	SlotsFolder = function()
+		return Workspace:FindFirstChild("AreaEggSlotsClient")
+	end,
+	EggModel = function(arg)
+		local v = tbl2.SlotsFolder()
+		local v2 = v and v:FindFirstChild(arg)
+		if v2 then
+			return v2
+		end
+		return Workspace:FindFirstChild(arg)
+	end,
+	GuardConfig = function(arg)
+		local directory = tbl.DirGuards and (tbl.DirGuards.Directory or tbl.DirGuards)
+		if not directory then
+			return nil
+		end
+		local directory2 = tbl.DirAreas and (tbl.DirAreas.Directory or tbl.DirAreas)
+		directory2 = directory2 and directory2[arg]
+		return directory[type(directory2) == "table" and directory2.GuardId or arg] or directory[arg]
+	end,
+	InGameplaySide = function(arg)
+		local v = tbl2.SeparationLine()
+
+		if v and tbl.AreaLookup and tbl.AreaLookup.IsInGameplaySide then
+			local ok, result = pcall(tbl.AreaLookup.IsInGameplaySide, v, arg)
+			if ok then
+				return result
+			end
+		end
+
+		return v ~= nil and arg.X > v.Position.X
+	end,
+	SeparationX = function()
+		local v = tbl2.SeparationLine()
+		return v and v.Position.X or 552.2
+	end,
+}
+
+local fn9
+
+fn9 = function()
+	local character = localPlayer.Character
+	return character and character:FindFirstChild("HumanoidRootPart")
+end
+
+local fn10
+
+fn10 = function()
+	local character = localPlayer.Character
+	return character and character:FindFirstChildOfClass("Humanoid")
+end
+
+local tbl3
+
+tbl3 = { Unpin = function()
+	local Treadmills = fn4("Treadmills", "REQUEST_UNEQUIP")
+
+	if Treadmills then
+		task.spawn(function()
+			pcall(function()
+				fn5(Treadmills, 3)
+			end)
+		end)
+
+		return true
+	end
+
+	return false
+end }
+
+local tbl4
+
+tbl4 = {
+	Now = function()
+		return Workspace:GetServerTimeNow()
+	end,
+	Blind = function()
+		return not (tbl.CycleUtil and tbl.CycleUtil.IsNight and tbl.CycleUtil.GetPhaseTimeLeft)
+	end,
+	IsNight = function()
+		if tbl4.Blind() then
+			return false
+		end
+		local ok, result = pcall(tbl.CycleUtil.IsNight, tbl4.Now())
+		return ok and result and true or false
+	end,
+	PhaseLeft = function()
+		if tbl4.Blind() then
+			return math.huge
+		end
+		local ok, result = pcall(tbl.CycleUtil.GetPhaseTimeLeft, tbl4.Now())
+		if ok and type(result) == "number" then
+			return result
+		end
+		return math.huge
+	end,
+	EndingSoonSeconds = function()
+		return tbl.CycleUtil and tbl.CycleUtil.EndingSoonSeconds or 20
+	end,
+}
+
+local fn11
+
+fn11 = function(arg)
+	local n = math.max(0, math.floor(arg or 0))
+	return string.format("%d:%02d", math.floor(n / 60), n % 60)
+end
+
+local fn12
+
+fn12 = function(arg)
+	local n = tonumber(arg) or 0
+	local str = n < 0 and "-" or ""
+	local n2 = math.abs(n)
+
+	for _, v in ipairs({ { 1e12, "T" }, { 1e9, "B" }, { 1000000, "M" }, { 1000, "k" } }) do
+		if n2 >= v[1] then
+			local str2 = string.format("%.1f", n2 / v[1])
+
+			if str2:sub(-2) == ".0" then
+				str2 = str2:sub(1, -3)
+			end
+
+			return str .. str2 .. v[2]
+		end
+	end
+
+	return str .. tostring(math.floor(n2))
+end
+
+local fn13
+
+fn13 = function(arg)
+	local n = math.max(0, math.floor(arg or 0))
+	local n2 = math.floor(n / 3600)
+	local n3 = math.floor(n % 3600 / 60)
+	if n2 > 0 then
+		return string.format("%dh %02dm", n2, n3)
+	end
+	return n3 .. "m"
+end
+
+local tbl5
+
+tbl5 = {
+	State = function(arg)
+		local v = tbl2.Guard(arg)
+		if not v then
+			return nil
+		end
+		return v:GetAttribute("GuardState")
+	end,
+	Pos = function(arg)
+		local v = tbl2.Guard(arg)
+		if not v then
+			return nil
+		end
+
+		local ok, result = pcall(function()
+			return v:GetPivot()
+		end)
+
+		return ok and result.Position or nil
+	end,
+	IsTargetingMe = function(arg)
+		local v = tbl2.Guard(arg)
+		if not v then
+			return false
+		end
+		local attribute = v:GetAttribute("TargetPlayer")
+		local attribute2 = v:GetAttribute("WakeTargetPlayer")
+		local str = tostring(localPlayer.Name)
+		local str2 = tostring(localPlayer.UserId)
+
+		local function fn14(arg2)
+			if arg2 == nil or arg2 == "" then
+				return false
+			end
+			local str3 = tostring(arg2)
+			return str3 == str or str3 == str2 or str3 == localPlayer.DisplayName
+		end
+
+		return fn14(attribute) or fn14(attribute2)
+	end,
+	IsSleeping = function(arg)
+		local v = tbl2.Guard(arg)
+		if not v then
+			return false
+		end
+
+		if v:GetAttribute("Sleeping") == true then
+			return true
+		end
+		return v:GetAttribute("GuardState") == "Sleeping"
+	end,
+}
+
+local tbl6 = {}
+
+tbl5.HomePos = function(arg)
+	if tbl5.IsSleeping(arg) then
+		local v = tbl5.Pos(arg)
+
+		if v then
+			tbl6[arg] = v
+		end
+	end
+
+	return tbl6[arg] or tbl5.Pos(arg)
+end
+
+tbl5.EffectiveSpeed = function(arg, arg2)
+	local v = tbl2.GuardConfig(arg)
+	if not v then
+		return nil
+	end
+	local walkSpeed = v.WalkSpeed or 16
+	local flatRadius = v.FlatRadius or 20
+
+	if tbl.ChasePolicy and tbl.ChasePolicy.ResolveWalkSpeed then
+		local ok, result = pcall(tbl.ChasePolicy.ResolveWalkSpeed, walkSpeed, flatRadius, math.max(arg2 or 0, 0))
+		if ok and type(result) == "number" then
+			return result
+		end
+	end
+
+	local n = math.max(flatRadius, 0.001)
+	if n < (arg2 or 0) then
+		return math.min(walkSpeed * ((arg2 / n - 1) * 0.5 + 1), walkSpeed * 4)
+	end
+	return walkSpeed
+end
+
+local fn14
+local fhSaeInstance = {}
+getgenv().__FH_SAE_INSTANCE = fhSaeInstance
+
+fn14 = function()
+	return getgenv().__FH_SAE_INSTANCE == fhSaeInstance
+end
+
+if getgenv().__FH_SAE_HOLD then
+	pcall(function()
+		getgenv().__FH_SAE_HOLD:Disconnect()
+	end)
+
+	getgenv().__FH_SAE_HOLD = nil
+end
+
+if getgenv().__FH_SAE_MOVER then
+	pcall(function()
+		getgenv().__FH_SAE_MOVER.Stop("reload")
+	end)
+
+	getgenv().__FH_SAE_MOVER = nil
+end
+
+local fn15
+
+fn15 = function(arg)
+	task.spawn(function()
+		if setthreadidentity then
+			pcall(setthreadidentity, 8)
+		end
+
+		arg()
+	end)
+end
+
+local tbl7
+
+tbl7 = {
+	running = true,
+	status = "Idle",
+	runsAttempted = 0,
+	runsSurvived = 0,
+	eggsStolen = 0,
+	eggsLost = 0,
+	eggsRecovered = 0,
+	petsHatched = 0,
+	startMoney = nil,
+	startedAtWall = nil,
+	startSpeed = nil,
+	lastSkipReason = nil,
+	busy = false,
+	travelActive = false,
+	nativeAutoSell = nil,
+	treadmillOn = false,
+	carrying = nil,
+	invFull = false,
+	riftBusy = false,
+	riftTrades = 0,
+}
+
+local tbl8
+tbl8 = {}
+local fn16
+
+fn16 = function()
+	if not tbl.Save or not tbl.Save.Get then
+		return nil
+	end
+	local ok, result = pcall(tbl.Save.Get)
+	return ok and result or nil
+end
+
+local fn17
+
+fn17 = function()
+	local v = fn16()
+	return v and v.SpeedPower or 0
+end
+
+local fn18
+
+fn18 = function()
+	local leaderstats = localPlayer:FindFirstChild("leaderstats")
+	leaderstats = leaderstats and leaderstats:FindFirstChild("Money/s")
+	return leaderstats and leaderstats.Value or 0
+end
+
+local fn19
+
+fn19 = function()
+	local v = fn16()
+	return v and v.Money or 0
+end
+
+local fn20
+
+fn20 = function()
+	local v = fn16()
+	if not (v and v.EggInventory) then
+		return 0
+	end
+	local n = 0
+
+	for k in pairs(v.EggInventory) do
+		n += 1
+	end
+
+	return n
+end
+
+local lib
+lib = loadstring(game:HttpGet("https://fh-scripts.skuppyv3.workers.dev/f/8fece0a40f0481ab"))()
+lib.UnloadEnabled = true
+lib.AccentColor = Color3.fromHex("FFCF3A")
+local fn21, fn22, v, clock, wallet, v2, sun, moon, v3, v4
+
+do
+	local v5 = lib:CreateNotification()
+	local v6 = lib:CreateIndicator()
+
+	if _G.__FH_SAE and _G.__FH_SAE ~= lib then
+		pcall(function()
+			_G.__FH_SAE:Unload()
+		end)
+	end
+
+	_G.__FH_SAE = lib
+
+	fn21 = function(arg)
+		local v7 = lib.Flags[arg]
+		if not v7 then
+			return nil
+		end
+		return v7:GetValue()
+	end
+
+	fn22 = function(arg, arg2, arg3)
+		local saeNotifications = lib.Flags.sae_notifications
+		if saeNotifications and not saeNotifications:GetValue() then
+			return
+		end
+		v5.new({ Title = arg, Content = arg2, Duration = arg3 or 4 })
+	end
+
+	pcall(function()
+		if not isfile("ForgeHub/logoM2.png") then
+			if not isfolder("ForgeHub") then
+				makefolder("ForgeHub")
+			end
+
+			writefile("ForgeHub/logoM2.png", game:HttpGet("https://fh-scripts.skuppyv3.workers.dev/f/37d487ea46e5cae4"))
+		end
+
+		lib.GlobalLogo = getcustomasset("ForgeHub/logoM2.png")
+	end)
+
+	v = lib:CreateWindow({
+		Logo = lib.GlobalLogo,
+		Name = "Forge Hub",
+		Content = "discord.gg/forgehubrbx",
+		Size = lib.IsMobile and lib.Scales.Mobile or lib.Scales.Default,
+		ConfigFolder = "ForgeHub_StealAnEgg",
+		Keybind = "RightShift",
+	})
+
+	v:SetAccount({ Expires = "v1.3.0" })
+	local v7 = v:Watermark()
+	clock = v7:AddBlock("clock", "0m")
+	wallet = v7:AddBlock("wallet", "0/s")
+	v2 = v7:AddBlock("lightning-bolt", "0")
+	sun = v7:AddBlock("sun", "0:00")
+	moon = v7:AddBlock("moon", "0:00")
+
+	v7:AddBlock("sidebar", "Menu"):Input(function()
+		v:ToggleInterface()
+	end)
+
+	v3 = v6.new({ Name = "GUARD", Icon = "triangle-exclamation", Color = "Red" })
+	v4 = v6.new({ Name = "NIGHT", Icon = "moon", Color = "White" })
+end
+
+v3:SetRender(false)
+v4:SetRender(false)
+
+pcall(function()
+	local fhBlr = game.CoreGui:FindFirstChild("FHBlr")
+
+	if fhBlr then
+		TweenService:Create(fhBlr.Frame.LoaderFrame.LD, TweenInfo.new(0.3), { Size = UDim2.new(1, 0, 1, 0) }):Play()
+		task.wait(0.5)
+		fhBlr:Destroy()
+	end
+end)
+
+local tbl9
+tbl9 = {}
+getgenv().__FH_SAE_DBG = { S = tbl7, SR = tbl9, RIFT = tbl8 }
+local fn23
+local tbl10 = {}
+
+fn23 = function(arg)
+	tbl10[#tbl10 + 1] = arg
+end
+
+RunService.Heartbeat:Connect(function()
+	if #tbl10 == 0 then
+		return
+	end
+	local v5 = tbl10
+	tbl10 = {}
+
+	for _, v6 in ipairs(v5) do
+		pcall(v6)
+	end
+end)
+
+local fn24
+
+fn24 = function(arg, arg2)
+	local v5 = arg:AddLabel("Status: Idle")
+	local v6 = nil
+	local root = type(v5) == "table" and v5.Root or nil
+
+	if root then
+		for _, descendant in ipairs(root:GetDescendants()) do
+			if descendant:IsA("TextLabel") and descendant.Text == "Status: Idle" then
+				v6 = descendant
+				break
+			end
+		end
+	end
+
+	if v6 then
+		pcall(function()
+			v6.TextWrapped = true
+			v6.TextYAlignment = Enum.TextYAlignment.Top
+			v6.Position = UDim2.new(0, 11, 0, 6)
+			v6.Size = UDim2.new(1, -22, 1, -12)
+		end)
+	end
+
+	tbl9[arg2] = { row = v5, label = v6, root = root, shown = "Idle", want = "Idle", since = 0, hold = 0 }
+end
+
+local fn25
+
+fn25 = function(arg, want, arg2)
+	local v5 = tbl9[arg]
+	if not v5 then
+		return
+	end
+	v5.want = want
+	v5.hold = os.clock() + (arg2 or 3)
+end
+
+local fn26
+
+fn26 = function(arg, want)
+	local v5 = tbl9[arg]
+	local flag = not v5
+	local flag2
+
+	if flag then
+		flag2 = flag
+	else
+		local hold = v5.hold
+		flag2 = os.clock() < hold
+	end
+
+	if flag2 then
+		return
+	end
+	v5.want = want
+end
+
+local tbl11
+tbl11 = {}
+v:AddTabLabel("AUTOMATION")
+
+do
+	local v5 = v:AddTab({ Icon = "ninja", Name = "Farming", Type = "Double" })
+	local v6 = v5:AddSection({ Name = "Auto Steal", Position = "left" })
+	v6:AddLabel("Enabled"):ToolTip("Grabs eggs from the areas you pick and brings them home. Turning it off lets the current run finish first."):AddToggle({ Flag = "sae_steal", Default = false })
+
+	v6:AddLabel("Areas"):ToolTip("Which areas to steal from. The later ones need far more speed. Best Recommended picks the highest area your speed is good for, and drops to the next best one when that area runs out of eggs."):AddDropdown({
+		Multi = true,
+		Values = data.AreaChoices,
+		Default = { data.BestOption },
+		AutoUpdate = true,
+		Flag = "sae_areas",
+	})
+
+	v6:AddLabel("Priority"):ToolTip("Which egg to go for first."):AddDropdown({ Values = { "Rarest", "Largest", "Nearest" }, Default = "Rarest", Flag = "sae_priority" })
+	v6:AddLabel("Min Rarity"):AddDropdown({ Values = data.Rarities, Default = data.Rarities[1], Flag = "sae_min_rarity" })
+	v6:AddLabel("Mutations"):ToolTip("Only take eggs with one of these. Leave it empty for any egg."):AddDropdown({ Multi = true, Values = data.Mutations, Default = {}, Flag = "sae_mutations" })
+	v6:AddLabel("Rift Eggs First"):ToolTip("Goes for the eggs the Rift needs before any others."):AddToggle({ Flag = "sae_rift_priority", Default = true })
+
+	v6:AddLabel("Retreat"):ToolTip("How many seconds before night to head back to safety."):AddSlider({
+		Min = 3,
+		Max = 60,
+		Default = 3,
+		Rounding = 0,
+		Type = "s",
+		Size = 100,
+		Flag = "sae_night_retreat",
+	})
+
+	fn24(v6, "steal")
+	local v7 = v5:AddSection({ Name = "Auto Rift", Position = "left" })
+	v7:AddLabel("Enabled"):ToolTip("Collects the three pets the Rift wants and trades them in for a Rift egg. Pops home between runs to plant and hatch its own eggs."):AddToggle({ Flag = "sae_rift", Default = false })
+	v7:AddLabel("Trade In Eggs"):ToolTip("Hands the pets over once all three are ready. Off, it only collects them."):AddToggle({ Flag = "sae_rift_trade", Default = true })
+	v7:AddLabel("Favourite Lock"):ToolTip("Favourites the pets set aside for the Rift so nothing can sell or fuse them."):AddToggle({ Flag = "sae_rift_lock", Default = true })
+	v7:AddLabel("Auto Reroll"):ToolTip("Rerolls a recipe you cannot reach, using a free daily reroll. Never Robux."):AddToggle({ Flag = "sae_rift_reroll", Default = true })
+	fn24(v7, "rift")
+	local v8 = v5:AddSection({ Name = "Recover Dropped", Position = "left" })
+	v8:AddLabel("Enabled"):ToolTip("Eggs dropped after a guard catches someone are free for anyone to take."):AddToggle({ Flag = "sae_recover", Default = true })
+	v8:AddLabel("Own Eggs Only"):AddToggle({ Flag = "sae_recover_own", Default = false })
+
+	v8:AddLabel("Max Distance"):ToolTip("How far the bot will walk for a dropped egg."):AddSlider({
+		Min = 100,
+		Max = 3000,
+		Default = 800,
+		Rounding = 0,
+		Size = 100,
+		Nums = { [3000] = "Any" },
+		Flag = "sae_recover_dist",
+	})
+
+	fn24(v8, "recover")
+	local v9 = v5:AddSection({ Name = "Anti Trap", Position = "left" })
+	v9:AddLabel("Enabled"):ToolTip("Walks around the traps other players leave on the ground. They only catch you while you are carrying an egg."):AddToggle({ Flag = "sae_antitrap", Default = true })
+	fn24(v9, "trap")
+	local v10 = v5:AddSection({ Name = "Farm Stats", Position = "right" })
+	tbl11.status = v10:AddLabel("Status: Idle")
+	tbl11.eggs = v10:AddLabel("Eggs: 0 / 0 / 0")
+	tbl11.hatched = v10:AddLabel("Pets Hatched: 0")
+	tbl11.income = v10:AddLabel("Income: 0/s")
+	tbl11.earned = v10:AddLabel("Earned: 0")
+	tbl11.speed = v10:AddLabel("Speed Gained: +0")
+	tbl11.rift = v10:AddLabel("Rift Eggs: 0")
+	tbl11.eggs:ToolTip("Stolen, lost to guards, and picked back up off the ground.")
+	tbl11.earned:ToolTip("Money you have made since this menu was opened.")
+
+	v10:AddButton({
+		Icon = "arrow-rotate-right",
+		Name = "Reset",
+		Callback = function()
+			local v11 = tbl7
+			tbl7.runsAttempted = 0
+			v11.runsSurvived = 0
+			local v12 = tbl7
+			local v13 = tbl7
+			tbl7.eggsStolen = 0
+			v12.eggsLost = 0
+			v13.eggsRecovered = 0
+			tbl7.petsHatched = 0
+			tbl7.riftTrades = 0
+			tbl7.startMoney = fn19()
+			tbl7.startSpeed = fn17()
+			tbl7.startedAtWall = os.clock()
+		end,
+	})
+
+	local v11 = v5:AddSection({ Name = "Auto Pets", Position = "right" })
+	v11:AddLabel("Auto Place"):ToolTip("Puts your eggs down on free spots. Only works while you are standing in your plot."):AddToggle({ Flag = "sae_place", Default = false })
+	v11:AddLabel("Auto Hatch"):ToolTip("Hatches eggs as soon as they are ready. Only works while you are standing in your plot."):AddToggle({ Flag = "sae_hatch", Default = false })
+	v11:AddLabel("Walk To Plot"):ToolTip("Walks to your plot by itself whenever there is something to place or hatch, so you never have to stand there."):AddToggle({ Flag = "sae_pets_walk", Default = false })
+
+	v11:AddLabel("Day Trips"):ToolTip("How many waiting eggs send you home to plant and hatch between runs."):AddSlider({
+		Min = 0,
+		Max = 30,
+		Default = 8,
+		Rounding = 0,
+		Type = " eggs",
+		Size = 100,
+		Nums = { [0] = "Off" },
+		Flag = "sae_pets_daytrip",
+	})
+
+	fn24(v11, "pets")
+	local v12 = v5:AddSection({ Name = "Auto Equip Best", Position = "right" })
+	v12:AddLabel("Enabled"):ToolTip("Uses the game's own Equip Best button for you."):AddToggle({ Flag = "sae_equip", Default = false })
+
+	v12:AddLabel("Interval"):AddSlider({
+		Min = 10,
+		Max = 120,
+		Default = 30,
+		Rounding = 0,
+		Type = "s",
+		Size = 100,
+		Flag = "sae_equip_interval",
+	})
+
+	fn24(v12, "equip")
+	local v13 = v5:AddSection({ Name = "Auto Sell", Position = "right" })
+	v13:AddLabel("Enabled"):ToolTip("Sells the pets you no longer need. Equipped and favourited pets are never sold."):AddToggle({ Flag = "sae_sell", Default = false })
+	v13:AddLabel("Sell Up To"):AddDropdown({ Values = data.Rarities, Default = data.Rarities[1], Flag = "sae_sell_rarity" })
+	v13:AddLabel("Keep Mutated"):ToolTip("Never sells a pet that has a mutation, however common it is."):AddToggle({ Flag = "sae_sell_keep_mut", Default = true })
+	v13:AddLabel("Keep Rift Pets"):ToolTip("Never sells or fuses a pet from a Rift egg."):AddToggle({ Flag = "sae_sell_keep_rift", Default = true })
+	fn24(v13, "sell")
+end
+
+do
+	local v5 = v:AddTab({ Icon = "chart-line", Name = "Progression", Type = "Double" })
+	local v6 = v5:AddSection({ Name = "Auto Treadmill", Position = "left" })
+	v6:AddLabel("Enabled"):ToolTip("Trains your speed whenever nothing else needs you."):AddToggle({ Flag = "sae_treadmill", Default = false })
+	fn24(v6, "tread")
+	local v7 = v5:AddSection({ Name = "Auto Treadmill Upgrade", Position = "left" })
+	v7:AddLabel("Enabled"):ToolTip("Buys the next treadmill with cash. Never uses Robux."):AddToggle({ Flag = "sae_treadmill_upgrade", Default = false })
+	v7:AddLabel("Max Tier"):AddSlider({ Min = 1, Max = 10, Default = 10, Rounding = 0, Size = 100, Flag = "sae_treadmill_max" })
+	fn24(v7, "treadup")
+	local v8 = v5:AddSection({ Name = "Auto Trail Upgrade", Position = "left" })
+	v8:AddLabel("Enabled"):ToolTip("Buys the best trail you can afford and wears it. Never uses Robux."):AddToggle({ Flag = "sae_trail", Default = false })
+	fn24(v8, "trail")
+	local v9 = v5:AddSection({ Name = "Auto Base Upgrade", Position = "right" })
+	v9:AddLabel("Enabled"):ToolTip("Upgrades your base as soon as you can afford it."):AddToggle({ Flag = "sae_base_upgrade", Default = false })
+	fn24(v9, "base")
+	local v10 = v5:AddSection({ Name = "Auto Fuse", Position = "right" })
+	v10:AddLabel("Enabled"):ToolTip("Turns 3 of the same pet into a new egg. Never uses equipped, favourited or mutated pets."):AddToggle({ Flag = "sae_fuse", Default = false })
+	v10:AddLabel("Max Rarity"):ToolTip("Only pets of this rarity or lower get used."):AddDropdown({ Values = data.Rarities, Default = data.Rarities[1], Flag = "sae_fuse_rarity" })
+	fn24(v10, "fuse")
+	local v11 = v5:AddSection({ Name = "Auto Claim", Position = "right" })
+	v11:AddLabel("Index Rewards"):ToolTip("Collects the speed and money from every index entry you finish."):AddToggle({ Flag = "sae_claim_index", Default = true })
+	v11:AddLabel("Offline Earnings"):AddToggle({ Flag = "sae_claim_offline", Default = true })
+	v11:AddLabel("Limited Egg Reward"):ToolTip("Only pays out once you have finished the Limited Egg collection."):AddToggle({ Flag = "sae_claim_limited", Default = true })
+	v11:AddLabel("Boss Mastery"):ToolTip("Claims Boss Mastery milestones once you have the kills."):AddToggle({ Flag = "sae_claim_boss", Default = true })
+	fn24(v11, "claim")
+end
+
+v:AddTabLabel("MISC")
+
+do
+	local v5 = v:AddTab({ Icon = "eye", Name = "Visuals", Type = "Double" })
+	local v6 = v5:AddSection({ Name = "Egg ESP", Position = "left" })
+	local Enabled = v6:AddLabel("Enabled")
+	Enabled:ToolTip("Shows eggs through walls, with their rarity and how far away they are.")
+	Enabled:AddToggle({ Flag = "sae_esp_egg", Default = false })
+	Enabled:AddColorPicker({ Default = Color3.fromRGB(120, 200, 255), Flag = "sae_esp_egg_color" })
+	v6:AddLabel("Min Rarity"):AddDropdown({ Values = data.Rarities, Default = data.Rarities[1], Flag = "sae_esp_egg_rarity" })
+
+	v6:AddLabel("Max Distance"):AddSlider({
+		Min = 200,
+		Max = 3000,
+		Default = 3000,
+		Rounding = 0,
+		Size = 100,
+		Nums = { [3000] = "Infinite" },
+		Flag = "sae_esp_egg_dist",
+	})
+
+	local v7 = v6:AddLabel("Rift Eggs")
+	v7:ToolTip("Marks the eggs the Rift is asking for. Needs Auto Rift on.")
+	v7:AddToggle({ Flag = "sae_esp_rift", Default = true })
+	v7:AddColorPicker({ Default = Color3.fromRGB(196, 152, 255), Flag = "sae_esp_rift_color" })
+	local v8 = v5:AddSection({ Name = "Player ESP", Position = "left" })
+	local Enabled2 = v8:AddLabel("Enabled")
+	Enabled2:ToolTip("Shows other players, and tags anyone carrying an egg.")
+	Enabled2:AddToggle({ Flag = "sae_esp_player", Default = false })
+	Enabled2:AddColorPicker({ Default = Color3.fromRGB(255, 120, 120), Flag = "sae_esp_player_color" })
+	v8:AddLabel("Carriers Only"):ToolTip("Hides everyone who is not carrying an egg."):AddToggle({ Flag = "sae_esp_carriers", Default = false })
+	v8:AddLabel("Show Money"):AddToggle({ Flag = "sae_esp_money", Default = false })
+
+	v8:AddLabel("Max Distance"):AddSlider({
+		Min = 200,
+		Max = 3000,
+		Default = 3000,
+		Rounding = 0,
+		Size = 100,
+		Nums = { [3000] = "Infinite" },
+		Flag = "sae_esp_player_dist",
+	})
+
+	local v9 = v5:AddSection({ Name = "Guard ESP", Position = "right" })
+	local Enabled3 = v9:AddLabel("Enabled")
+	Enabled3:ToolTip("Shows each guard, whether it is asleep, and how fast it is moving.")
+	Enabled3:AddToggle({ Flag = "sae_esp_guard", Default = false })
+	Enabled3:AddColorPicker({ Default = Color3.fromRGB(255, 80, 80), Flag = "sae_esp_guard_color" })
+	v9:AddLabel("Alert When Targeted"):AddToggle({ Flag = "sae_guard_alert", Default = true })
+
+	v9:AddLabel("Max Distance"):AddSlider({
+		Min = 200,
+		Max = 3000,
+		Default = 3000,
+		Rounding = 0,
+		Size = 100,
+		Nums = { [3000] = "Infinite" },
+		Flag = "sae_esp_guard_dist",
+	})
+
+	local v10 = v5:AddSection({ Name = "Trap ESP", Position = "right" })
+	local Enabled4 = v10:AddLabel("Enabled")
+	Enabled4:ToolTip("Shows other players' armed traps, with who placed them and how far away they are.")
+	Enabled4:AddToggle({ Flag = "sae_esp_trap", Default = false })
+	Enabled4:AddColorPicker({ Default = Color3.fromRGB(255, 160, 60), Flag = "sae_esp_trap_color" })
+
+	v10:AddLabel("Max Distance"):AddSlider({
+		Min = 200,
+		Max = 3000,
+		Default = 3000,
+		Rounding = 0,
+		Size = 100,
+		Nums = { [3000] = "Infinite" },
+		Flag = "sae_esp_trap_dist",
+	})
+
+	local v11 = v5:AddSection({ Name = "HUD", Position = "right" })
+	v11:AddLabel("Show Stats"):ToolTip("Shows your session time, income and speed at the top of the screen."):AddToggle({ Flag = "sae_hud_stats", Default = true })
+	v11:AddLabel("Show Day/Night"):ToolTip("Shows how long until night, and how long night has left."):AddToggle({ Flag = "sae_cycle", Default = true })
+	v11:AddLabel("Night Warning"):AddToggle({ Flag = "sae_cycle_warn", Default = true })
+	local v12 = v5:AddSection({ Name = "Event Alerts", Position = "right" })
+	v12:AddLabel("Enabled"):ToolTip("Tells you when a live event (Capture The Egg, Great Bloom, Rift Event and the others) starts or ends, and how long it runs."):AddToggle({ Flag = "sae_events", Default = true })
+	v12:AddLabel("Boss Event"):ToolTip("Counts down to the next Abyss Overlord fight."):AddToggle({ Flag = "sae_boss_alert", Default = true })
+	fn24(v12, "events")
+end
+
+local v5, v6, v7
+local v8 = v:AddTab({ Icon = "gear", Name = "Utility", Type = "Double" })
+v5 = v8:AddSection({ Name = "Teleport", Position = "left" })
+v5:AddLabel("Destination"):AddDropdown({ Values = { "Base", "Treadmill" }, Default = "Base", Flag = "sae_travel_dest" })
+v5:AddLabel("Bind"):AddKeybind({ Default = nil, Flag = "sae_tp_bind" })
+v6 = v8:AddSection({ Name = "Respawn", Position = "right" })
+v7 = v8:AddSection({ Name = "Script", Position = "right" })
+v7:AddLabel("Notifications"):ToolTip("Controls every pop-up message this menu shows."):AddToggle({ Flag = "sae_notifications", Default = true })
+
+v7:AddLabel("Menu Keybind"):AddKeybind({
+	Default = "RightShift",
+	Flag = "sae_menu_key",
+	Callback = function(keybind)
+		if type(keybind) == "string" and keybind ~= "" then
+			v.Keybind = keybind
+		end
+	end,
+})
+
+local fn27
+
+fn27 = function(status)
+	tbl7.status = status
+end
+
+local fn28
+
+fn28 = function()
+	if tbl.SpeedProj and tbl.SpeedProj.GetSpeedPower then
+		local ok, result = pcall(tbl.SpeedProj.GetSpeedPower)
+		if ok and type(result) == "number" then
+			return result
+		end
+	end
+
+	return fn17()
+end
+
+local fn29
+
+fn29 = function()
+	local v9 = fn10()
+	if v9 and v9.WalkSpeed > 0 then
+		return v9.WalkSpeed
+	end
+
+	if tbl.TreadUtil and tbl.TreadUtil.SpeedPowerToWalkSpeed then
+		local ok, result = pcall(tbl.TreadUtil.SpeedPowerToWalkSpeed, fn28())
+		if ok and type(result) == "number" then
+			return result
+		end
+	end
+
+	return 16
+end
+
+local fn30, fn31
+
+do
+	local function fn32(arg)
+		if type(arg) ~= "string" then
+			return nil
+		end
+		local match, v9 = arg:match("^%s*([%d%.]+)%s*([kKmMbBtTqQ]?)")
+		local num = tonumber(match)
+		if not num then
+			return nil
+		end
+		return num * (({ k = 1000, m = 1000000, b = 1e9, t = 1e12, q = 1e15 })[v9:lower()] or 1)
+	end
+
+	fn30 = function(arg, arg2)
+		local v9 = tbl2.Area(arg)
+		local v10 = tbl2.GuardConfig(arg)
+		local v11 = tbl2.SeparationLine()
+		if not (v9 and v10 and v11 and tbl.EscapePred and tbl.ChasePolicy) then
+			return nil
+		end
+		local bounds = v9:FindFirstChild("Bounds")
+		local closestExitPoint = v9:FindFirstChild("ClosestExitPoint")
+		local v12 = tbl5.HomePos(arg)
+		if not (bounds and closestExitPoint and v12) then
+			return nil
+		end
+		local n = -v11.CFrame.LookVector
+		local vector = Vector3.new(n.X, 0, n.Z)
+
+		if vector.Magnitude < 0.001 then
+			vector = Vector3.new(-1, 0, 0)
+		end
+
+		local unit = vector.Unit
+		arg2 = arg2 or closestExitPoint.Position
+		local ok, result = pcall(tbl.EscapePred.ResolveExitDistance, bounds.CFrame, bounds.Size, arg2, unit)
+
+		if not ok or type(result) ~= "number" then
+			result = math.max((v11.Position - arg2):Dot(unit), 1)
+		end
+
+		local ok2, result2 = pcall(tbl.ChasePolicy.ResolveHitDistance, v10.HitDistance)
+
+		return {
+			BaseGuardWalkSpeed = v10.WalkSpeed or 16,
+			ExitDirection = unit,
+			ExitDistance = result,
+			FlatRadius = v10.FlatRadius or 20,
+			GuardStartPosition = v12,
+			HitDistance = ok2 and result2 or v10.HitDistance or 10,
+			PlayerStartPosition = arg2,
+		}
+	end
+
+	local tbl12 = {}
+
+	fn31 = function(arg)
+		local v9 = tbl12[arg]
+		local flag
+
+		if v9 then
+			local at = v9.at
+			flag = os.clock() - at < 300
+		else
+			flag = v9
+		end
+
+		if flag then
+			return v9.v
+		end
+		local result = nil
+
+		if tbl.SpeedReq then
+			local v10 = fn30(arg)
+			result = nil
+
+			if v10 then
+				local ok
+				ok, result = pcall(tbl.SpeedReq, v10)
+				ok = ok and type(result) == "number"
+				local v11 = nil
+
+				if not ok then
+					result = v11
+				end
+			end
+		end
+
+		if not result then
+			local requiredSpeedSign = tbl2.Area(arg)
+			requiredSpeedSign = requiredSpeedSign and requiredSpeedSign:FindFirstChild("RequiredSpeedSign")
+			requiredSpeedSign = requiredSpeedSign and requiredSpeedSign:FindFirstChild("Speed", true)
+			return requiredSpeedSign and fn32(requiredSpeedSign.Text) or nil
+		end
+
+		tbl12[arg] = { v = result, at = os.clock() }
+		return result
+	end
+end
+
+local refreshAreas
+
+refreshAreas = function()
+	local v9 = tbl2.GuardAreas()
+	if not v9 then
+		return false
+	end
+	local tbl12 = {}
+
+	for _, child in ipairs(v9:GetChildren()) do
+		if child:FindFirstChild("Guard") and child:FindFirstChild("Nests") then
+			tbl12[#tbl12 + 1] = child.Name
+		end
+	end
+
+	if #tbl12 < 2 then
+		return false
+	end
+
+	table.sort(tbl12, function(arg, arg2)
+		local huge = fn31(arg) or math.huge
+		local huge2 = fn31(arg2) or math.huge
+		if huge == huge2 then
+			return arg < arg2
+		end
+		return huge < huge2
+	end)
+
+	local flag = #tbl12 ~= #data.AreaOrder
+	local v10
+
+	if not flag then
+		for i, v11 in ipairs(tbl12) do
+			if data.AreaOrder[i] ~= v11 then
+				flag = true
+				break
+			end
+		end
+
+		v10 = flag
+	else
+		v10 = flag
+	end
+
+	if v10 then
+		table.clear(data.AreaOrder)
+		table.move(tbl12, 1, #tbl12, 1, data.AreaOrder)
+		table.clear(data.AreaChoices)
+		data.AreaChoices[1] = data.BestOption
+		table.move(tbl12, 1, #tbl12, 2, data.AreaChoices)
+	end
+
+	return true
+end
+
+local fn32, fn33, fn34
+
+local function fn35()
+	local v9 = fn28()
+	local v10 = data.AreaOrder[1]
+
+	for _, v11 in ipairs(data.AreaOrder) do
+		local v12 = fn31(v11)
+
+		if v12 and v9 >= v12 then
+			v10 = v11
+		end
+	end
+
+	return v10
+end
+
+fn32 = function()
+	local v9 = fn28()
+	local tbl12 = {}
+	local tbl13 = {}
+
+	for i = #data.AreaOrder, 1, -1 do
+		local v10 = data.AreaOrder[i]
+		local v11 = fn31(v10)
+
+		if v11 and v9 >= v11 then
+			tbl12[#tbl12 + 1] = v10
+			tbl13[v10] = true
+		end
+	end
+
+	if not tbl13[data.AreaOrder[1]] then
+		tbl12[#tbl12 + 1] = data.AreaOrder[1]
+	end
+
+	return tbl12
+end
+
+fn33 = function()
+	local saeAreas = fn21("sae_areas")
+	return type(saeAreas) == "table" and saeAreas[data.BestOption] and true or false
+end
+
+fn34 = function()
+	local saeAreas = fn21("sae_areas")
+	local tbl12 = {}
+	local tbl13 = {}
+
+	if type(saeAreas) == "table" then
+		for k, saeArea in pairs(saeAreas) do
+			if saeArea then
+				if k == data.BestOption then
+					k = fn35()
+				end
+
+				if not tbl13[k] then
+					tbl13[k] = true
+					tbl12[#tbl12 + 1] = k
+				end
+			end
+		end
+	end
+
+	table.sort(tbl12, function(arg, arg2)
+		local n = 99
+		local n2 = 99
+
+		for i, v9 in ipairs(data.AreaOrder) do
+			if v9 == arg then
+				n = i
+			end
+
+			if v9 == arg2 then
+				n2 = i
+			end
+		end
+
+		return n < n2
+	end)
+
+	return tbl12
+end
+
+local fn36, fn37, fn38, fn39, fn40, fn41, fn42, fn43, fhSaeMover, fn44
+local flag, fn45, fn46, fn47, fn48, tbl12, fn49, fn50, fn51, fn52
+local fn53
+
+do
+	local function fn54()
+		local saeMutations = fn21("sae_mutations")
+		local tbl13 = {}
+
+		if type(saeMutations) == "table" then
+			for k, saeMutation in pairs(saeMutations) do
+				if saeMutation then
+					tbl13[k] = true
+				end
+			end
+		end
+
+		return tbl13
+	end
+
+	fn36 = function(arg)
+		local directory = tbl.DirAssets and tbl.DirAssets.Directory
+		local v9 = directory and directory[arg]
+		if v9 and type(v9.Rarity) == "table" then
+			return v9.Rarity._id
+		end
+		return nil
+	end
+
+	fn37 = function(arg, arg2)
+		if not arg2 then
+			return true
+		end
+		local v9 = fn36(arg)
+		if not v9 then
+			return true
+		end
+		local v10 = data.RarityRank[v9]
+		local v11 = data.RarityRank[arg2]
+		if not v10 or not v11 then
+			return true
+		end
+		return v10 >= v11
+	end
+
+	fn38 = function(arg)
+		arg = arg and arg.Mutations
+		if type(arg) ~= "table" then
+			return false
+		end
+
+		for _, v9 in pairs(arg) do
+			if v9 ~= false and v9 ~= "None" then
+				return true
+			end
+		end
+
+		return false
+	end
+
+	local function fn55(arg, arg2)
+		local v9, v10, v11 = pairs(arg2)
+		local flag2 = false
+		local v12 = table.pack(Q_1())
+
+		if v12[1] then
+			flag2 = true
+		end
+
+		if not flag2 then
+			return true
+		end
+		local mutations = arg.Mutations
+		if type(mutations) ~= "table" then
+			return false
+		end
+
+		for _, mutation in ipairs(mutations) do
+			if arg2[mutation] then
+				return true
+			end
+		end
+
+		for k, mutation in pairs(mutations) do
+			if mutation == true and arg2[k] then
+				return true
+			end
+		end
+
+		return false
+	end
+
+	fn39 = function()
+		if not (tbl.EggCmds and tbl.EggCmds.GetAreaEggSnapshot) then
+			return {}
+		end
+		local ok, result = pcall(tbl.EggCmds.GetAreaEggSnapshot)
+		if not ok or type(result) ~= "table" then
+			return {}
+		end
+		return result.Records or {}
+	end
+
+	local function fn56(arg)
+		if not arg or not arg.Uid then
+			return nil
+		end
+
+		if tbl.SlotIdentity and tbl.SlotIdentity.IsFirstAreaUid then
+			local ok, result = pcall(tbl.SlotIdentity.IsFirstAreaUid, arg.Uid)
+
+			if ok and result then
+				if tbl.SlotIdentity.BuildSlotKey then
+					local ok2, result2 = pcall(tbl.SlotIdentity.BuildSlotKey, arg.AreaId, arg.NestId)
+					if ok2 then
+						return result2
+					end
+				end
+
+				return tostring(arg.AreaId) .. ":" .. tostring(arg.NestId)
+			end
+
+			return nil
+		end
+
+		if tostring(arg.Uid):find("FirstAreaEgg") then
+			return tostring(arg.AreaId) .. ":" .. tostring(arg.NestId)
+		end
+		return nil
+	end
+
+	fn40 = function(arg)
+		if not arg then
+			return nil
+		end
+		local v9 = tbl2.EggModel(arg.Uid)
+
+		if v9 then
+			local ok, result = pcall(function()
+				return v9:GetPivot()
+			end)
+
+			if ok and result then
+				return result.Position
+			end
+		end
+
+		if typeof(arg.BottomCFrame) == "CFrame" then
+			return arg.BottomCFrame.Position
+		end
+
+		if typeof(arg.BoundsCFrame) == "CFrame" then
+			return arg.BoundsCFrame.Position
+		end
+		local nests = tbl2.Area(arg.AreaId)
+		nests = nests and nests:FindFirstChild("Nests")
+
+		if nests and arg.NestId then
+			local v10 = nests:FindFirstChild(arg.NestId)
+
+			if v10 then
+				local ok, result = pcall(function()
+					return v10:GetPivot()
+				end)
+
+				if ok and result then
+					return result.Position
+				end
+			end
+		end
+
+		return nil
+	end
+
+	fn41 = function()
+		if not (tbl.PlotCmds and tbl.PlotCmds.GetPlotData) then
+			return nil
+		end
+		local ok, result = pcall(tbl.PlotCmds.GetPlotData)
+		return ok and result or nil
+	end
+
+	fn42 = function()
+		return (fn21("sae_steal") or fn21("sae_recover")) and true or false
+	end
+
+	fn43 = function()
+		return fn42() or fn21("sae_treadmill") or fn21("sae_pets_walk") or false
+	end
+
+	local n = 6
+	local n2 = 1.5
+	local n3 = 4
+	local n4 = 25
+	fhSaeMover = { active = false, stopFlag = nil, mult = 1.15, acRecord = nil, corrections = 0 }
+	getgenv().__FH_SAE_MOVER = fhSaeMover
+
+	local function fn57()
+		return tbl2.SeparationX()
+	end
+
+	local function fn58()
+		if fhSaeMover.acRecord ~= nil then
+			return fhSaeMover.acRecord
+		end
+		fhSaeMover.acRecord = false
+
+		pcall(function()
+			for _, v9 in ipairs(getgc(true)) do
+				if type(v9) == "table" and rawget(v9, "ThreatLevel") ~= nil and rawget(v9, "Evidence") ~= nil and rawget(v9, "Player") == localPlayer then
+					fhSaeMover.acRecord = v9
+					break
+				end
+			end
+		end)
+
+		return fhSaeMover.acRecord
+	end
+
+	local function fn59()
+		local v9 = fn58()
+		if not v9 then
+			return false
+		end
+
+		local ok, result = pcall(function()
+			return v9.CorrectionContext ~= nil or v9.MovementMode == "Correcting"
+		end)
+
+		return ok and result or false
+	end
+
+	fn44 = function(arg, arg2)
+		return Vector3.new(arg.X - arg2.X, 0, arg.Z - arg2.Z).Magnitude
+	end
+
+	flag = nil
+	local n5 = 0
+
+	local function fn60()
+		if flag then
+			return flag
+		end
+
+		if flag == false and os.clock() - n5 < 5 then
+			return nil
+		end
+		local now = os.clock()
+		flag = false
+		n5 = now
+
+		pcall(function()
+			local playerScripts = localPlayer:FindFirstChild("PlayerScripts")
+			playerScripts = playerScripts and playerScripts:FindFirstChild("PlayerModule")
+
+			if playerScripts then
+				flag = require(playerScripts):GetControls()
+			end
+		end)
+
+		return flag or nil
+	end
+
+	local function fn61(arg)
+		local v9 = fn60()
+		if not v9 then
+			return
+		end
+
+		pcall(function()
+			if arg then
+				v9:Enable()
+			else
+				v9:Disable()
+			end
+		end)
+	end
+
+	local n6 = 10
+
+	fn45 = function()
+		return localPlayer:GetAttribute("InBossArena") == true
+	end
+
+	fn46 = function()
+		local bossArena = Workspace:FindFirstChild("BossArena")
+		bossArena = bossArena and bossArena:FindFirstChild("BossArenaLeaveTeleport")
+		if not bossArena then
+			return nil
+		end
+
+		if bossArena:IsA("BasePart") then
+			return bossArena
+		end
+		return bossArena:FindFirstChild("Hitbox") or bossArena.PrimaryPart
+	end
+
+	local function fn62()
+		local tbl13 = {}
+		local bossArenaTeleport = Workspace:FindFirstChild("BossArenaTeleport", true)
+		if not bossArenaTeleport then
+			return tbl13
+		end
+
+		if bossArenaTeleport:IsA("BasePart") then
+			tbl13[#tbl13 + 1] = bossArenaTeleport
+		end
+
+		for _, descendant in ipairs(bossArenaTeleport:GetDescendants()) do
+			if descendant:IsA("BasePart") then
+				tbl13[#tbl13 + 1] = descendant
+			end
+		end
+
+		return tbl13
+	end
+
+	fn47 = function()
+		local tbl13 = {}
+
+		for _, v9 in ipairs(fn62()) do
+			tbl13[#tbl13 + 1] = { inst = v9, pos = v9.Position, r = math.max(v9.Size.X, v9.Size.Z) * 0.5 + 14 }
+		end
+
+		if not fn21("sae_antitrap") then
+			return tbl13
+		end
+
+		local ok, result = pcall(function()
+			return game:GetService("CollectionService"):GetTagged("PlacedTrap")
+		end)
+
+		if not ok then
+			return tbl13
+		end
+
+		for _, v9 in ipairs(result) do
+			if v9:IsDescendantOf(Workspace) then
+				local isBasePart = v9:IsA("BasePart") and v9 or v9:FindFirstChild("Hitbox")
+
+				if not isBasePart and v9:IsA("Model") then
+					isBasePart = v9.PrimaryPart
+				end
+
+				if isBasePart and isBasePart:IsA("BasePart") then
+					local attribute = v9:GetAttribute("Owner")
+
+					if v9:GetAttribute("TrapActive") ~= true and attribute ~= localPlayer.Name then
+						local size = isBasePart.Size
+						tbl13[#tbl13 + 1] = { inst = v9, pos = isBasePart.Position, r = math.max(size.X, size.Z) * 0.5 + n6 }
+					end
+				end
+			end
+		end
+
+		return tbl13
+	end
+
+	local function fn63(arg, arg2, arg3)
+		local v9 = fn47()
+		if #v9 == 0 then
+			return nil
+		end
+		local vector = Vector3.new(-arg2.Z, 0, arg2.X)
+		local n7 = math.max(45, arg3 or 0)
+		local v10 = nil
+		local n8 = 0
+		local n9 = 0
+
+		for _, v11 in ipairs(v9) do
+			local vector2 = Vector3.new(v11.pos.X - arg.X, 0, v11.pos.Z - arg.Z)
+			local v12 = vector2:Dot(arg2)
+
+			if v12 > 1 and v12 < n7 then
+				local v13 = vector2:Dot(vector)
+				local r = v11.r
+
+				if math.abs(v13) < r then
+					if not v10 or v12 < v10 then
+						v10 = v12
+					end
+
+					n8 = math.max(n8, v13 + v11.r + 3)
+					n9 = math.max(n9, v11.r + 3 - v13)
+				end
+			end
+		end
+
+		if not v10 then
+			return nil
+		end
+		local trapPick
+
+		if fhSaeMover.trapPick and fhSaeMover.trapPick > 0 then
+			trapPick = 1
+		else
+			trapPick = nil
+
+			if fhSaeMover.trapPick then
+				trapPick = -1
+			end
+		end
+
+		local flag2 = n8 <= n9
+
+		if trapPick == nil then
+			trapPick = flag2 and 1 or -1
+		elseif trapPick == 1 and n8 > n9 + 4 then
+			trapPick = -1
+		elseif trapPick == -1 and n9 > n8 + 4 then
+			trapPick = 1
+		end
+
+		fhSaeMover.trapPick = trapPick
+		n8 = trapPick == 1 and n8 or n9
+		if n8 <= 0 then
+			return nil
+		end
+		local n10 = math.max(v10 + 15, 25, n7 * 0.4)
+		local n11 = arg + arg2 * n10 + vector * trapPick * math.min(n8 * n10 / math.max(v10, 1), n10 * 0.7)
+		local vector2 = Vector3.new(n11.X - arg.X, 0, n11.Z - arg.Z)
+		if vector2.Magnitude < 0.1 then
+			return nil
+		end
+		return vector2.Unit
+	end
+
+	local raycastParams = RaycastParams.new()
+	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+
+	local function fn64(arg, arg2)
+		local character = localPlayer.Character
+		raycastParams.FilterDescendantsInstances = character and { character } or {}
+		local vector = Vector3.new(arg.X, arg.Y + 1.5, arg.Z)
+		local n7 = Vector3.new(arg2.X, arg.Y + 1.5, arg2.Z) - vector
+		if n7.Magnitude < 1 then
+			return true
+		end
+		local n8 = math.clamp(math.ceil(n7.Magnitude / 40), 1, 160)
+		local n9 = n7 / n8
+
+		for i = 0, n8 - 1 do
+			if Workspace:Raycast(vector + n9 * i, n9, raycastParams) then
+				return false
+			end
+		end
+
+		return true
+	end
+
+	local function fn65(arg, arg2)
+		local v9 = game:GetService("PathfindingService"):CreatePath({ AgentRadius = 2.5, AgentHeight = 5, AgentCanJump = true, WaypointSpacing = n })
+		if not pcall(function()
+			v9:ComputeAsync(arg, arg2)
+		end) or v9.Status ~= Enum.PathStatus.Success then
+			return nil
+		end
+		local waypoints = v9:GetWaypoints()
+		if #waypoints < 2 then
+			return nil
+		end
+		return waypoints
+	end
+
+	fhSaeMover.Stop = function(stopFlag)
+		fhSaeMover.stopFlag = stopFlag or "stop"
+	end
+
+	fhSaeMover.Release = function()
+		if fhSaeMover.active then
+			return
+		end
+		local v9 = fn10()
+
+		if v9 then
+			pcall(function()
+				v9:Move(Vector3.zero, false)
+			end)
+		end
+
+		fn61(true)
+		fhSaeMover.handoff = false
+	end
+
+	local n7 = 1800
+	local n8 = -364
+	local n9 = 50
+
+	local function fn66(arg, arg2)
+		local tbl13 = {}
+		local n10 = math.max(1, math.ceil(fn44(arg, arg2) / n9))
+
+		for i = 0, n10 do
+			tbl13[#tbl13 + 1] = { Position = arg:Lerp(arg2, i / n10), Action = Enum.PathWaypointAction.Walk }
+		end
+
+		return tbl13
+	end
+
+	local function fn67(arg, arg2)
+		if not arg then
+			return arg2
+		end
+		table.move(arg2, 2, #arg2, #arg + 1, arg)
+		return arg
+	end
+
+	fhSaeMover.PlanRoute = function(arg, arg2)
+		if fn44(arg, arg2) <= n7 then
+			return fn65(arg, arg2)
+		end
+		local n10 = fn57() + 18
+		local n11 = arg2.X >= arg.X and 1 or -1
+		local n12 = math.min(150, math.abs(arg2.X - arg.X) * 0.25)
+		local y = arg.Y
+		local vector = Vector3.new(math.max(arg.X + n11 * n12, n10), y, n8)
+		local y2 = arg.Y
+		local vector2 = Vector3.new(math.max(arg2.X - n11 * n12, n10), y2, n8)
+		local v9 = nil
+
+		if fn44(arg, vector) > 6 then
+			local v10 = fn64(arg, vector) and fn66(arg, vector) or fn65(arg, vector)
+			if not v10 then
+				return nil
+			end
+			v9 = fn67(nil, v10)
+			vector = v9[#v9].Position
+		end
+
+		local v10
+
+		if fn64(vector, vector2) then
+			v10 = fn67(v9, fn66(vector, vector2))
+		else
+			local n13 = vector2.X >= vector.X and 1 or -1
+			v10 = v9
+			local exitTo = nil
+
+			while true do
+				if not (math.abs(vector2.X - vector.X) > 1) then
+					exitTo = 1
+					break
+				else
+					local v11 = fn65(vector, Vector3.new(vector.X + n13 * math.min(1800, math.abs(vector2.X - vector.X)), vector.Y, n8))
+
+					if v11 then
+						local v12 = fn67(v10, v11)
+						vector = v12[#v12].Position
+						v10 = v12
+						continue
+					end
+
+					break
+				end
+			end
+
+			if exitTo ~= 1 then
+				return nil
+			end
+		end
+
+		local position = v10[#v10].Position
+		local v11
+
+		if not (fn44(position, arg2) > 3) then
+			v11 = v10
+		else
+			local v12 = fn64(position, arg2) and fn66(position, arg2) or fn65(position, arg2)
+			if not v12 then
+				return nil
+			end
+			v11 = fn67(v10, v12)
+		end
+
+		return v11
+	end
+
+	fhSaeMover.GoTo = function(target, arg)
+		local tbl13 = arg or {}
+
+		if fhSaeMover.active then
+			fhSaeMover.Stop("preempted")
+			task.wait(0.05)
+		end
+
+		local reach = tbl13.reach or 3
+
+		local function fn68(arg2)
+			return tbl13.arrived ~= nil and tbl13.arrived(arg2)
+		end
+
+		local v9 = fhSaeMover
+		fhSaeMover.active = true
+		v9.stopFlag = nil
+		local v10 = fhSaeMover
+		fhSaeMover.target = target
+		v10.lastEvent = "goto start"
+		fhSaeMover.handoff = false
+		fhSaeMover.brake = tbl13.brake and true or false
+		fhSaeMover.walks = (fhSaeMover.walks or 0) + 1
+		local v11 = nil
+		local now = os.clock()
+
+		local function fn69(arg2)
+			v11 = arg2
+		end
+
+		local v12 = fn9()
+		if not v12 then
+			fhSaeMover.active = false
+			return false, "no character"
+		end
+		local tbl14
+
+		if fn64(v12.Position, target) then
+			tbl14 = {
+				{ Position = v12.Position, Action = Enum.PathWaypointAction.Walk },
+				{ Position = target, Action = Enum.PathWaypointAction.Walk },
+			}
+		else
+			tbl14 = fhSaeMover.PlanRoute(v12.Position, target)
+
+			if not tbl14 then
+				if not (fn44(v12.Position, target) <= 60) then
+					fhSaeMover.active = false
+					return false, "no route"
+				end
+
+				tbl14 = {
+					{ Position = v12.Position, Action = Enum.PathWaypointAction.Walk },
+					{ Position = target, Action = Enum.PathWaypointAction.Walk },
+				}
+			end
+		end
+
+		fhSaeMover.trapPick = nil
+		fn61(false)
+		local v13 = nil
+		local n10 = 1
+		local huge = math.huge
+		local n11 = 0
+		local n12 = 0
+		local n13 = 0
+
+		while true do
+			local result = RunService.Heartbeat:Wait()
+
+			if not (tbl7.running and fn14()) then
+				fn69("unloaded")
+			end
+
+			if fhSaeMover.stopFlag then
+				fn69(fhSaeMover.stopFlag)
+			end
+
+			if not v11 then
+				local v14 = fn9()
+				local v15 = fn10()
+
+				if not v14 or not v15 or v15.Health <= 0 then
+					fn69("dead")
+					break
+				else
+					local position = v14.Position
+					local num, n14, n15, flag2, v16, v17, str, format, magnitude, n16, flag3, v18, v19, n17, vector, unit, position2, vector2, flag4, v20, v21, n18, position3, vector3, flag5, unit2, n19, v22, v23, trapsAvoided, now2, lastTrapSay, v24, n20, v25, n21, n22, flag6, flag7, assemblyLinearVelocity, vector4, v26, v27, str2, str3
+
+					if tbl13.tick then
+						local v28 = tbl13.tick(position, result)
+
+						if v28 then
+							fn69(v28)
+							break
+						else
+							num = tonumber(localPlayer:GetAttribute("RagdollEndTime"))
+							n14 = num or 0
+
+							if Workspace:GetServerTimeNow() < n14 then
+								now = os.clock()
+								v13 = nil
+								continue
+							else
+								n15 = math.max(12, v15.WalkSpeed * fhSaeMover.mult * result * 1.5 + 6)
+								flag2 = v13 and (position - v13).Magnitude > n15
+								v16 = flag2 or fn59()
+
+								if v16 then
+									v17 = fhSaeMover
+									str = "ext %.1f dt %.3f ac %s"
+									format = str.format
+									magnitude = v13 and (position - v13).Magnitude or -1
+									v17.lastEvent = format(str, magnitude, result, tostring(fn59()))
+
+									if fn59() then
+										fhSaeMover.corrections = fhSaeMover.corrections + 1
+										fhSaeMover.mult = 1
+									end
+
+									v15:Move(Vector3.zero, false)
+									n16 = os.clock() + 1
+
+									while true do
+										flag3 = os.clock() < n16 and fn59()
+										if flag3 then
+											task.wait(0.1)
+											continue
+										end
+										break
+									end
+
+									task.wait(0.4)
+									v18 = fn9()
+
+									if not v18 then
+										fn69("dead")
+										break
+									else
+										v19 = fhSaeMover.PlanRoute(v18.Position, target)
+										tbl14 = v19 or tbl14
+										now = os.clock()
+										n11 += 1
+										v13 = nil
+										n10 = 1
+										huge = math.huge
+
+										if n11 > n3 then
+											fn69("kept getting moved")
+											break
+										else
+											continue
+										end
+									end
+								else
+									n17 = math.max(3, Vector3.new(v14.AssemblyLinearVelocity.X, 0, v14.AssemblyLinearVelocity.Z).Magnitude * result * 2.5)
+									vector = Vector3.new(v14.AssemblyLinearVelocity.X, 0, v14.AssemblyLinearVelocity.Z)
+									unit = vector.Magnitude > 5 and vector.Unit or Vector3.zero
+
+									while n10 <= #tbl14 do
+										position2 = tbl14[n10].Position
+										vector2 = Vector3.new(position2.X - position.X, 0, position2.Z - position.Z)
+										flag4 = vector2.Magnitude <= n17 or unit.Magnitude > 0 and vector2.Magnitude < 20 and vector2:Dot(unit) < 0
+
+										if flag4 then
+											n10 += 1
+											now = os.clock()
+											huge = math.huge
+											continue
+										end
+
+										break
+									end
+
+									if fn44(position, target) <= reach then
+										v15:Move(Vector3.zero, false)
+										fn69("arrived")
+										break
+									elseif not (#tbl14 < n10) then
+										v20 = tbl14[n10]
+										v21 = fn44(position, v20.Position)
+
+										if v21 < huge - 0.25 then
+											now = os.clock()
+											huge = v21
+										end
+
+										n18 = math.min(#tbl14, n10 + 1)
+										position3 = tbl14[n18].Position
+
+										if n18 == #tbl14 then
+											position3 = target
+										end
+
+										vector3 = Vector3.new(position3.X - position.X, 0, position3.Z - position.Z)
+										flag5 = false
+
+										if vector3.Magnitude > 0.1 then
+											unit2 = vector3.Unit
+											n19 = v15.WalkSpeed * fhSaeMover.mult
+											v22 = fn63(position, unit2, n19 * 0.9)
+
+											if v22 then
+												v23 = fhSaeMover
+												trapsAvoided = fhSaeMover.trapsAvoided or 0
+												v23.trapsAvoided = trapsAvoided + 1
+												now2 = os.clock()
+												lastTrapSay = fhSaeMover.lastTrapSay or 0
+
+												if not (now2 - lastTrapSay > 4) then
+													unit2 = v22
+												else
+													fhSaeMover.lastTrapSay = os.clock()
+													fn25("trap", "Going around a trap", 4)
+													unit2 = v22
+												end
+											end
+
+											if tbl13.brake then
+												v24 = fn44(position, target)
+												n20 = math.max(n19 * 0.25, 8)
+
+												if v24 < n20 then
+													v25 = fn44(position, v20.Position)
+
+													for i = n10, #tbl14 - 1 do
+														v25 += fn44(tbl14[i].Position, tbl14[i + 1].Position)
+													end
+
+													n21 = v25 + fn44(tbl14[#tbl14].Position, target)
+
+													if n18 ~= #tbl14 then
+														n22 = n21
+													else
+														n22 = math.min(n21, v24)
+													end
+
+													if n22 < n20 then
+														unit2 *= math.clamp(n22 / n20, 0.2, 1)
+														flag5 = true
+													end
+												end
+											end
+
+											v15:Move(unit2, false)
+										end
+
+										flag6 = v20.Action == Enum.PathWaypointAction.Jump and v15.FloorMaterial ~= Enum.Material.Air
+
+										if flag6 then
+											v15.Jump = true
+										end
+
+										flag7 = fhSaeMover.mult > 1 and not flag5
+
+										if flag7 then
+											assemblyLinearVelocity = v14.AssemblyLinearVelocity
+											vector4 = Vector3.new(assemblyLinearVelocity.X, 0, assemblyLinearVelocity.Z)
+
+											if v15.WalkSpeed * 0.25 < vector4.Magnitude then
+												v14.CFrame = v14.CFrame + vector4.Unit * math.min((fhSaeMover.mult - 1) * v15.WalkSpeed * result, v21)
+											end
+										end
+
+										if os.clock() - now > n2 then
+											n13 += 1
+											fhSaeMover.lastEvent = ("stall #%d wp %d/%d d %.1f"):format(n13, n10, #tbl14, v21)
+											tbl3.Unpin()
+											v15:Move(Vector3.zero, false)
+											task.wait(0.2)
+											v26 = fn9()
+											v27 = v26 and fhSaeMover.PlanRoute(v26.Position, target)
+											tbl14 = v27 or tbl14
+											now = os.clock()
+											n10 = 1
+											huge = math.huge
+
+											if not (n3 < n13) then
+												v13 = position
+												continue
+											else
+												str2 = fn68(position) and "arrived" or "stuck"
+												fn69(str2)
+												break
+											end
+										else
+											v13 = position
+											continue
+										end
+									else
+										tbl14 = {
+											{ Position = position, Action = Enum.PathWaypointAction.Walk },
+											{ Position = target, Action = Enum.PathWaypointAction.Walk },
+										}
+
+										n12 += 1
+										n10 = 2
+										huge = math.huge
+
+										if n12 > 2 then
+											str3 = fn68(position) and "arrived" or "could not reach it"
+											fn69(str3)
+											break
+										else
+											v20 = tbl14[n10]
+											v21 = fn44(position, v20.Position)
+
+											if v21 < huge - 0.25 then
+												now = os.clock()
+												huge = v21
+											end
+
+											n18 = math.min(#tbl14, n10 + 1)
+											position3 = tbl14[n18].Position
+
+											if n18 == #tbl14 then
+												position3 = target
+											end
+
+											vector3 = Vector3.new(position3.X - position.X, 0, position3.Z - position.Z)
+											flag5 = false
+
+											if vector3.Magnitude > 0.1 then
+												unit2 = vector3.Unit
+												n19 = v15.WalkSpeed * fhSaeMover.mult
+												v22 = fn63(position, unit2, n19 * 0.9)
+
+												if v22 then
+													v23 = fhSaeMover
+													trapsAvoided = fhSaeMover.trapsAvoided or 0
+													v23.trapsAvoided = trapsAvoided + 1
+													now2 = os.clock()
+													lastTrapSay = fhSaeMover.lastTrapSay or 0
+
+													if not (now2 - lastTrapSay > 4) then
+														unit2 = v22
+													else
+														fhSaeMover.lastTrapSay = os.clock()
+														fn25("trap", "Going around a trap", 4)
+														unit2 = v22
+													end
+												end
+
+												if tbl13.brake then
+													v24 = fn44(position, target)
+													n20 = math.max(n19 * 0.25, 8)
+
+													if v24 < n20 then
+														v25 = fn44(position, v20.Position)
+
+														for i = n10, #tbl14 - 1 do
+															v25 += fn44(tbl14[i].Position, tbl14[i + 1].Position)
+														end
+
+														n21 = v25 + fn44(tbl14[#tbl14].Position, target)
+
+														if n18 ~= #tbl14 then
+															n22 = n21
+														else
+															n22 = math.min(n21, v24)
+														end
+
+														if n22 < n20 then
+															unit2 *= math.clamp(n22 / n20, 0.2, 1)
+															flag5 = true
+														end
+													end
+												end
+
+												v15:Move(unit2, false)
+											end
+
+											flag6 = v20.Action == Enum.PathWaypointAction.Jump and v15.FloorMaterial ~= Enum.Material.Air
+
+											if flag6 then
+												v15.Jump = true
+											end
+
+											flag7 = fhSaeMover.mult > 1 and not flag5
+
+											if flag7 then
+												assemblyLinearVelocity = v14.AssemblyLinearVelocity
+												vector4 = Vector3.new(assemblyLinearVelocity.X, 0, assemblyLinearVelocity.Z)
+
+												if v15.WalkSpeed * 0.25 < vector4.Magnitude then
+													v14.CFrame = v14.CFrame + vector4.Unit * math.min((fhSaeMover.mult - 1) * v15.WalkSpeed * result, v21)
+												end
+											end
+
+											if os.clock() - now > n2 then
+												n13 += 1
+												fhSaeMover.lastEvent = ("stall #%d wp %d/%d d %.1f"):format(n13, n10, #tbl14, v21)
+												tbl3.Unpin()
+												v15:Move(Vector3.zero, false)
+												task.wait(0.2)
+												v26 = fn9()
+												v27 = v26 and fhSaeMover.PlanRoute(v26.Position, target)
+												tbl14 = v27 or tbl14
+												now = os.clock()
+												n10 = 1
+												huge = math.huge
+
+												if not (n3 < n13) then
+													v13 = position
+													continue
+												else
+													str2 = fn68(position) and "arrived" or "stuck"
+													fn69(str2)
+													break
+												end
+											else
+												v13 = position
+												continue
+											end
+										end
+									end
+								end
+							end
+						end
+					else
+						num = tonumber(localPlayer:GetAttribute("RagdollEndTime"))
+						n14 = num or 0
+
+						if Workspace:GetServerTimeNow() < n14 then
+							now = os.clock()
+							v13 = nil
+							continue
+						else
+							n15 = math.max(12, v15.WalkSpeed * fhSaeMover.mult * result * 1.5 + 6)
+							flag2 = v13 and (position - v13).Magnitude > n15
+							v16 = flag2 or fn59()
+
+							if v16 then
+								v17 = fhSaeMover
+								str = "ext %.1f dt %.3f ac %s"
+								format = str.format
+								magnitude = v13 and (position - v13).Magnitude or -1
+								v17.lastEvent = format(str, magnitude, result, tostring(fn59()))
+
+								if fn59() then
+									fhSaeMover.corrections = fhSaeMover.corrections + 1
+									fhSaeMover.mult = 1
+								end
+
+								v15:Move(Vector3.zero, false)
+								n16 = os.clock() + 1
+
+								while true do
+									flag3 = os.clock() < n16 and fn59()
+									if flag3 then
+										task.wait(0.1)
+										continue
+									end
+									break
+								end
+
+								task.wait(0.4)
+								v18 = fn9()
+
+								if not v18 then
+									fn69("dead")
+									break
+								else
+									v19 = fhSaeMover.PlanRoute(v18.Position, target)
+									tbl14 = v19 or tbl14
+									now = os.clock()
+									n11 += 1
+									v13 = nil
+									n10 = 1
+									huge = math.huge
+
+									if n11 > n3 then
+										fn69("kept getting moved")
+										break
+									else
+										continue
+									end
+								end
+							else
+								n17 = math.max(3, Vector3.new(v14.AssemblyLinearVelocity.X, 0, v14.AssemblyLinearVelocity.Z).Magnitude * result * 2.5)
+								vector = Vector3.new(v14.AssemblyLinearVelocity.X, 0, v14.AssemblyLinearVelocity.Z)
+								unit = vector.Magnitude > 5 and vector.Unit or Vector3.zero
+
+								while n10 <= #tbl14 do
+									position2 = tbl14[n10].Position
+									vector2 = Vector3.new(position2.X - position.X, 0, position2.Z - position.Z)
+									flag4 = vector2.Magnitude <= n17 or unit.Magnitude > 0 and vector2.Magnitude < 20 and vector2:Dot(unit) < 0
+
+									if flag4 then
+										n10 += 1
+										now = os.clock()
+										huge = math.huge
+										continue
+									end
+
+									break
+								end
+
+								if fn44(position, target) <= reach then
+									v15:Move(Vector3.zero, false)
+									fn69("arrived")
+									break
+								elseif not (#tbl14 < n10) then
+									v20 = tbl14[n10]
+									v21 = fn44(position, v20.Position)
+
+									if v21 < huge - 0.25 then
+										now = os.clock()
+										huge = v21
+									end
+
+									n18 = math.min(#tbl14, n10 + 1)
+									position3 = tbl14[n18].Position
+
+									if n18 == #tbl14 then
+										position3 = target
+									end
+
+									vector3 = Vector3.new(position3.X - position.X, 0, position3.Z - position.Z)
+									flag5 = false
+
+									if vector3.Magnitude > 0.1 then
+										unit2 = vector3.Unit
+										n19 = v15.WalkSpeed * fhSaeMover.mult
+										v22 = fn63(position, unit2, n19 * 0.9)
+
+										if v22 then
+											v23 = fhSaeMover
+											trapsAvoided = fhSaeMover.trapsAvoided or 0
+											v23.trapsAvoided = trapsAvoided + 1
+											now2 = os.clock()
+											lastTrapSay = fhSaeMover.lastTrapSay or 0
+
+											if not (now2 - lastTrapSay > 4) then
+												unit2 = v22
+											else
+												fhSaeMover.lastTrapSay = os.clock()
+												fn25("trap", "Going around a trap", 4)
+												unit2 = v22
+											end
+										end
+
+										if tbl13.brake then
+											v24 = fn44(position, target)
+											n20 = math.max(n19 * 0.25, 8)
+
+											if v24 < n20 then
+												v25 = fn44(position, v20.Position)
+
+												for i = n10, #tbl14 - 1 do
+													v25 += fn44(tbl14[i].Position, tbl14[i + 1].Position)
+												end
+
+												n21 = v25 + fn44(tbl14[#tbl14].Position, target)
+
+												if n18 ~= #tbl14 then
+													n22 = n21
+												else
+													n22 = math.min(n21, v24)
+												end
+
+												if n22 < n20 then
+													unit2 *= math.clamp(n22 / n20, 0.2, 1)
+													flag5 = true
+												end
+											end
+										end
+
+										v15:Move(unit2, false)
+									end
+
+									flag6 = v20.Action == Enum.PathWaypointAction.Jump and v15.FloorMaterial ~= Enum.Material.Air
+
+									if flag6 then
+										v15.Jump = true
+									end
+
+									flag7 = fhSaeMover.mult > 1 and not flag5
+
+									if flag7 then
+										assemblyLinearVelocity = v14.AssemblyLinearVelocity
+										vector4 = Vector3.new(assemblyLinearVelocity.X, 0, assemblyLinearVelocity.Z)
+
+										if v15.WalkSpeed * 0.25 < vector4.Magnitude then
+											v14.CFrame = v14.CFrame + vector4.Unit * math.min((fhSaeMover.mult - 1) * v15.WalkSpeed * result, v21)
+										end
+									end
+
+									if os.clock() - now > n2 then
+										n13 += 1
+										fhSaeMover.lastEvent = ("stall #%d wp %d/%d d %.1f"):format(n13, n10, #tbl14, v21)
+										tbl3.Unpin()
+										v15:Move(Vector3.zero, false)
+										task.wait(0.2)
+										v26 = fn9()
+										v27 = v26 and fhSaeMover.PlanRoute(v26.Position, target)
+										tbl14 = v27 or tbl14
+										now = os.clock()
+										n10 = 1
+										huge = math.huge
+
+										if not (n3 < n13) then
+											v13 = position
+											continue
+										else
+											str2 = fn68(position) and "arrived" or "stuck"
+											fn69(str2)
+											break
+										end
+									else
+										v13 = position
+										continue
+									end
+								else
+									tbl14 = {
+										{ Position = position, Action = Enum.PathWaypointAction.Walk },
+										{ Position = target, Action = Enum.PathWaypointAction.Walk },
+									}
+
+									n12 += 1
+									n10 = 2
+									huge = math.huge
+
+									if n12 > 2 then
+										str3 = fn68(position) and "arrived" or "could not reach it"
+										fn69(str3)
+										break
+									else
+										v20 = tbl14[n10]
+										v21 = fn44(position, v20.Position)
+
+										if v21 < huge - 0.25 then
+											now = os.clock()
+											huge = v21
+										end
+
+										n18 = math.min(#tbl14, n10 + 1)
+										position3 = tbl14[n18].Position
+
+										if n18 == #tbl14 then
+											position3 = target
+										end
+
+										vector3 = Vector3.new(position3.X - position.X, 0, position3.Z - position.Z)
+										flag5 = false
+
+										if vector3.Magnitude > 0.1 then
+											unit2 = vector3.Unit
+											n19 = v15.WalkSpeed * fhSaeMover.mult
+											v22 = fn63(position, unit2, n19 * 0.9)
+
+											if v22 then
+												v23 = fhSaeMover
+												trapsAvoided = fhSaeMover.trapsAvoided or 0
+												v23.trapsAvoided = trapsAvoided + 1
+												now2 = os.clock()
+												lastTrapSay = fhSaeMover.lastTrapSay or 0
+
+												if not (now2 - lastTrapSay > 4) then
+													unit2 = v22
+												else
+													fhSaeMover.lastTrapSay = os.clock()
+													fn25("trap", "Going around a trap", 4)
+													unit2 = v22
+												end
+											end
+
+											if tbl13.brake then
+												v24 = fn44(position, target)
+												n20 = math.max(n19 * 0.25, 8)
+
+												if v24 < n20 then
+													v25 = fn44(position, v20.Position)
+
+													for i = n10, #tbl14 - 1 do
+														v25 += fn44(tbl14[i].Position, tbl14[i + 1].Position)
+													end
+
+													n21 = v25 + fn44(tbl14[#tbl14].Position, target)
+
+													if n18 ~= #tbl14 then
+														n22 = n21
+													else
+														n22 = math.min(n21, v24)
+													end
+
+													if n22 < n20 then
+														unit2 *= math.clamp(n22 / n20, 0.2, 1)
+														flag5 = true
+													end
+												end
+											end
+
+											v15:Move(unit2, false)
+										end
+
+										flag6 = v20.Action == Enum.PathWaypointAction.Jump and v15.FloorMaterial ~= Enum.Material.Air
+
+										if flag6 then
+											v15.Jump = true
+										end
+
+										flag7 = fhSaeMover.mult > 1 and not flag5
+
+										if flag7 then
+											assemblyLinearVelocity = v14.AssemblyLinearVelocity
+											vector4 = Vector3.new(assemblyLinearVelocity.X, 0, assemblyLinearVelocity.Z)
+
+											if v15.WalkSpeed * 0.25 < vector4.Magnitude then
+												v14.CFrame = v14.CFrame + vector4.Unit * math.min((fhSaeMover.mult - 1) * v15.WalkSpeed * result, v21)
+											end
+										end
+
+										if os.clock() - now > n2 then
+											n13 += 1
+											fhSaeMover.lastEvent = ("stall #%d wp %d/%d d %.1f"):format(n13, n10, #tbl14, v21)
+											tbl3.Unpin()
+											v15:Move(Vector3.zero, false)
+											task.wait(0.2)
+											v26 = fn9()
+											v27 = v26 and fhSaeMover.PlanRoute(v26.Position, target)
+											tbl14 = v27 or tbl14
+											now = os.clock()
+											n10 = 1
+											huge = math.huge
+
+											if not (n3 < n13) then
+												v13 = position
+												continue
+											else
+												str2 = fn68(position) and "arrived" or "stuck"
+												fn69(str2)
+												break
+											end
+										else
+											v13 = position
+											continue
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+
+			break
+		end
+
+		if v11 == "retarget" or v11 == "taken" then
+			fhSaeMover.handoff = true
+		else
+			local v14 = fn10()
+
+			if v14 then
+				pcall(function()
+					v14:Move(Vector3.zero, false)
+				end)
+			end
+
+			if tbl13.brake then
+				for i = 1, 3 do
+					local v15 = fn9()
+
+					if v15 then
+						local assemblyLinearVelocity = v15.AssemblyLinearVelocity
+
+						if not (Vector3.new(assemblyLinearVelocity.X, 0, assemblyLinearVelocity.Z).Magnitude < 5) then
+							pcall(function()
+								v15.AssemblyLinearVelocity = Vector3.new(0, assemblyLinearVelocity.Y, 0)
+							end)
+
+							RunService.Heartbeat:Wait()
+							continue
+						end
+					end
+
+					break
+				end
+			end
+
+			fn61(true)
+		end
+
+		local v14 = fhSaeMover
+		fhSaeMover.active = false
+		v14.stopFlag = nil
+		fhSaeMover.lastEvent = "goto end " .. tostring(v11)
+		return v11 == "arrived", v11
+	end
+
+	fn48 = function()
+		if fhSaeMover.active then
+			fhSaeMover.Stop("stop")
+		end
+
+		fn61(true)
+		fhSaeMover.handoff = false
+		local fhSaeHold = getgenv().__FH_SAE_HOLD
+
+		if fhSaeHold then
+			pcall(function()
+				fhSaeHold:Disconnect()
+			end)
+
+			getgenv().__FH_SAE_HOLD = nil
+		end
+	end
+
+	tbl12 = { bad = {}, refused = {} }
+	local n10 = 20
+	local n11 = 60
+
+	fn49 = function()
+		local v9 = fn9()
+		if not v9 then
+			return
+		end
+
+		if not tbl2.InGameplaySide(v9.Position) then
+			return
+		end
+		local y = v9.Position.Y
+		local z = v9.Position.Z
+		fhSaeMover.GoTo(Vector3.new(fn57() - 14, y, z), { reach = 4 })
+	end
+
+	local function fn68(arg)
+		return tostring(arg.AreaId) .. ":" .. tostring(arg.NestId)
+	end
+
+	local function fn69(arg)
+		if arg then
+			tbl12.bad[fn68(arg)] = os.clock()
+		end
+	end
+
+	fn50 = function()
+		if tbl.EggCmds and tbl.EggCmds.SyncAreaEggSnapshot then
+			pcall(tbl.EggCmds.SyncAreaEggSnapshot)
+			return
+		end
+		local Eggs = fn4("Eggs", "REQUEST_AREA_EGG_SNAPSHOT")
+
+		if Eggs then
+			pcall(function()
+				fn5(Eggs, 3)
+			end)
+		end
+	end
+
+	local tbl13 = {}
+
+	fn51 = function()
+		local saeAreas = fn21("sae_areas")
+		if type(saeAreas) ~= "table" then
+			return
+		end
+		local v9 = fn28()
+
+		for k, saeArea in pairs(saeAreas) do
+			saeArea = saeArea and k ~= data.BestOption
+
+			if saeArea then
+				local v10 = fn31(k)
+
+				if v10 and v9 < v10 then
+					local str = k .. ":" .. tostring(math.floor(v9 / math.max(v10, 1) * 10))
+
+					if not tbl13[str] then
+						tbl13[str] = true
+						local str2 = "Your speed (" .. fn12(v9) .. ") is below the " .. fn12(v10) .. " suggested for " .. k .. ". The guard there will probably catch you."
+
+						fn23(function()
+							fn22("Auto Steal", str2, 6)
+						end)
+					end
+				end
+			end
+		end
+	end
+
+	local n12 = 0.85
+
+	local function fn70(arg, arg2)
+		if not (tbl.EscapePred and tbl.EscapePred.Resolve) then
+			return 0
+		end
+		local v9 = fn30(arg, arg2)
+		if not v9 then
+			return 0
+		end
+		local mult = fhSaeMover.mult
+		v9.PlayerWalkSpeed = fn29() * mult * n12
+		local ok, result = pcall(tbl.EscapePred.Resolve, v9)
+		if not ok or type(result) ~= "table" then
+			return 0
+		end
+
+		if result.Outcome == "Caught" then
+			return nil
+		end
+
+		if result.CatchTime == nil then
+			return math.huge
+		end
+		return result.CatchTime - (result.ExitTime or 0)
+	end
+
+	local function fn71(arg, arg2)
+		if tbl5.IsSleeping(arg) then
+			return false
+		end
+		local v9 = tbl5.Pos(arg)
+		if not v9 then
+			return false
+		end
+		local walkSpeed = tbl2.GuardConfig(arg)
+		local n13 = (walkSpeed and walkSpeed.HitDistance or 5) * 2
+		walkSpeed = walkSpeed and walkSpeed.WalkSpeed or 16
+		return fn44(v9, arg2) <= n13 + walkSpeed * 0.75
+	end
+
+	local function fn72(arg)
+		local v9 = fn34()
+		if #v9 == 0 then
+			return nil, "No areas picked"
+		end
+		local flag2 = fn21("sae_rift") and fn21("sae_rift_priority") and tbl8.WantsAny() and true or false
+		local v10 = flag2 and fn33()
+		local tbl14 = nil
+
+		if v10 then
+			tbl14 = {}
+
+			for _, v11 in ipairs(v9) do
+				tbl14[v11] = true
+			end
+
+			for _, v11 in ipairs(fn32()) do
+				tbl14[v11] = true
+			end
+		end
+
+		local tbl15 = {}
+
+		for _, v11 in ipairs(v9) do
+			tbl15[v11] = true
+		end
+
+		local saeMinRarity = fn21("sae_min_rarity")
+		local v11 = fn54()
+		local tbl16 = {}
+
+		local function fn73(arg2)
+			local tbl17 = {}
+			local n13 = 0
+			local n14 = 0
+			local n15 = 0
+			local n16 = 0
+			local n17 = 0
+
+			for _, v12 in ipairs(fn39()) do
+				if v12.State == "Slot" and arg2[v12.AreaId] then
+					local v13 = fn40(v12)
+
+					if v13 then
+						local flag3 = not (flag2 and tbl8.WantsRec(v12))
+
+						if flag3 then
+							flag3 = not (fn37(v12.AssetCategory, saeMinRarity) and fn55(v12, v11))
+						end
+
+						if flag3 then
+							n13 += 1
+						else
+							if tbl16[v12.AreaId] == nil then
+								tbl16[v12.AreaId] = tbl5.IsTargetingMe(v12.AreaId) and true or false
+							end
+
+							if tbl16[v12.AreaId] then
+								n14 += 1
+							elseif fn71(v12.AreaId, v13) then
+								n15 += 1
+							else
+								local v14 = tbl12.bad[fn68(v12)]
+
+								if v14 and os.clock() - v14 <= n4 then
+									n16 += 1
+								else
+									local v15 = fn70(v12.AreaId, v13)
+
+									if v15 == nil then
+										n17 += 1
+									else
+										v12._margin = v15
+										tbl17[#tbl17 + 1] = v12
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+
+			return tbl17, n13, n14, n17, n16, n15
+		end
+
+		local v12, v13, v14, v15, v16, v17 = fn73(tbl15)
+
+		if tbl14 then
+			local v18 = fn73(tbl14)
+			local tbl17 = {}
+
+			for _, v19 in ipairs(v18) do
+				if tbl8.WantsRec(v19) then
+					tbl17[#tbl17 + 1] = v19
+				end
+			end
+
+			if #tbl17 > 0 then
+				local position = fn9() and fn9().Position
+
+				if position then
+					table.sort(tbl17, function(arg2, arg3)
+						local v19 = fn40(arg2)
+						local v20 = fn40(arg3)
+						return (v19 and fn44(v19, position) or 1e9) < (v20 and fn44(v20, position) or 1e9)
+					end)
+				end
+
+				tbl7.bestFallback = nil
+				tbl7.lastPick = { filtered = v13, onUs = v14, tooSlow = v15, bad = v16, nearGuard = v17 }
+				return tbl17[1]
+			end
+		end
+
+		if #v12 > 0 then
+			tbl7.bestFallback = nil
+		elseif fn33() then
+			for _, v18 in ipairs(fn32()) do
+				if not tbl15[v18] then
+					local tbl17 = {}
+
+					for k in pairs(tbl15) do
+						tbl17[k] = true
+					end
+
+					tbl17[v18] = true
+					local v19, v20, v21, v22, v23, v24 = fn73(tbl17)
+
+					if #v19 > 0 then
+						if tbl7.bestFallback ~= v18 then
+							tbl7.bestFallback = v18
+
+							if not arg then
+								fn23(function()
+									fn22("Auto Steal", "Best area is out of eggs - dropping to " .. v18 .. ".", 5)
+								end)
+							end
+						end
+
+						v12 = v19
+						v13 = v20
+						v14 = v21
+						v15 = v22
+						v16 = v23
+						v17 = v24
+						break
+					end
+				end
+			end
+		end
+
+		tbl7.lastPick = { filtered = v13, onUs = v14, tooSlow = v15, bad = v16, nearGuard = v17 }
+
+		if #v12 == 0 then
+			if v14 > 0 then
+				return nil, "Shaking off the guard"
+			end
+
+			if v17 > 0 then
+				return nil, "Waiting for the guard to move away"
+			end
+
+			if v15 > 0 then
+				return nil, "No safe eggs at your speed"
+			end
+
+			if v16 > 0 then
+				return nil, "Waiting to retry " .. v16 .. (v16 == 1 and " nest" or " nests")
+			end
+
+			if v13 > 0 then
+				return nil, "No eggs match your filters"
+			end
+			return nil, "No eggs left to take"
+		end
+
+		if flag2 then
+			local tbl17 = {}
+
+			for _, v18 in ipairs(v12) do
+				if tbl8.WantsRec(v18) then
+					tbl17[#tbl17 + 1] = v18
+				end
+			end
+
+			if #tbl17 > 0 then
+				v12 = tbl17
+			end
+		end
+
+		local saePriority = fn21("sae_priority") or "Rarest"
+		local tbl17
+
+		if saePriority == "Rarest" then
+			local n13 = 0
+
+			for _, v18 in ipairs(v12) do
+				local n14 = data.RarityRank[fn36(v18.AssetCategory) or ""] or 0
+
+				if n13 < n14 then
+					n13 = n14
+				end
+			end
+
+			tbl17 = {}
+
+			for _, v18 in ipairs(v12) do
+				if (data.RarityRank[fn36(v18.AssetCategory) or ""] or 0) == n13 then
+					tbl17[#tbl17 + 1] = v18
+				end
+			end
+		elseif saePriority == "Largest" then
+			table.sort(v12, function(arg2, arg3)
+				return (arg2.AssetScale or 0) > (arg3.AssetScale or 0)
+			end)
+
+			tbl17 = {}
+
+			for i = 1, math.min(3, #v12) do
+				tbl17[#tbl17 + 1] = v12[i]
+			end
+		elseif saePriority == "Nearest" then
+			local position = fn9() and fn9().Position
+			local tbl18
+
+			if position then
+				table.sort(v12, function(arg2, arg3)
+					local v18 = fn40(arg2)
+					local v19 = fn40(arg3)
+					return (v18 and (v18 - position).Magnitude or 1e9) < (v19 and (v19 - position).Magnitude or 1e9)
+				end)
+
+				tbl18 = {}
+
+				for i = 1, math.min(3, #v12) do
+					tbl18[#tbl18 + 1] = v12[i]
+				end
+			else
+				tbl18 = v12
+			end
+
+			tbl17 = tbl18
+		else
+			tbl17 = v12
+		end
+
+		table.sort(tbl17, function(arg2, arg3)
+			return (arg2._margin or 0) > (arg3._margin or 0)
+		end)
+
+		return tbl17[1]
+	end
+
+	local function fn73()
+		if not (tbl.EggCmds and tbl.EggCmds.GetOwnerRuntimeRecords) then
+			return 0
+		end
+		local ok, result = pcall(tbl.EggCmds.GetOwnerRuntimeRecords, localPlayer.UserId)
+		if not ok or type(result) ~= "table" then
+			return 0
+		end
+		local v9, v10, v11 = pairs(result)
+		local n13 = 0
+
+		for k in v9, v10, v11 do
+			n13 += 1
+		end
+
+		return n13
+	end
+
+	local function fn74()
+		if tbl4.IsNight() then
+			return "night"
+		end
+		local saeNightRetreat = fn21("sae_night_retreat") or 3
+		if tbl4.PhaseLeft() <= saeNightRetreat then
+			return "night"
+		end
+		return nil
+	end
+
+	local n13 = 8
+	local n14 = 0.3
+	local n15 = 6
+
+	local function fn75(arg, arg2)
+		local v9 = tbl5.Pos(arg)
+		local v10 = tbl2.GuardConfig(arg)
+		local n16 = math.max(v10 and v10.EggPickupDistance or 0, (v10 and v10.HitDistance or 5) * 2) + 8
+		local n17 = tonumber(localPlayer:GetAttribute("RagdollEndTime")) or 0
+		local v11 = tbl5.IsTargetingMe(arg)
+		local n18 = v9 and fn44(v9, arg2) or -1
+		local x = arg2.X
+		local z = arg2.Z
+		local v12 = tostring
+		local state = tbl5.State
+		tbl7.lastGuardClear = ("%s tgt=%s rag=%.1f gd=%.1f reach=%.1f egg=%d,%d state=%s"):format(arg, tostring(v11), n17 - Workspace:GetServerTimeNow(), n18, n16, x, z, v12(state(arg)))
+		if v11 then
+			return false
+		end
+
+		if Workspace:GetServerTimeNow() < n17 then
+			return false
+		end
+
+		if not v9 then
+			return true
+		end
+		return n18 > n16
+	end
+
+	local function fn76(arg, arg2, arg3)
+		local v9 = fn9()
+		local v10 = fn10()
+		if not v9 or not v10 or v10.Health <= 0 then
+			return false, "no character"
+		end
+		local v11 = fn40(arg)
+		if not v11 then
+			return false, "no position"
+		end
+		local areaId = arg.AreaId
+		local v12 = fn73()
+		local v13 = fn57()
+		tbl7.busy = true
+
+		local function fn77(arg4, arg5)
+			if arg2 and not arg2() then
+				return "turned off"
+			end
+			return fn74(arg4, arg5)
+		end
+
+		local flag2 = false
+		local v14 = nil
+		local flag3 = false
+		local n16 = 0
+		local n17 = 0
+		local n18 = 0
+		local n19 = os.clock() + 1
+
+		local function fn78(arg4, arg5)
+			if flag2 then
+				return "got it"
+			end
+			local v15 = fn77(arg4, arg5)
+			if v15 then
+				return v15
+			end
+
+			if arg3 and os.clock() >= n19 and fn44(arg4, v11) > n11 then
+				n19 = os.clock() + 1
+				local v16 = arg3(arg, arg4)
+				if v16 then
+					tbl7.retarget = v16
+					return "retarget"
+				end
+			end
+
+			if n18 <= os.clock() then
+				n18 = os.clock() + 0.5
+				local ok, result = pcall(tbl.EggCmds.GetAreaEggRecord, arg.Uid)
+				if ok and (result == nil or result.State ~= arg.State and result.CarrierUserId ~= localPlayer.UserId) then
+					return "taken"
+				end
+			end
+
+			if flag3 or n17 >= n15 or os.clock() < n16 then
+				return nil
+			end
+
+			if n13 < fn44(arg4, v11) then
+				return nil
+			end
+			local n20 = n17 + 1
+			flag3 = true
+			n17 = n20
+			n16 = os.clock() + n14
+
+			task.spawn(function()
+				local flag4 = false
+				local v16 = nil
+
+				pcall(function()
+					local v17, v18 = tbl.EggCmds.RequestCarryAreaEgg(arg.Uid, fn56(arg))
+					flag4 = v17
+					v16 = v18
+				end)
+
+				if flag4 then
+					flag2 = true
+				else
+					v14 = v16
+				end
+
+				flag3 = false
+			end)
+
+			return nil
+		end
+
+		local function fn79(arg4)
+			local n20 = n13 - 0.5
+			return fn44(arg4, v11) <= n20
+		end
+
+		local v15, str = fhSaeMover.GoTo(v11, { tick = fn78, reach = 3, arrived = fn79, brake = true })
+
+		if flag2 then
+			str = "got it"
+		end
+
+		local flag4 = not flag2
+
+		if flag4 and (str == "turned off" or str == "night") then
+			tbl7.busy = false
+			local v16 = fn9()
+
+			if v16 and tbl2.InGameplaySide(v16.Position) then
+				fn49()
+			end
+
+			return false, str == "night" and "night" or "stopped"
+		end
+
+		if flag4 and str == "retarget" then
+			local v16 = tbl7
+			tbl7.busy = false
+			v16.goAgain = true
+			return false, "retarget"
+		end
+
+		if flag4 and str == "no route" then
+			tbl7.busy = false
+			return false, "no route"
+		end
+
+		if flag4 and str == "taken" then
+			local v16 = tbl7
+			tbl7.busy = false
+			v16.goAgain = true
+			return false, "Someone else took it"
+		end
+
+		local n20 = 0
+
+		while flag3 and n20 < 1.5 do
+			task.wait(0.1)
+			n20 += 0.1
+		end
+
+		while true do
+			if not flag2 and n17 < n15 then
+				if not (arg2 and not arg2()) then
+					if not fn74() then
+						n17 += 1
+						local flag5 = false
+						local v16 = nil
+
+						pcall(function()
+							local v17, v18 = tbl.EggCmds.RequestCarryAreaEgg(arg.Uid, fn56(arg))
+							flag5 = v17
+							v16 = v18
+						end)
+
+						if flag5 then
+							flag2 = true
+							break
+						else
+							v14 = v16
+							local str2 = type(v14) == "string" and v14:lower() or ""
+
+							if str2:find("closer") then
+								fhSaeMover.GoTo(v11, { tick = fn74, reach = 3, arrived = fn79, brake = true })
+								continue
+							elseif str2:find("gameplay area") then
+								task.wait(0.35)
+								continue
+							else
+								break
+							end
+						end
+					end
+				end
+			end
+
+			break
+		end
+
+		if not flag2 then
+			tbl7.busy = false
+			if type(v14) == "string" and v14:lower():find("unavailable") then
+				return false, "Someone else took it"
+			end
+
+			if tbl5.IsTargetingMe(areaId) then
+				return false, "the guard is already after us"
+			end
+			fn69(arg)
+			if v14 == nil then
+				return false, "could not reach the egg (" .. tostring(str) .. ")"
+			end
+			return false, v14
+		end
+
+		tbl7.carrying = areaId
+
+		local function fn80()
+			if not (tbl.EggCmds and tbl.EggCmds.GetAreaEggRecord) then
+				return true
+			end
+			local ok, result = pcall(tbl.EggCmds.GetAreaEggRecord, arg.Uid)
+			if not ok then
+				return true
+			end
+
+			if result == nil then
+				local v16 = fn9()
+				if v12 < fn73() then
+					return true
+				end
+
+				if v16 and v16.Position.X - v13 <= 8 then
+					return true
+				end
+				return false
+			end
+
+			if result.State ~= "Carried" then
+				return false
+			end
+			local carrierUserId = result.CarrierUserId or result.OwnerUserId
+			return carrierUserId == nil or carrierUserId == localPlayer.UserId
+		end
+
+		local now = nil
+
+		local function fn81(lostPos)
+			if not fn80() then
+				tbl7.carrying = nil
+				tbl7.lostPos = lostPos
+				now = os.clock()
+				return "lost the egg"
+			end
+
+			if lostPos.X <= v13 - 6 then
+				return "arrived"
+			end
+			return nil
+		end
+
+		local v16 = fn9()
+		local v17, v18 = fhSaeMover.GoTo(Vector3.new(v13 - 10, v16 and v16.Position.Y or v11.Y, v11.Z), { tick = fn81, reach = 4 })
+		tbl7.carrying = nil
+		tbl7.busy = false
+		if v18 == "lost the egg" or now then
+			fn69(arg)
+			return false, "lost the egg"
+		end
+		local flag5 = false
+
+		for i = 1, 25 do
+			if v12 < fn73() then
+				flag5 = true
+				break
+			else
+				task.wait(0.12)
+			end
+		end
+
+		return true, nil, flag5, false
+	end
+
+	local function fn77()
+		local tbl14 = {}
+		local saeRecoverOwn = fn21("sae_recover_own")
+
+		for _, v9 in ipairs(fn39()) do
+			if v9.State == "Dropped" then
+				if not saeRecoverOwn or v9.LastCarrierUserId == localPlayer.UserId or v9.CarrierUserId == localPlayer.UserId then
+					if fn40(v9) then
+						tbl14[#tbl14 + 1] = v9
+					end
+				end
+			end
+		end
+
+		return tbl14
+	end
+
+	local function fn78()
+		local v9 = fn77()
+		if #v9 == 0 then
+			return nil
+		end
+		local position = fn9() and fn9().Position
+		local n16 = tonumber(fn21("sae_recover_dist")) or 800
+
+		if n16 >= 3000 then
+			n16 = math.huge
+		end
+
+		local flag2 = false
+		local flag3 = false
+		local flag4 = false
+		local v10 = nil
+		local v11 = nil
+
+		for _, v12 in ipairs(v9) do
+			local v13 = fn40(v12)
+			local magnitude = position and v13 and (v13 - position).Magnitude or math.huge
+			local v14 = tbl12.refused[v12.Uid]
+
+			if not (v14 and os.clock() - v14 < n10) then
+				if magnitude > n16 then
+					flag2 = true
+				elseif not fn75(v12.AreaId, v13) then
+					flag3 = true
+				elseif fn70(v12.AreaId, v13) == nil then
+					flag4 = true
+				elseif not v10 or magnitude < v10 then
+					v10 = magnitude
+					v11 = v12
+				end
+			end
+		end
+
+		return v11, v10, flag3, flag4, flag2
+	end
+
+	local function fn79(arg, arg2, arg3)
+		local ok, result = pcall(tbl.EggCmds.GetAreaEggRecord, arg.Uid)
+		local flag2 = ok and result and result.State == "Dropped" and fn40(result)
+		local v9 = fn9()
+		if not (flag2 and v9 and (flag2 - v9.Position).Magnitude <= 120 and fn21(arg2)) then
+			return false, false
+		end
+		local lostPos = tbl7.lostPos or flag2
+		local n16 = os.clock() + 6
+		task.wait(1)
+		local flag3
+
+		while true do
+			local flag4 = os.clock() < n16 and fn21(arg2)
+			flag3 = false
+
+			if flag4 then
+				local ok2, result2 = pcall(tbl.EggCmds.GetAreaEggRecord, arg.Uid)
+
+				if ok2 and result2 and result2.State == "Dropped" then
+					if fn75(arg.AreaId, lostPos) then
+						flag3 = true
+						break
+					else
+						task.wait(0.25)
+						continue
+					end
+				end
+			end
+
+			break
+		end
+
+		if not fn21(arg2) then
+			return false, false
+		end
+
+		if not flag3 then
+			fn25(arg3, "The guard is standing over the egg", 4)
+			return false, false
+		end
+		fn27("Picking the egg back up")
+		fn25(arg3, "Picking the egg back up", 4)
+		fn50()
+
+		local v10, v11, v12 = fn76(result, function()
+			return fn21(arg2)
+		end)
+
+		return v10, v12
+	end
+
+	fn52 = function()
+		local v9, v10 = fn72()
+
+		if not v9 then
+			tbl7.lastSkipReason = v10
+			tbl7.stealIdleSince = tbl7.stealIdleSince or os.clock()
+			fn27(v10)
+			fn25("steal", v10, 2)
+			return false
+		end
+
+		tbl7.stealIdleSince = nil
+		local v11 = fn9()
+		local v12 = fn40(v9)
+
+		if v11 and v12 then
+			local mult = fhSaeMover.mult
+			local n16 = math.max(fn29() * mult, 1)
+			local n17 = (fn44(v11.Position, v12) + math.max(v12.X - fn57(), 0)) / n16 + 3
+
+			if tbl4.PhaseLeft() <= (fn21("sae_night_retreat") or 3) + n17 then
+				tbl7.lastSkipReason = "not enough day left"
+				fn27("Not enough time before night")
+				fn25("steal", "Not enough time before night", 2)
+				return false
+			end
+		end
+
+		fn27("Stealing in " .. tostring(v9.AreaId))
+		fn25("steal", "Walking to " .. tostring(v9.AreaId), 5)
+		tbl7.runsAttempted = tbl7.runsAttempted + 1
+		fn50()
+
+		local v13, v14, v15 = fn76(v9, function()
+			return fn21("sae_steal")
+		end, function(arg)
+			if fn21("sae_recover") and fn78() then
+				return "a dropped egg"
+			end
+
+			if fn21("sae_rift") and fn21("sae_rift_priority") and tbl8.WantsAny() and not tbl8.WantsRec(arg) then
+				local v13 = fn72(true)
+				if v13 and tbl8.WantsRec(v13) and v13.Uid ~= arg.Uid then
+					return "a Rift egg"
+				end
+			end
+
+			return nil
+		end)
+
+		if v14 == "retarget" then
+			fn25("steal", "Switching to " .. tostring(tbl7.retarget), 3)
+			return false
+		end
+
+		if v13 then
+			tbl7.eggsStolen = tbl7.eggsStolen + 1
+
+			if v15 then
+				tbl7.runsSurvived = tbl7.runsSurvived + 1
+
+				if fn21("sae_rift") then
+					tbl8.Banked(v9)
+				end
+			else
+				tbl7.eggsLost = tbl7.eggsLost + 1
+			end
+
+			return true
+		end
+
+		if v14 == "lost the egg" then
+			tbl7.eggsLost = tbl7.eggsLost + 1
+			fn25("steal", "Lost the egg, going again", 3)
+			local v16, v17 = fn79(v9, "sae_steal", "steal")
+
+			if v16 then
+				tbl7.eggsRecovered = tbl7.eggsRecovered + 1
+
+				if v17 then
+					tbl7.runsSurvived = tbl7.runsSurvived + 1
+
+					if fn21("sae_rift") then
+						tbl8.Banked(v9)
+					end
+				end
+
+				return true
+			end
+		elseif v14 == "no route" then
+			fn25("steal", "No path to the egg yet", 2)
+		elseif v14 and v14 ~= "night" and v14 ~= "stopped" then
+			fn25("steal", tostring(v14), 3)
+		end
+
+		tbl7.lastSkipReason = tostring(v14)
+		return false
+	end
+
+	fn53 = function()
+		local v9, v10, v11, v12, v13 = fn78()
+
+		if not v9 then
+			if v11 then
+				fn26("recover", "A guard is standing over the dropped egg")
+			elseif v12 then
+				fn26("recover", "No dropped eggs you could get away with")
+			elseif v13 then
+				fn26("recover", "Dropped eggs are too far away")
+			end
+
+			return false
+		end
+
+		fn27("Picking up a dropped egg")
+		fn25("recover", "Walking to a dropped egg", 5)
+		fn50()
+
+		local v14, v15, v16 = fn76(v9, function()
+			return fn21("sae_recover")
+		end, function(arg, arg2)
+			local v14, v15 = fn78()
+			local v16 = fn40(arg)
+			if v14 and v15 and v14.Uid ~= arg.Uid and v16 and v15 + 50 < fn44(arg2, v16) then
+				return "a closer dropped egg"
+			end
+			return nil
+		end)
+
+		if v14 then
+			tbl7.eggsRecovered = tbl7.eggsRecovered + 1
+
+			if v16 then
+				tbl7.runsSurvived = tbl7.runsSurvived + 1
+			end
+
+			return true
+		end
+
+		if v15 == "retarget" then
+			fn25("recover", "Switching to " .. tostring(tbl7.retarget), 3)
+			return false
+		end
+
+		if v15 ~= "night" and v15 ~= "stopped" then
+			tbl12.refused[v9.Uid] = os.clock()
+		end
+
+		if v15 == "lost the egg" then
+			tbl7.eggsLost = tbl7.eggsLost + 1
+			fn25("recover", "Lost the egg, trying again", 3)
+			local v17, v18 = fn79(v9, "sae_recover", "recover")
+
+			if v17 then
+				tbl7.eggsRecovered = tbl7.eggsRecovered + 1
+
+				if v18 then
+					tbl7.runsSurvived = tbl7.runsSurvived + 1
+				end
+
+				return true
+			end
+		elseif v15 == "no route" then
+			fn25("recover", "No path to the egg yet", 2)
+		elseif v15 and v15 ~= "night" and v15 ~= "stopped" then
+			fn25("recover", tostring(v15), 3)
+		end
+
+		return false
+	end
+end
+
+local f
+
+f = {
+	AtPlot = function(arg)
+		local v9 = arg or fn41()
+		local v10 = fn9()
+		if not (v9 and v9.PetArea and v10) then
+			return false
+		end
+		local n = v10.Position - v9.PetArea.Position
+		local n2 = v9.PetArea.Size.X * 0.5 + 8
+		local flag2 = math.abs(n.X) <= n2
+
+		if flag2 then
+			local n3 = v9.PetArea.Size.Z * 0.5 + 8
+			flag2 = math.abs(n.Z) <= n3
+		end
+
+		return flag2
+	end,
+	GoToPlot = function()
+		local v9 = fn41()
+		local v10 = fn9()
+		if not (v9 and v9.PetArea and v10) then
+			return false
+		end
+
+		if f.AtPlot(v9) then
+			return true
+		end
+		local position = v9.PetArea.Position
+		return (fhSaeMover.GoTo(Vector3.new(position.X, v10.Position.Y, position.Z), { reach = 4, brake = true }))
+	end,
+}
+
+local fn54
+
+do
+	local function fn55()
+		local tbl13 = {}
+
+		for _, child in ipairs(Workspace:GetChildren()) do
+			if child.Name == "PlacedEggRenders" then
+				for _, child2 in ipairs(child:GetChildren()) do
+					local ok, result = pcall(function()
+						return child2:GetPivot()
+					end)
+
+					if ok then
+						tbl13[#tbl13 + 1] = result.Position
+					end
+				end
+			end
+		end
+
+		return tbl13
+	end
+
+	local function fn56(arg, arg2)
+		local petArea = arg.PetArea
+		local n = petArea.Size.X * 0.5 - 4
+		local n2 = petArea.Size.Z * 0.5 - 4
+
+		for i = 1, 60 do
+			local y = petArea.Position.Y
+			local z = petArea.Position.Z
+			local vector = Vector3.new(petArea.Position.X + math.random(-n, n), y, z + math.random(-n2, n2))
+			local flag2 = true
+
+			for _, v9 in ipairs(arg2) do
+				if (v9 - vector).Magnitude < 6 then
+					flag2 = false
+					break
+				end
+			end
+
+			if flag2 then
+				return vector
+			end
+		end
+
+		return petArea.Position
+	end
+
+	f.PetsPass = function()
+		local saePlace = fn21("sae_place")
+		local saeHatch = fn21("sae_hatch")
+		if not (saePlace or saeHatch) then
+			return false
+		end
+		local v9 = fn41()
+		if not (v9 and v9.PetArea and v9.CenterPoint) then
+			return false
+		end
+
+		if not (tbl.EggCmds and tbl.EggCmds.GetOwnerRuntimeRecords) then
+			return false
+		end
+
+		if not f.AtPlot(v9) then
+			return false
+		end
+		local ok, result = pcall(tbl.EggCmds.GetOwnerRuntimeRecords, localPlayer.UserId)
+		if not ok or type(result) ~= "table" then
+			return false
+		end
+		local tbl13 = {}
+
+		if fn21("sae_rift") then
+			if not tbl8.state and tbl8.Live() then
+				tbl8.Sync(true)
+				tbl8.Rebuild()
+			end
+
+			for k in pairs(tbl8.ReservedEggs()) do
+				tbl13[k] = true
+			end
+		end
+
+		local tbl14 = {}
+		local tbl15 = {}
+
+		for k, v10 in pairs(result) do
+			if not tbl13[k] then
+				if v10.Placement then
+					local ok2, result2 = pcall(tbl.EggCmds.IsLocalEggReady, k)
+
+					if ok2 and result2 then
+						tbl15[#tbl15 + 1] = k
+					end
+				else
+					tbl14[#tbl14 + 1] = k
+				end
+			end
+		end
+
+		local n = 0
+
+		if saePlace then
+			local v10 = fn55()
+
+			for i = 1, math.min(#tbl14, 12) do
+				if f.AtPlot(v9) then
+					local v11 = tbl14[i]
+
+					pcall(function()
+						tbl.EggCmds.RequestEquipTool(v11)
+					end)
+
+					task.wait(0.12)
+					local v12 = v11
+					local character = localPlayer.Character
+
+					if character and tbl.EggToolDisplay and tbl.EggToolDisplay.GetToolUid then
+						for _, child in ipairs(character:GetChildren()) do
+							if child:IsA("Tool") then
+								local ok2, result2 = pcall(tbl.EggToolDisplay.GetToolUid, child)
+
+								if ok2 and result2 then
+									v12 = result2
+								end
+							end
+						end
+					end
+
+					local v13 = fn56(v9, v10)
+					local flag2 = false
+
+					pcall(function()
+						flag2 = tbl.EggCmds.RequestPlaceEgg(v12, v9.CenterPoint.CFrame:ToObjectSpace(CFrame.new(v13)))
+					end)
+
+					if flag2 then
+						n += 1
+						v10[#v10 + 1] = v13
+					end
+
+					task.wait(0.15)
+					continue
+				end
+
+				break
+			end
+		end
+
+		local n2 = 0
+
+		if saeHatch then
+			if #tbl15 > 0 then
+				tbl8.GuardAutoSell()
+			end
+
+			n2 = 0
+
+			for i, v10 in ipairs(tbl15) do
+				if f.AtPlot(v9) then
+					local flag2 = false
+
+					pcall(function()
+						flag2 = tbl.EggCmds.RequestHatchEgg(v10)
+					end)
+
+					if flag2 then
+						task.wait(0.1)
+						local v11 = nil
+
+						pcall(function()
+							local v12, v13, v14 = tbl.EggCmds.RequestCompleteHatchEgg(v10)
+							i = v12
+							i = v13
+							v11 = v14
+						end)
+
+						if v11 then
+							n2 += 1
+							tbl7.petsHatched = tbl7.petsHatched + 1
+						end
+
+						task.wait(0.1)
+					end
+
+					continue
+				end
+
+				break
+			end
+		end
+
+		if n + n2 > 0 then
+			local str
+
+			if n > 0 and n2 > 0 then
+				str = "Placing " .. n .. (n == 1 and " egg" or " eggs") .. ", hatching " .. n2
+			elseif n > 0 then
+				str = "Placing " .. n .. (n == 1 and " egg" or " eggs")
+			else
+				str = "Hatching " .. n2 .. (n2 == 1 and " egg" or " eggs")
+			end
+
+			fn25("pets", str, 4)
+			fn27(str)
+		end
+
+		return n + n2 > 0
+	end
+
+	f.PetsWorkPending = function()
+		if not (fn21("sae_place") or fn21("sae_hatch")) then
+			return false
+		end
+
+		if not (tbl.EggCmds and tbl.EggCmds.GetOwnerRuntimeRecords) then
+			return false
+		end
+		local ok, result = pcall(tbl.EggCmds.GetOwnerRuntimeRecords, localPlayer.UserId)
+		if not ok or type(result) ~= "table" then
+			return false
+		end
+
+		for k, v9 in pairs(result) do
+			if v9.Placement then
+				if fn21("sae_hatch") then
+					local ok2, result2 = pcall(tbl.EggCmds.IsLocalEggReady, k)
+					if ok2 and result2 then
+						return true
+					end
+					continue
+				end
+
+				continue
+			end
+
+			if fn21("sae_place") then
+				return true
+			end
+		end
+
+		return false
+	end
+
+	f.DayTripCount = function()
+		if not (tbl.EggCmds and tbl.EggCmds.GetOwnerRuntimeRecords) then
+			return 0
+		end
+		local ok, result = pcall(tbl.EggCmds.GetOwnerRuntimeRecords, localPlayer.UserId)
+		if not ok or type(result) ~= "table" then
+			return 0
+		end
+		local saeRift = fn21("sae_rift") and tbl8.ReservedEggs() or {}
+		local v9, v10, v11 = pairs(result)
+		local n = 0
+
+		for k, v12 in v9, v10, v11 do
+			local flag2 = saeRift[k] ~= nil
+
+			if v12.Placement then
+				if fn21("sae_hatch") or flag2 then
+					local ok2, result2 = pcall(tbl.EggCmds.IsLocalEggReady, k)
+
+					if ok2 and result2 then
+						n += 1
+					end
+				end
+			elseif fn21("sae_place") or flag2 then
+				n += 1
+			end
+		end
+
+		return n
+	end
+
+	f.DayTripDue = function()
+		local n = tonumber(fn21("sae_pets_daytrip")) or 0
+		if n <= 0 then
+			return false
+		end
+
+		if not (fn21("sae_place") or fn21("sae_hatch") or fn21("sae_rift")) then
+			return false
+		end
+
+		if os.clock() - (tbl7.dayTripAt or 0) < (tbl7.dayTripCool or 60) then
+			return false
+		end
+		return f.DayTripCount() >= n
+	end
+
+	f.EquipBest = function()
+		local Backpack = fn4("Backpack", "EQUIP_BEST")
+		if not Backpack then
+			return false, "remote missing"
+		end
+		local v9, v10 = fn5(Backpack, 6)
+		return v9 and true or false, v10
+	end
+
+	fn54 = function(arg)
+		local tbl13 = {}
+		local n = data.RarityRank[arg] or 1
+
+		for i, rarity in ipairs(data.Rarities) do
+			if i <= n then
+				tbl13[rarity] = true
+			end
+		end
+
+		return tbl13
+	end
+
+	f.PushNativeAutoSell = function(arg)
+		local Backpack = fn4("Backpack", "SET_AUTO_SELL_STATE")
+		if not Backpack then
+			return false
+		end
+		return fn5(Backpack, 5, arg or {}) and true or false
+	end
+
+	f.CaptureNativeAutoSell = function()
+		if tbl7.nativeAutoSell ~= nil then
+			return
+		end
+		local Backpack = fn4("Backpack", "GET_AUTO_SELL_STATE")
+		if not Backpack then
+			tbl7.nativeAutoSell = {}
+			return
+		end
+		local v9 = fn5(Backpack, 5)
+
+		if type(v9) == "table" then
+			tbl7.nativeAutoSell = v9
+		end
+	end
+
+	task.spawn(function()
+		task.wait(1)
+		pcall(f.CaptureNativeAutoSell)
+	end)
+
+	local function fn57(arg)
+		local saeSellKeepMut = fn21("sae_sell_keep_mut")
+		local saeSellKeepRift = fn21("sae_sell_keep_rift")
+		local v9 = fn54(fn21("sae_sell_rarity") or data.Rarities[1])
+		local tbl13 = {}
+		local v10 = ipairs
+		local equippedAssets = arg.EquippedAssets or {}
+
+		for _, equippedAsset in v10(equippedAssets) do
+			tbl13[equippedAsset] = true
+		end
+
+		local favoriteAssets = arg.FavoriteAssets or {}
+		local tbl14 = {}
+		local v11 = pairs
+		local inventory = arg.Inventory or {}
+
+		for k, v12 in v11(inventory) do
+			local v13 = fn36(v12.Category)
+			local flag2 = false
+
+			if type(v12.Mutations) == "table" then
+				for _, mutation in pairs(v12.Mutations) do
+					if mutation ~= false and mutation ~= "None" then
+						flag2 = true
+						break
+					end
+				end
+			end
+
+			local flag3 = v13 and v9[v13] and not tbl13[k] and not favoriteAssets[k] and v12.IsFavorite ~= true and not v12.InFuse
+
+			if flag3 then
+				flag3 = not (saeSellKeepMut and flag2)
+			end
+
+			flag3 = flag3 and not tbl8.IsReserved(k)
+
+			if flag3 then
+				flag3 = not (saeSellKeepRift and data.RiftPets[v12.Category])
+			end
+
+			if flag3 then
+				tbl14[#tbl14 + 1] = k
+			end
+		end
+
+		return tbl14
+	end
+
+	f.SellSweep = function(arg)
+		local v9 = fn16()
+		local v10 = fn10()
+		local backpack = localPlayer:FindFirstChild("Backpack")
+		if not (v9 and v10 and backpack) then
+			return 0, 0
+		end
+		local AssetInventory = fn4("AssetInventory", "SELL_ASSET")
+		if not AssetInventory then
+			return 0, 0
+		end
+		local v11 = fn57(v9)
+		if #v11 == 0 then
+			return 0, 0
+		end
+		local min = math.min
+		local n = #v11
+		arg = arg or 6
+		local n2 = 0
+
+		for i = 1, min(n, arg) do
+			local v12 = v11[i]
+			local v13 = nil
+
+			for _, child in ipairs(backpack:GetChildren()) do
+				if child:GetAttribute("UID") == v12 and child:GetAttribute("ItemType") == "Asset" then
+					v13 = child
+					break
+				else
+					v13 = nil
+				end
+			end
+
+			if v13 then
+				v10:EquipTool(v13)
+				task.wait(0.25)
+				local tool = localPlayer.Character and localPlayer.Character:FindFirstChildWhichIsA("Tool")
+
+				if tool and tool:GetAttribute("UID") == v12 then
+					fn6(AssetInventory, { v12 })
+					n2 += 1
+					task.wait(0.3)
+				end
+			end
+		end
+
+		pcall(function()
+			v10:UnequipTools()
+		end)
+
+		return n2, #v11
+	end
+
+	tbl8.state = nil
+	tbl8.stateAt = 0
+	tbl8.slots = {}
+	tbl8.reserved = {}
+	tbl8.eggs = {}
+	tbl8.need = {}
+	tbl8.lockFile = "ForgeHub/sae_rift_locks_" .. tostring(localPlayer.UserId) .. ".json"
+	tbl8.locked = getgenv().__FH_SAE_RIFT_LOCKS or {}
+
+	pcall(function()
+		if isfile and isfile(tbl8.lockFile) then
+			local data2 = game:GetService("HttpService"):JSONDecode(readfile(tbl8.lockFile))
+			tbl8.loadedFromFile = 0
+			local v9 = ipairs
+			local tbl13 = type(data2) == "table" and data2 or {}
+
+			for _, v10 in v9(tbl13) do
+				if type(v10) == "string" then
+					tbl8.locked[v10] = true
+					tbl8.loadedFromFile = tbl8.loadedFromFile + 1
+				end
+			end
+		end
+	end)
+
+	local locked = tbl8.locked
+	getgenv().__FH_SAE_RIFT_LOCKS = locked
+
+	tbl8.SaveLocks = function()
+		pcall(function()
+			if not writefile then
+				return
+			end
+
+			if isfolder and not isfolder("ForgeHub") and makefolder then
+				makefolder("ForgeHub")
+			end
+
+			local tbl13 = {}
+
+			for k in pairs(tbl8.locked) do
+				tbl13[#tbl13 + 1] = k
+			end
+
+			writefile(tbl8.lockFile, game:GetService("HttpService"):JSONEncode(tbl13))
+		end)
+	end
+
+	tbl8.rerolled = nil
+	tbl8.lastMap = nil
+	tbl8.failAt = 0
+	tbl8.boss = nil
+	tbl8.bossAt = 0
+
+	tbl8.ReqKey = function(arg)
+		if type(arg) ~= "table" then
+			return ""
+		end
+		return table.concat(arg, "|")
+	end
+
+	tbl8.Live = function()
+		if not fn4("Rift", "ASK_STATE") then
+			return false
+		end
+
+		if tbl.RiftElig and tbl.RiftElig.IsFeatureLive then
+			local ok, result = pcall(tbl.RiftElig.IsFeatureLive)
+			if ok then
+				return result == true
+			end
+		end
+
+		return Workspace:GetAttribute("LiveEventFlag_RiftOpen") ~= false
+	end
+
+	tbl8.SpeedNeeded = function()
+		if tbl.RiftFlags and tbl.RiftFlags.SpeedPowerRequirement then
+			local ok, result = pcall(function()
+				return tbl.RiftFlags.SpeedPowerRequirement:Get()
+			end)
+
+			if ok and type(result) == "number" then
+				return result
+			end
+		end
+
+		return 0
+	end
+
+	tbl8.Unlocked = function()
+		if tbl.RiftElig and tbl.RiftElig.IsEligible then
+			local ok, result = pcall(tbl.RiftElig.IsEligible, fn17())
+			if ok then
+				return result == true
+			end
+		end
+
+		return tbl8.state ~= nil and tbl8.state.Unlocked == true
+	end
+
+	tbl8.Requirements = function()
+		local state = tbl8.state
+		if state and type(state.Requirements) == "table" then
+			return state.Requirements
+		end
+		local v9 = fn16()
+		local requirements = v9 and type(v9.Rift) == "table" and v9.Rift.Requirements
+		return type(requirements) == "table" and requirements or {}
+	end
+
+	tbl8.Sync = function(arg)
+		local Rift = fn4("Rift", "ASK_STATE")
+		if not Rift then
+			return false
+		end
+		local flag2 = not arg
+		local flag3
+
+		if flag2 then
+			local stateAt = tbl8.stateAt
+			flag3 = os.clock() - stateAt < 30
+		else
+			flag3 = flag2
+		end
+
+		if flag3 then
+			return tbl8.state ~= nil
+		end
+		tbl8.stateAt = os.clock()
+		local v9 = fn5(Rift, 8)
+		if type(v9) ~= "table" then
+			return false
+		end
+		local v10 = tbl8.ReqKey(tbl8.state and tbl8.state.Requirements)
+		tbl8.state = v9
+
+		if tbl8.ReqKey(v9.Requirements) ~= v10 then
+			tbl8.Rebuild()
+		end
+
+		return true
+	end
+
+	tbl8.RotationLeft = function()
+		if tbl.DirRift and type(tbl.DirRift.SecondsUntilRotation) == "function" then
+			local ok, result = pcall(tbl.DirRift.SecondsUntilRotation)
+			if ok and type(result) == "number" then
+				return math.max(0, result)
+			end
+		end
+
+		local state = tbl8.state
+		if state and type(state.SecondsUntilRotation) == "number" then
+			local stateAt = tbl8.stateAt
+			return math.max(0, state.SecondsUntilRotation - os.clock() - stateAt)
+		end
+		return nil
+	end
+
+	tbl8.Source = function(arg)
+		if tbl.RiftRecipes and tbl.RiftRecipes.SpawnChanceOf then
+			local ok, result, result2 = pcall(tbl.RiftRecipes.SpawnChanceOf, arg)
+			if ok and result2 then
+				return result2, result
+			end
+		end
+
+		local directory = tbl.DirAreas and tbl.DirAreas.Directory
+
+		if type(directory) == "table" then
+			local v9 = nil
+			local v10 = nil
+
+			for k, v11 in pairs(directory) do
+				local dropTable = type(v11) == "table" and v11.DropTable
+				local v12 = ipairs
+				dropTable = type(dropTable) == "table" and dropTable or {}
+
+				for _, v13 in v12(dropTable) do
+					if v13[1] == arg and (not v9 or v13[2] > v9) then
+						v9 = v13[2]
+						v10 = k
+					end
+				end
+			end
+
+			return v10, v9
+		end
+
+		return nil, nil
+	end
+
+	tbl8.MayOffer = function(arg, arg2)
+		if tbl.FuseKernel and tbl.FuseKernel.MayEnterRift then
+			local ok, result, result2 = pcall(tbl.FuseKernel.MayEnterRift, arg, arg2)
+			if ok then
+				return result == true, result2
+			end
+		end
+
+		return arg2.InFuse ~= true and arg2.IsFavorite ~= true, nil
+	end
+
+	tbl8.Candidate = function(arg, arg2)
+		local v9 = fn16()
+		if not (v9 and type(v9.Inventory) == "table") then
+			return nil
+		end
+		local v10 = nil
+		local v11 = nil
+
+		for k, v12 in pairs(v9.Inventory) do
+			if type(v12) == "table" and v12.Category == arg and not arg2[k] then
+				local v13 = tbl8.MayOffer(k, v12)
+
+				if not v13 and tbl8.locked[k] and v12.InFuse ~= true then
+					local n = (fn38(v12) and 1000000 or 0) + (tonumber(v12.Scale) or 1)
+
+					if not v10 or n < v11 then
+						v10 = k
+						v11 = n
+					end
+				elseif v13 then
+					local n = (fn38(v12) and 1000000 or 0) + (tonumber(v12.Scale) or 1)
+
+					if not v10 or n < v11 then
+						v10 = k
+						v11 = n
+					end
+				end
+			end
+		end
+
+		return v10
+	end
+
+	tbl8.Rebuild = function()
+		if not fn21("sae_rift") then
+			local v9 = tbl8
+			local v10 = tbl8
+			local v11 = tbl8
+			tbl8.slots = {}
+			v9.reserved = {}
+			v10.eggs = {}
+			v11.need = {}
+			tbl8.ApplyLocks()
+			return
+		end
+
+		local v9 = tbl8.Requirements()
+		local v10 = fn16()
+		local slots = {}
+		local reserved = {}
+		local eggs = {}
+		local need = {}
+		local tbl13 = {}
+		local v11 = fn28()
+		local tbl14 = {}
+
+		for _, v12 in ipairs(fn34()) do
+			tbl14[v12] = true
+		end
+
+		if fn33() then
+			for _, v12 in ipairs(fn32()) do
+				tbl14[v12] = true
+			end
+		end
+
+		local tbl15 = {}
+
+		for _, v12 in ipairs(fn39()) do
+			if v12.State == "Slot" and v12.AssetCategory then
+				tbl15[v12.AssetCategory] = (tbl15[v12.AssetCategory] or 0) + 1
+			end
+		end
+
+		for i, v12 in ipairs(v9) do
+			local tbl16 = { cat = v12 }
+			local v13 = tbl8.Candidate(v12, tbl13)
+
+			if v13 then
+				tbl16.how = "pet"
+				tbl16.uid = v13
+				tbl13[v13] = true
+				reserved[v13] = v12
+			else
+				local eggInventory = v10 and v10.EggInventory
+
+				if type(eggInventory) == "table" then
+					for k, v14 in pairs(eggInventory) do
+						if type(v14) == "table" and v14.AssetCategory == v12 and not tbl13[k] then
+							tbl16.how = "egg"
+							tbl16.uid = k
+							tbl13[k] = true
+							eggs[k] = v12
+							break
+						end
+					end
+				end
+
+				if not tbl16.how then
+					need[v12] = true
+					local v14, v15 = tbl8.Source(v12)
+					local onMap = tbl15[v12] or 0
+					tbl16.area = v14
+					tbl16.chance = v15
+					tbl16.onMap = onMap
+					local v16 = v14 and fn31(v14)
+
+					if not v14 then
+						tbl16.how = "unknown"
+					elseif v16 and v11 < v16 then
+						tbl16.how = "unreachable"
+					elseif not tbl14[v14] then
+						tbl16.how = "notpicked"
+					else
+						tbl16.how = "hunt"
+					end
+				end
+			end
+
+			slots[i] = tbl16
+		end
+
+		local v12 = tbl8
+		local v13 = tbl8
+		local v14 = tbl8
+		tbl8.slots = slots
+		v12.reserved = reserved
+		v13.eggs = eggs
+		v14.need = need
+		tbl8.ApplyLocks()
+	end
+
+	tbl8.ApplyLocks = function()
+		local PetSatchel = fn4("PetSatchel", "WRITE_FAVOURITE")
+		if not PetSatchel then
+			return
+		end
+		local flag2 = fn21("sae_rift") and fn21("sae_rift_lock") and true or false
+		local v9 = fn16()
+		local inventory = v9 and type(v9.Inventory) == "table" and v9.Inventory or {}
+
+		if flag2 then
+			for k in pairs(tbl8.reserved) do
+				local v10 = inventory[k]
+
+				if v10 and v10.IsFavorite ~= true and not tbl8.locked[k] then
+					fn6(PetSatchel, k, true)
+					tbl8.locked[k] = true
+				end
+			end
+		end
+
+		for k in pairs(tbl8.locked) do
+			if not flag2 or not tbl8.reserved[k] or not inventory[k] then
+				if inventory[k] then
+					fn6(PetSatchel, k, false)
+				end
+
+				tbl8.locked[k] = nil
+			end
+		end
+
+		tbl8.SaveLocks()
+	end
+
+	tbl8.ReleaseLocks = function()
+		local PetSatchel = fn4("PetSatchel", "WRITE_FAVOURITE")
+
+		for k in pairs(tbl8.locked) do
+			if PetSatchel then
+				fn6(PetSatchel, k, false)
+			end
+
+			tbl8.locked[k] = nil
+		end
+
+		tbl8.SaveLocks()
+	end
+
+	tbl8.Unlock = function(arg)
+		local PetSatchel = fn4("PetSatchel", "WRITE_FAVOURITE")
+		local flag2 = false
+
+		for _, v9 in ipairs(arg) do
+			if tbl8.locked[v9] then
+				if PetSatchel then
+					fn6(PetSatchel, v9, false)
+				end
+
+				tbl8.locked[v9] = nil
+				flag2 = true
+			end
+		end
+
+		if not flag2 then
+			return
+		end
+		tbl8.SaveLocks()
+		local now = os.clock()
+
+		while true do
+			task.wait(0.2)
+			local v9 = fn16()
+			local v10, v11, v12 = ipairs(arg)
+			local flag3 = true
+
+			for _, v13 in v10, v11, v12 do
+				local flag4 = v9 and type(v9.Inventory) == "table" and v9.Inventory[v13]
+
+				if flag4 and flag4.IsFavorite == true then
+					flag3 = false
+				end
+			end
+
+			if not (flag3 or os.clock() - now > 3) then
+				continue
+			end
+			break
+		end
+	end
+
+	tbl8.IsReserved = function(arg)
+		return tbl8.reserved[arg] ~= nil
+	end
+
+	tbl8.ReservedEggs = function()
+		return tbl8.eggs
+	end
+
+	tbl8.Banked = function(arg)
+		arg = arg and arg.AssetCategory
+		if not arg or not tbl8.need[arg] then
+			return
+		end
+		local now = os.clock()
+
+		while true do
+			local eggInventory = fn16()
+			eggInventory = eggInventory and eggInventory.EggInventory
+			local flag2 = false
+
+			if type(eggInventory) == "table" then
+				for _, v9 in pairs(eggInventory) do
+					if type(v9) == "table" and v9.AssetCategory == arg then
+						flag2 = true
+						break
+					end
+				end
+			end
+
+			if not flag2 then
+				task.wait(0.2)
+				if not (os.clock() - now > 2) then
+					continue
+				end
+			end
+
+			break
+		end
+
+		tbl8.Rebuild()
+
+		if tbl8.EggWork() then
+			tbl7.riftAt = 0
+			fn25("rift", "Planting the " .. tbl8.PetName(arg) .. " egg before the next run", 4)
+		end
+	end
+
+	tbl8.WantsAny = function()
+		return next(tbl8.need) ~= nil
+	end
+
+	tbl8.WantsRec = function(arg)
+		return arg ~= nil and tbl8.need[arg.AssetCategory] == true
+	end
+
+	tbl8.RiftEggsHeld = function()
+		local eggInventory = fn16()
+		eggInventory = eggInventory and eggInventory.EggInventory
+		local n = 0
+
+		if type(eggInventory) == "table" then
+			for _, v9 in pairs(eggInventory) do
+				if type(v9) == "table" and v9.EggSkin then
+					n += 1
+				end
+			end
+		end
+
+		return n
+	end
+
+	tbl8.SafeMap = function(arg)
+		local tbl13 = {}
+		local v9 = pairs
+		arg = arg or {}
+
+		for k, v10 in v9(arg) do
+			tbl13[k] = v10
+		end
+
+		if fn21("sae_rift") then
+			for k in pairs(tbl8.need) do
+				local v10 = fn36(k)
+
+				if v10 then
+					tbl13[v10] = nil
+				end
+			end
+
+			for _, egg in pairs(tbl8.eggs) do
+				local v10 = fn36(egg)
+
+				if v10 then
+					tbl13[v10] = nil
+				end
+			end
+		end
+
+		if fn21("sae_sell_keep_rift") and tbl8.RiftEggsHeld() > 0 then
+			for k in pairs(data.RiftPets) do
+				local v10 = fn36(k)
+
+				if v10 then
+					tbl13[v10] = nil
+				end
+			end
+		end
+
+		return tbl13
+	end
+
+	tbl8.GuardAutoSell = function()
+		if not fn21("sae_sell") then
+			return
+		end
+		local v9 = tbl8.SafeMap(fn54(fn21("sae_sell_rarity") or data.Rarities[1]))
+		local tbl13 = {}
+
+		for k in pairs(v9) do
+			tbl13[#tbl13 + 1] = k
+		end
+
+		table.sort(tbl13)
+		local lastMap = table.concat(tbl13, ",")
+
+		if lastMap ~= tbl8.lastMap then
+			tbl8.lastMap = lastMap
+			f.PushNativeAutoSell(v9)
+		end
+	end
+
+	tbl8.PendingReward = function()
+		local state = tbl8.state
+		if state and type(state.PendingReward) == "table" then
+			return true
+		end
+		local v9 = fn16()
+		return v9 and type(v9.Rift) == "table" and type(v9.Rift.PendingReward) == "table" and true or false
+	end
+
+	tbl8.ReadyToTrade = function()
+		local v9 = tbl8.Requirements()
+		if #v9 == 0 or #tbl8.slots ~= #v9 then
+			return false
+		end
+
+		for _, slot in ipairs(tbl8.slots) do
+			if slot.how ~= "pet" then
+				return false
+			end
+		end
+
+		return true
+	end
+
+	tbl8.EggWork = function()
+		if next(tbl8.eggs) == nil then
+			return false
+		end
+
+		if not (tbl.EggCmds and tbl.EggCmds.GetOwnerRuntimeRecords) then
+			return false
+		end
+		local ok, result = pcall(tbl.EggCmds.GetOwnerRuntimeRecords, localPlayer.UserId)
+		if not ok or type(result) ~= "table" then
+			return false
+		end
+
+		for k in pairs(tbl8.eggs) do
+			local v9 = result[k]
+
+			if v9 then
+				if not v9.Placement then
+					return true
+				end
+				local ok2, result2 = pcall(tbl.EggCmds.IsLocalEggReady, k)
+				if ok2 and result2 then
+					return true
+				end
+			end
+		end
+
+		return false
+	end
+
+	tbl8.WantReroll = function()
+		if not fn21("sae_rift_reroll") then
+			return false
+		end
+
+		if not fn4("Rift", "ASK_REFRESH") then
+			return false
+		end
+		local state = tbl8.state
+		local flag2 = not state
+
+		if not flag2 then
+			flag2 = (tonumber(state.FreeRefreshesRemaining) or 0) <= 0
+		end
+
+		if flag2 then
+			return false
+		end
+
+		if tbl8.rerolled == tbl8.ReqKey(tbl8.Requirements()) then
+			return false
+		end
+
+		for _, slot in ipairs(tbl8.slots) do
+			if slot.how == "unreachable" or slot.how == "unknown" then
+				return true
+			end
+		end
+
+		return false
+	end
+
+	tbl8.WorkPending = function()
+		if not (fn21("sae_rift") and tbl8.Live() and tbl8.Unlocked()) then
+			return false
+		end
+
+		if tbl8.PendingReward() then
+			return true
+		end
+		local saeRiftTrade = fn21("sae_rift_trade") and tbl8.ReadyToTrade()
+
+		if saeRiftTrade then
+			local failAt = tbl8.failAt
+			saeRiftTrade = os.clock() - failAt > 30
+		end
+
+		if saeRiftTrade then
+			return true
+		end
+
+		if tbl8.EggWork() then
+			return true
+		end
+
+		if tbl8.WantReroll() then
+			return true
+		end
+		return false
+	end
+
+	tbl8.MachinePos = function()
+		local objects = Workspace:FindFirstChild("__OBJECTS")
+		objects = objects and objects:FindFirstChild("Machines")
+		objects = objects and objects:FindFirstChild("RiftMachine")
+		local machine = objects and objects:FindFirstChild("Machine")
+		if machine and machine:IsA("BasePart") then
+			return machine.Position
+		end
+		return Vector3.new(533.4, 68.5, -334.5)
+	end
+
+	tbl8.PetName = function(arg)
+		local directory = tbl.DirAssets and tbl.DirAssets.Directory
+		directory = directory and directory[arg]
+		if directory and type(directory.DisplayName) == "string" and directory.DisplayName ~= "" then
+			return directory.DisplayName
+		end
+		return tostring(arg)
+	end
+
+	tbl8.EggLeft = function(arg)
+		if not (tbl.EggCmds and tbl.EggCmds.GetOwnerRuntimeRecords) then
+			return nil
+		end
+		local ok, result = pcall(tbl.EggCmds.GetOwnerRuntimeRecords, localPlayer.UserId)
+		local flag2 = ok and type(result) == "table" and result[arg] or nil
+		if not flag2 then
+			return nil
+		end
+
+		if not flag2.Placement then
+			return nil, "bag"
+		end
+
+		if flag2.Placement.ReadyAt ~= nil then
+			return 0
+		end
+		local v9 = fn(fn2(ReplicatedStorage, "Shared", "Util", "EggRecords"))
+		if not v9 then
+			return nil
+		end
+		local serverTimeNow = Workspace:GetServerTimeNow()
+		local n = tonumber(flag2.GrowthSpeedMultiplier) or 1
+		local ok2, result2 = pcall(v9.WallSecondsRemaining, flag2, serverTimeNow, n)
+
+		if not (ok2 and type(result2) == "number") then
+			ok2, result2 = pcall(v9.GrowthSecondsRemaining, flag2, serverTimeNow, n, 0, nil)
+		end
+
+		if ok2 and type(result2) == "number" then
+			return math.max(0, result2)
+		end
+		return nil
+	end
+
+	tbl8.SlotText = function(arg)
+		local v9 = tbl8.PetName(arg.cat)
+		if arg.how == "pet" then
+			return v9 .. ": ready"
+		end
+
+		if arg.how == "egg" then
+			local v10, v11 = tbl8.EggLeft(arg.uid)
+			if v11 == "bag" then
+				return v9 .. ": egg in your bag, planting it"
+			end
+
+			if v10 == 0 then
+				return v9 .. ": egg ready to hatch"
+			end
+
+			if v10 then
+				return v9 .. ": hatching your egg (" .. fn11(v10) .. ")"
+			end
+			return v9 .. ": hatching your egg"
+		end
+
+		if arg.how == "hunt" then
+			local saeSteal = fn21("sae_steal")
+
+			if saeSteal then
+				saeSteal = (arg.onMap or 0) > 0
+			end
+
+			if saeSteal then
+				return v9 .. ": stealing from " .. tostring(arg.area)
+			end
+
+			if (arg.onMap or 0) > 0 then
+				return v9 .. ": egg at " .. tostring(arg.area) .. ", Auto Steal is off"
+			end
+			return v9 .. ": waiting for egg at " .. tostring(arg.area)
+		end
+
+		if arg.how == "notpicked" then
+			return v9 .. ": add " .. tostring(arg.area) .. " to your areas"
+		end
+
+		if arg.how == "unreachable" then
+			return v9 .. ": " .. tostring(arg.area) .. " is beyond your speed"
+		end
+		return v9 .. ": no known source"
+	end
+
+	tbl8.HatchReserved = function(arg)
+		if not (tbl.EggCmds and tbl.EggCmds.GetOwnerRuntimeRecords) then
+			return 0
+		end
+		local ok, result = pcall(tbl.EggCmds.GetOwnerRuntimeRecords, localPlayer.UserId)
+		if not ok or type(result) ~= "table" then
+			return 0
+		end
+		local v9 = fn55()
+		local n = 0
+
+		for k, egg in pairs(tbl8.eggs) do
+			local v10 = result[k]
+
+			if v10 and f.AtPlot(arg) then
+				if not v10.Placement then
+					pcall(function()
+						tbl.EggCmds.RequestEquipTool(k)
+					end)
+
+					task.wait(0.12)
+					local v11 = k
+					local character = localPlayer.Character
+
+					if character and tbl.EggToolDisplay and tbl.EggToolDisplay.GetToolUid then
+						for _, child in ipairs(character:GetChildren()) do
+							if child:IsA("Tool") then
+								local ok2, result2 = pcall(tbl.EggToolDisplay.GetToolUid, child)
+
+								if ok2 and result2 then
+									v11 = result2
+								end
+							end
+						end
+					end
+
+					local v12 = fn56(arg, v9)
+					local flag2 = false
+
+					pcall(function()
+						flag2 = tbl.EggCmds.RequestPlaceEgg(v11, arg.CenterPoint.CFrame:ToObjectSpace(CFrame.new(v12)))
+					end)
+
+					if flag2 then
+						n += 1
+						v9[#v9 + 1] = v12
+						fn25("rift", "Planted the " .. tbl8.PetName(egg) .. " egg", 4)
+					end
+
+					task.wait(0.15)
+				else
+					local ok2, result2 = pcall(tbl.EggCmds.IsLocalEggReady, k)
+
+					if ok2 and result2 then
+						local flag2 = false
+
+						pcall(function()
+							flag2 = tbl.EggCmds.RequestHatchEgg(k)
+						end)
+
+						if flag2 then
+							task.wait(0.1)
+							local v11 = nil
+
+							pcall(function()
+								local v12, v13, v14 = tbl.EggCmds.RequestCompleteHatchEgg(k)
+								_ = v12
+								_ = v13
+								v11 = v14
+							end)
+
+							if v11 then
+								n += 1
+								tbl7.petsHatched = tbl7.petsHatched + 1
+								fn25("rift", "Hatched the " .. tbl8.PetName(egg) .. " egg", 4)
+							end
+
+							task.wait(0.1)
+						end
+					end
+				end
+			end
+		end
+
+		return n
+	end
+end
+
+tbl8.Trade = function()
+	local Rift = fn4("Rift", "ASK_TRADE_IN")
+	if not Rift then
+		return false
+	end
+
+	if data.EggCap <= fn20() then
+		fn25("rift", "Egg inventory is full, the Rift egg has nowhere to go", 5)
+		return false
+	end
+	local tbl13 = {}
+	local tbl14 = {}
+
+	for i, slot in ipairs(tbl8.slots) do
+		tbl13[i] = slot.uid
+		tbl14[i] = tbl8.PetName(slot.cat)
+	end
+
+	local v9 = fn9()
+	if not v9 then
+		return false
+	end
+	local v10 = tbl8.MachinePos()
+
+	if fn44(v9.Position, v10) > 7 then
+		fn25("rift", "Walking to the Rift", 4)
+		fn27("Walking to the Rift")
+		local v11 = fhSaeMover.GoTo(Vector3.new(v10.X + 3.5, v9.Position.Y, v10.Z - 1.5), { reach = 3, brake = true })
+		local v12 = fn9()
+
+		if not v11 or not v12 or fn44(v12.Position, v10) > 9 then
+			fn25("rift", "Could not reach the Rift", 5)
+			tbl8.failAt = os.clock()
+			return false
+		end
+	end
+
+	fn27("Trading at the Rift")
+	local v11 = fn16()
+	local tbl15 = {}
+	local v12 = ipairs
+	local equippedAssets = v11 and type(v11.EquippedAssets) == "table" and v11.EquippedAssets or {}
+
+	for _, equippedAsset in v12(equippedAssets) do
+		tbl15[equippedAsset] = true
+	end
+
+	local PenRoster = fn4("PenRoster", "ASK_DOFF")
+
+	for _, v13 in ipairs(tbl13) do
+		if tbl15[v13] and PenRoster then
+			fn5(PenRoster, 6, v13)
+			task.wait(0.25)
+		end
+	end
+
+	tbl8.Unlock(tbl13)
+	fn25("rift", "Offering " .. table.concat(tbl14, ", "), 5)
+	local v13, flag2 = fn5(Rift, 12, tbl13)
+
+	if v13 == true then
+		tbl7.riftTrades = tbl7.riftTrades + 1
+		task.wait(0.3)
+		local Rift2 = fn4("Rift", "ASK_FINISH_REVEAL")
+
+		if Rift2 then
+			fn5(Rift2, 8)
+		end
+
+		local state = tbl8.state
+		local bannerDisplayName = state and type(state.BannerDisplayName) == "string" and state.BannerDisplayName or "Rift"
+		fn22("Auto Rift", "Traded " .. table.concat(tbl14, ", ") .. " for a " .. bannerDisplayName .. " Egg.", 6)
+		fn25("rift", "Got a " .. bannerDisplayName .. " Egg", 8)
+		tbl8.Sync(true)
+		tbl8.Rebuild()
+		return true
+	end
+
+	flag2 = type(flag2) == "string" and flag2
+	local flag3
+
+	if flag2 then
+		flag3 = flag2
+	else
+		flag3 = type(v13) == "string" and v13
+	end
+
+	flag3 = flag3 or "The Rift refused the trade"
+	fn25("rift", tostring(flag3), 6)
+	tbl7.lastSkipReason = "rift: " .. tostring(flag3)
+	tbl8.failAt = os.clock()
+	tbl8.Sync(true)
+	tbl8.Rebuild()
+	return false
+end
+
+tbl8.Pass = function()
+	if not tbl8.WorkPending() then
+		return false
+	end
+	tbl7.riftBusy = true
+	local flag2 = false
+
+	pcall(function()
+		if tbl8.PendingReward() then
+			local Rift = fn4("Rift", "ASK_FINISH_REVEAL")
+
+			if Rift then
+				fn5(Rift, 8)
+				fn25("rift", "Collected the Rift egg from your last trade", 6)
+				tbl8.Sync(true)
+				flag2 = true
+			end
+		end
+
+		if tbl8.WantReroll() then
+			local Rift = fn4("Rift", "ASK_REFRESH")
+			tbl8.rerolled = tbl8.ReqKey(tbl8.Requirements())
+			local tbl13 = {}
+
+			for _, slot in ipairs(tbl8.slots) do
+				if slot.how == "unreachable" then
+					tbl13[#tbl13 + 1] = tbl8.PetName(slot.cat)
+				end
+			end
+
+			fn5(Rift, 8)
+			tbl8.Sync(true)
+			tbl8.Rebuild()
+			local tbl14 = {}
+
+			for _, slot in ipairs(tbl8.slots) do
+				tbl14[#tbl14 + 1] = tbl8.PetName(slot.cat)
+			end
+
+			fn25("rift", "Rerolled: now asking for " .. table.concat(tbl14, ", "), 8)
+			fn22("Auto Rift", "Used a free reroll (" .. table.concat(tbl13, ", ") .. " came from areas beyond your speed). Now: " .. table.concat(tbl14, ", ") .. ".", 7)
+			flag2 = true
+		end
+
+		if tbl8.EggWork() then
+			local v9 = fn41()
+
+			if v9 and v9.PetArea and not f.AtPlot(v9) then
+				fn25("rift", "Walking to your plot to hatch the Rift's eggs", 4)
+				fn27("Walking to your plot")
+				f.GoToPlot()
+			end
+
+			if v9 and v9.PetArea and f.AtPlot(v9) then
+				tbl8.GuardAutoSell()
+
+				if tbl8.HatchReserved(v9) > 0 then
+					flag2 = true
+					task.wait(0.5)
+					tbl8.Rebuild()
+				end
+			end
+		end
+
+		local saeRiftTrade = fn21("sae_rift_trade") and tbl8.ReadyToTrade()
+
+		if saeRiftTrade then
+			local failAt = tbl8.failAt
+			saeRiftTrade = os.clock() - failAt > 30
+		end
+
+		if saeRiftTrade then
+			if tbl8.Trade() then
+				flag2 = true
+			end
+		end
+	end)
+
+	tbl7.riftBusy = false
+	return flag2
+end
+
+tbl8.BossSync = function()
+	local BossEvent = fn4("BossEvent", "ASK_SNAPSHOT")
+	local flag2 = not BossEvent
+	local flag3
+
+	if flag2 then
+		flag3 = flag2
+	else
+		local bossAt = tbl8.bossAt
+		flag3 = os.clock() - bossAt < 20
+	end
+
+	if flag3 then
+		return
+	end
+	tbl8.bossAt = os.clock()
+	local v9 = fn5(BossEvent, 6)
+
+	if type(v9) == "table" then
+		tbl8.boss = v9
+	end
+end
+
+tbl8.BossLine = function()
+	local boss = tbl8.boss
+	if not boss then
+		return nil
+	end
+	local serverTimeNow = Workspace:GetServerTimeNow()
+	local bossName = tbl.DirBossEvent and type(tbl.DirBossEvent.BossName) == "string" and tbl.DirBossEvent.BossName or "Boss"
+	local num = tonumber(boss.OpensAt)
+	local num2 = tonumber(boss.ClosesAt)
+
+	if boss.Open == true or num and num2 and num <= serverTimeNow and serverTimeNow < num2 then
+		if num2 and num2 > serverTimeNow then
+			return bossName .. " is here, " .. fn11(num2 - serverTimeNow) .. " left"
+		end
+		return bossName .. " is here"
+	end
+
+	if num and num > serverTimeNow then
+		return bossName .. " in " .. fn11(num - serverTimeNow)
+	end
+	return nil
+end
+
+tbl7.eventConns = tbl7.eventConns or {}
+
+fn15(function()
+	local Rift = fn4("Rift", "BANNER_ROTATED")
+
+	if Rift and Rift:IsA("RemoteEvent") then
+		tbl7.eventConns[#tbl7.eventConns + 1] = Rift.OnClientEvent:Connect(function()
+			if not fn14() then
+				return
+			end
+
+			task.spawn(function()
+				task.wait(1)
+				tbl8.Sync(true)
+
+				if fn21("sae_rift") then
+					local tbl13 = {}
+
+					for _, slot in ipairs(tbl8.slots) do
+						tbl13[#tbl13 + 1] = tbl8.PetName(slot.cat)
+					end
+
+					fn22("Auto Rift", "The Rift banner rotated. Now asking for " .. table.concat(tbl13, ", ") .. ".", 7)
+				end
+			end)
+		end)
+	end
+
+	local flag2 = false
+
+	while tbl7.running and fn14() do
+		pcall(function()
+			if fn21("sae_rift") and tbl8.Live() then
+				tbl8.Sync(false)
+				tbl8.Rebuild()
+			elseif next(tbl8.reserved) ~= nil or next(tbl8.locked) ~= nil then
+				tbl8.Rebuild()
+			end
+
+			if fn21("sae_boss_alert") then
+				tbl8.BossSync()
+				local boss = tbl8.boss
+				local serverTimeNow = Workspace:GetServerTimeNow()
+				local flag3 = boss ~= nil and (boss.Open == true or tonumber(boss.OpensAt) and tonumber(boss.ClosesAt) and tonumber(boss.OpensAt) <= serverTimeNow and serverTimeNow < tonumber(boss.ClosesAt))
+
+				if flag3 and not flag2 then
+					fn22("Boss Event", tostring(tbl.DirBossEvent and tbl.DirBossEvent.BossName or "The boss") .. " has arrived. The arena is open.", 6)
+				end
+
+				flag2 = flag3 and true or false
+			end
+		end)
+
+		task.wait(10)
+	end
+end)
+
+do
+	local function fn55()
+		local plotFolder = fn41()
+		plotFolder = plotFolder and plotFolder.PlotFolder
+		return plotFolder and plotFolder:FindFirstChild("TreadmillBottom")
+	end
+
+	local Treadmills = fn4("Treadmills", "ACTIVE_TREADMILL_EVENT")
+
+	if Treadmills then
+		local connection = nil
+
+		local function fn56(arg)
+			if not fn14() then
+				if connection then
+					connection:Disconnect()
+				end
+
+				return
+			end
+
+			tbl7.treadmillOn = arg ~= nil and true or false
+
+			if not tbl7.treadmillOn then
+				local v9 = tbl7
+				tbl7.spSample = nil
+				v9.speedRate = nil
+			end
+		end
+
+		tbl7.treadmillEvent = pcall(function()
+			if typeof(Treadmills) == "Instance" then
+				connection = Treadmills.OnClientEvent:Connect(fn56)
+			elseif tbl.Network and tbl.Network.Fired then
+				connection = tbl.Network.Fired(Treadmills):Connect(fn56)
+			end
+		end) and connection ~= nil
+	end
+
+	local function fn56(arg)
+		return Vector3.new(arg.Position.X - 6, 0, arg.Position.Z - 10)
+	end
+
+	f.TreadmillSet = function(arg)
+		if arg then
+			if tbl7.treadmillOn then
+				return true
+			end
+			local v9 = fn55()
+			local Treadmills2 = fn4("Treadmills", "REQUEST_EQUIP_STATIC")
+			if not (v9 and Treadmills2) then
+				return false
+			end
+			local v10 = fn9()
+			if not v10 then
+				return false
+			end
+
+			if fn44(v10.Position, v9.Position) > 3 then
+				fhSaeMover.GoTo(Vector3.new(v9.Position.X, v10.Position.Y, v9.Position.Z), {
+					reach = 3,
+					tick = function()
+						if tbl7.treadmillOn then
+							return "pinned"
+						end
+					end,
+				})
+
+				if tbl7.treadmillOn then
+					return true
+				end
+				local v11 = fn9()
+				if not v11 or fn44(v11.Position, v9.Position) > 5 then
+					return false
+				end
+			end
+
+			local v11, v12 = fn5(Treadmills2, 5)
+
+			if v11 == true or type(v12) == "string" and v12:lower():find("already") then
+				tbl7.treadmillOn = true
+			end
+
+			local now = os.clock()
+
+			while not tbl7.treadmillOn and os.clock() - now < 1.5 do
+				task.wait(0.1)
+			end
+
+			return tbl7.treadmillOn
+		end
+
+		if not tbl7.treadmillOn then
+			return true
+		end
+		local Treadmills2 = fn4("Treadmills", "REQUEST_UNEQUIP")
+
+		if Treadmills2 then
+			fn5(Treadmills2, 5)
+		end
+
+		tbl7.treadmillOn = false
+		local v9 = tbl7
+		tbl7.spSample = nil
+		v9.speedRate = nil
+		local v10 = fn55()
+		local v11 = fn9()
+
+		if v10 and v11 and fn44(v11.Position, v10.Position) < 9 then
+			local v12 = fn56(v10)
+			fhSaeMover.GoTo(Vector3.new(v12.X, v11.Position.Y, v12.Z), { reach = 2 })
+		end
+
+		return true
+	end
+
+	f.TreadmillUpgrade = function()
+		local v9 = fn16()
+		if not (v9 and tbl.DirTreadmill) then
+			return false
+		end
+		local n = (v9.TreadmillUpgradeLevel or 0) + 1
+		if (tonumber(fn21("sae_treadmill_max")) or 10) < n then
+			fn26("treadup", "Already at max tier")
+			return false
+		end
+		local result = nil
+
+		if tbl.DirTreadmill.GetByUpgradeLevel then
+			local ok
+			ok, result = pcall(tbl.DirTreadmill.GetByUpgradeLevel, n)
+			local v10 = nil
+
+			if not ok then
+				result = v10
+			end
+		end
+
+		if not (result and result._id and result.Price) then
+			fn26("treadup", "Already at max tier")
+			return false
+		end
+
+		if (v9.Money or 0) < result.Price then
+			fn26("treadup", "Need " .. fn12(result.Price - (v9.Money or 0)) .. " more")
+			return false
+		end
+		local Treadmills2 = fn4("Treadmills", "REQUEST_UPGRADE")
+		if not Treadmills2 then
+			return false
+		end
+		local v10 = fn5(Treadmills2, 6, result._id)
+
+		if v10 then
+			fn25("treadup", "Upgraded to tier " .. n, 8)
+			fn22("Auto Treadmill Upgrade", "Your treadmill is now tier " .. n .. ".", 4)
+		end
+
+		return v10 and true or false
+	end
+
+	f.BaseUpgrade = function()
+		local v9 = fn16()
+		if not (v9 and tbl.BaseUpgrade and tbl.BaseUpgrade.CanAffordNext) then
+			return false
+		end
+		local ok, result, result2 = pcall(tbl.BaseUpgrade.GetNextConfig, v9)
+		if ok and result2 == nil then
+			fn26("base", "Base fully upgraded")
+			return false
+		end
+		local ok2, result3 = pcall(tbl.BaseUpgrade.CanAffordNext, v9)
+
+		if not (ok2 and result3) then
+			if ok and result2 and result2.Cost then
+				fn26("base", "Need " .. fn12(result2.Cost - (v9.Money or 0)) .. " more")
+			end
+
+			return false
+		end
+
+		local Plots = fn4("Plots", "REQUEST_BASE_UPGRADE")
+		if not Plots then
+			return false
+		end
+		fn6(Plots)
+		fn25("base", "Upgraded your base", 8)
+		fn22("Auto Base Upgrade", "Your base just got bigger.", 4)
+		return true
+	end
+
+	f.TrailPass = function()
+		local v9 = fn16()
+		if not (v9 and tbl.DirTrails and tbl.DirTrails.Directory) then
+			return false
+		end
+		local trailInventory = v9.TrailInventory or {}
+		local money = v9.Money or 0
+		local v10 = nil
+		local v11 = nil
+		local v12 = nil
+		local v13 = nil
+
+		for k, v14 in pairs(tbl.DirTrails.Directory) do
+			local n = tonumber(v14.SpeedMultiplier) or 1
+
+			if trailInventory[k] then
+				if not v10 or n > v10 then
+					v10 = n
+					v11 = k
+				end
+			elseif v14.Price and v14.Price <= money then
+				if not v12 or n > v12 then
+					v12 = n
+					v13 = k
+				end
+			end
+		end
+
+		local price = nil
+
+		for k, v14 in pairs(tbl.DirTrails.Directory) do
+			local n = tonumber(v14.SpeedMultiplier) or 1
+
+			if not trailInventory[k] and v14.Price and v14.Price > money and (not v10 or n > v10) and (not price or v14.Price < price) then
+				price = v14.Price
+			end
+		end
+
+		if v13 and (not v10 or v12 > v10) then
+			local Trails = fn4("Trails", "REQUEST_PURCHASE")
+
+			if Trails then
+				if fn5(Trails, 6, v13) then
+					local str = v13:gsub("Trail$", "")
+					fn25("trail", "Bought the " .. str .. " trail", 8)
+					fn22("Auto Trail Upgrade", "Bought the " .. str .. " trail.", 4)
+					v11 = v13
+				end
+			end
+		end
+
+		if v11 and v9.EquippedTrail ~= v11 then
+			local Trails = fn4("Trails", "REQUEST_SELECT")
+
+			if Trails then
+				fn5(Trails, 6, v11)
+				fn25("trail", "Equipped the " .. v11:gsub("Trail$", "") .. " trail", 6)
+			end
+
+			return true
+		end
+
+		if price then
+			fn26("trail", "Need " .. fn12(price - money) .. " more")
+		else
+			fn26("trail", "Best trail equipped")
+		end
+
+		return false
+	end
+
+	f.ClaimIndex = function()
+		local Index = fn4("Index", "REQUEST_CLAIM_ALL")
+		if not Index then
+			return false
+		end
+		return fn5(Index, 8) and true or false
+	end
+
+	f.ClaimOffline = function()
+		local OfflineAssets = fn4("OfflineAssets", "GET_SUMMARY")
+		local OfflineAssets2 = fn4("OfflineAssets", "REQUEST_REDEEM")
+		if not (OfflineAssets and OfflineAssets2) then
+			return false
+		end
+		local v9 = fn5(OfflineAssets, 6)
+		if type(v9) ~= "table" then
+			return false
+		end
+
+		if (v9.ClaimableAmount or 0) <= 0 then
+			return false
+		end
+		return fn5(OfflineAssets2, 8, { Kind = "Claim" }) and true or false
+	end
+
+	f.ClaimLimited = function()
+		local Index = fn4("Index", "REQUEST_CLAIM_LIMITED_EGG_REWARD")
+		if not Index then
+			return false
+		end
+		return fn5(Index, 8) and true or false
+	end
+
+	f.ClaimBossMastery = function()
+		local BossMastery = fn4("BossMastery", "ASK_CLAIM_MILESTONE")
+		local dirBossMastery = tbl.DirBossMastery
+		local bossMastery = fn16()
+		bossMastery = bossMastery and bossMastery.BossMastery
+		if not (BossMastery and dirBossMastery and type(dirBossMastery.Milestones) == "table" and type(bossMastery) == "table") then
+			return false
+		end
+		local n = tonumber(bossMastery.Mastery) or 0
+		if n <= 0 then
+			return false
+		end
+
+		if data.EggCap <= fn20() then
+			return false
+		end
+		local tbl13 = {}
+		local v9 = pairs
+		local claimedMilestoneIds = type(bossMastery.ClaimedMilestoneIds) == "table" and bossMastery.ClaimedMilestoneIds or {}
+
+		for k, claimedMilestoneId in v9(claimedMilestoneIds) do
+			if claimedMilestoneId == true then
+				tbl13[k] = true
+			elseif type(claimedMilestoneId) == "string" then
+				tbl13[claimedMilestoneId] = true
+			end
+		end
+
+		local flag2 = false
+
+		for _, milestone in ipairs(dirBossMastery.Milestones) do
+			local num = tonumber(milestone.Kills)
+
+			if type(dirBossMastery.GetMilestoneKills) == "function" then
+				local ok, result = pcall(dirBossMastery.GetMilestoneKills, milestone)
+
+				if ok and type(result) == "number" then
+					num = result
+				end
+			end
+
+			if milestone.Id and not tbl13[milestone.Id] and num and n >= num then
+				if fn5(BossMastery, 8, milestone.Id) == true then
+					flag2 = true
+				end
+
+				task.wait(0.3)
+			end
+		end
+
+		return flag2
+	end
+
+	f.FusePass = function()
+		local v9 = fn16()
+		if not (v9 and v9.Inventory) then
+			return false
+		end
+
+		if data.EggCap <= fn20() then
+			fn26("fuse", "Egg inventory is full")
+			return false
+		end
+
+		if type(v9.FusionSlots) == "table" and #v9.FusionSlots > 0 then
+			fn26("fuse", "Fuse machine is busy")
+			return false
+		end
+		local n = data.RarityRank[fn21("sae_fuse_rarity") or data.Rarities[1]] or 1
+		local saeSellKeepRift = fn21("sae_sell_keep_rift")
+		local tbl13 = {}
+		local v10 = ipairs
+		local equippedAssets = v9.EquippedAssets or {}
+
+		for _, equippedAsset in v10(equippedAssets) do
+			tbl13[equippedAsset] = true
+		end
+
+		local favoriteAssets = v9.FavoriteAssets or {}
+		local tbl14 = {}
+
+		for k, v11 in pairs(v9.Inventory) do
+			local flag2 = false
+
+			if type(v11.Mutations) == "table" then
+				for _, mutation in pairs(v11.Mutations) do
+					if mutation ~= false and mutation ~= "None" then
+						flag2 = true
+						break
+					end
+				end
+			end
+
+			local flag3 = fn36(v11.Category)
+			flag3 = flag3 and data.RarityRank[flag3]
+			flag3 = flag3 and flag3 <= n and not tbl13[k] and not favoriteAssets[k] and not flag2 and not v11.InFuse and v11.IsFavorite ~= true and not tbl8.IsReserved(k)
+			local flag4
+
+			if flag3 then
+				flag4 = not (saeSellKeepRift and data.RiftPets[v11.Category])
+			else
+				flag4 = flag3
+			end
+
+			if flag4 then
+				tbl14[v11.Category] = tbl14[v11.Category] or {}
+				table.insert(tbl14[v11.Category], k)
+			end
+		end
+
+		local v11 = nil
+		local v12 = nil
+
+		for k, v13 in pairs(tbl14) do
+			if #v13 >= 3 then
+				v11 = v13
+				v12 = k
+				break
+			else
+				v11 = nil
+				v12 = nil
+			end
+		end
+
+		if not v11 then
+			fn26("fuse", "Need 3 of the same pet")
+			return false
+		end
+		fn25("fuse", "Fusing 3 " .. tostring(v12) .. "s", 6)
+		local FuseMachine = fn4("FuseMachine", "INSERT_MOB")
+		local FuseMachine2 = fn4("FuseMachine", "START_FUSE")
+		local FuseMachine3 = fn4("FuseMachine", "COMPLETE_REVEAL")
+		if not (FuseMachine and FuseMachine2 and FuseMachine3) then
+			return false
+		end
+
+		for i = 1, 3 do
+			local v13, v14 = fn5(FuseMachine, 6, v11[i])
+
+			if not v13 then
+				tbl7.lastSkipReason = "fuse insert: " .. tostring(v14)
+				fn25("fuse", "Could not fuse those pets", 6)
+				return false
+			end
+		end
+
+		local v13, v14 = fn5(FuseMachine2, 8)
+
+		if not v13 then
+			tbl7.lastSkipReason = "fuse start: " .. tostring(v14)
+			fn25("fuse", "Could not fuse those pets", 6)
+			return false
+		end
+
+		task.wait(0.3)
+		fn5(FuseMachine3, 8)
+		fn25("fuse", "Fused 3 " .. tostring(v12) .. "s into an egg", 8)
+		fn22("Auto Fuse", "Fused 3 " .. tostring(v12) .. "s into a new egg.", 4)
+		return true
+	end
+
+	local tbl13 = { egg = {}, player = {}, guard = {}, trap = {}, frame = nil }
+	local n = 24
+
+	local function fn57(arg, adornee, fillColor, arg2)
+		if arg2 and not arg.hl then
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "FH_H"
+			highlight.FillColor = fillColor
+			highlight.OutlineColor = fillColor
+			highlight.FillTransparency = 0.65
+			highlight.OutlineTransparency = 0.1
+			highlight.Adornee = adornee
+			highlight.Parent = adornee
+			arg.hl = highlight
+		elseif not arg2 and arg.hl then
+			pcall(function()
+				arg.hl:Destroy()
+			end)
+
+			arg.hl = nil
+		end
+	end
+
+	local function fn58(adornee, textColor3, text)
+		local billboardGui = Instance.new("BillboardGui")
+		billboardGui.Name = "FH_B"
+		billboardGui.Size = UDim2.fromOffset(230, 36)
+		billboardGui.StudsOffset = Vector3.new(0, 2.6, 0)
+		billboardGui.AlwaysOnTop = true
+		billboardGui.Adornee = adornee
+		billboardGui.Parent = adornee
+		local textLabel = Instance.new("TextLabel")
+		textLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+		textLabel.BackgroundTransparency = 0.55
+		textLabel.BorderSizePixel = 0
+		textLabel.AutomaticSize = Enum.AutomaticSize.X
+		textLabel.Size = UDim2.new(0, 0, 1, 0)
+		textLabel.AnchorPoint = Vector2.new(0.5, 0)
+		textLabel.Position = UDim2.fromScale(0.5, 0)
+		textLabel.Font = Enum.Font.GothamBold
+		textLabel.TextSize = 13
+		textLabel.TextColor3 = textColor3
+		textLabel.TextStrokeTransparency = 1
+		textLabel.Text = text or ""
+		textLabel.Parent = billboardGui
+		local uiPadding = Instance.new("UIPadding")
+		local udim = UDim.new(0, 6)
+		local udim2 = UDim.new(0, 6)
+		uiPadding.PaddingLeft = udim
+		uiPadding.PaddingRight = udim2
+		uiPadding.Parent = textLabel
+		local uiCorner = Instance.new("UICorner")
+		uiCorner.CornerRadius = UDim.new(0, 4)
+		uiCorner.Parent = textLabel
+		return { hl = nil, bb = billboardGui, tl = textLabel, model = adornee }
+	end
+
+	local function fn59(arg)
+		for k, v9 in pairs(arg) do
+			pcall(function()
+				if v9.hl then
+					v9.hl:Destroy()
+				end
+
+				v9.bb:Destroy()
+			end)
+
+			arg[k] = nil
+		end
+	end
+
+	local function fn60(arg, arg2, arg3, textColor3, text, maxDistance, dist)
+		local v9 = arg[arg2]
+
+		if v9 and v9.bb.Parent ~= arg3 then
+			pcall(function()
+				if v9.hl then
+					v9.hl:Destroy()
+				end
+
+				v9.bb:Destroy()
+			end)
+
+			v9 = nil
+		end
+
+		if not v9 then
+			v9 = fn58
+			v9 = v9(arg3, textColor3, text)
+			arg[arg2] = v9
+		else
+			v9.tl.Text = text
+
+			if v9.tl.TextColor3 ~= textColor3 then
+				v9.tl.TextColor3 = textColor3
+
+				if v9.hl then
+					v9.hl.FillColor = textColor3
+					v9.hl.OutlineColor = textColor3
+				end
+			end
+		end
+
+		v9.colour = textColor3
+		v9.dist = dist or 0
+		v9.bb.MaxDistance = maxDistance or 10000
+		v9.seen = true
+	end
+
+	local function fn61(arg, arg2)
+		local tbl14 = {}
+
+		for k, v9 in pairs(arg) do
+			if not v9.seen then
+				pcall(function()
+					if v9.hl then
+						v9.hl:Destroy()
+					end
+
+					v9.bb:Destroy()
+				end)
+
+				arg[k] = nil
+			else
+				v9.seen = false
+				tbl14[#tbl14 + 1] = v9
+			end
+		end
+
+		table.sort(tbl14, function(arg3, arg4)
+			return arg3.dist < arg4.dist
+		end)
+
+		for _, v9 in ipairs(tbl14) do
+			local flag2 = arg2 == nil or arg2.left > 0
+			fn57(v9, v9.model, v9.colour, flag2)
+
+			if flag2 and arg2 then
+				arg2.left = arg2.left - 1
+			end
+		end
+	end
+
+	local fhSaeDbg = getgenv().__FH_SAE_DBG or {}
+	fhSaeDbg.DATA = data
+	fhSaeDbg.F = f
+	fhSaeDbg.RefreshAreas = refreshAreas
+	getgenv().__FH_SAE_DBG = fhSaeDbg
+	local n2 = 3
+	local flag2 = false
+	local n3 = 0
+	local n4 = 3
+	local now = os.clock()
+
+	task.spawn(function()
+		tbl7.startMoney = fn19()
+		tbl7.startSpeed = fn17()
+		tbl7.startedAtWall = os.clock()
+
+		while tbl7.running and fn14() do
+			local flag3 = fhSaeMover.handoff and not fhSaeMover.active
+			local walks = fhSaeMover.walks or 0
+
+			local ok, result = pcall(function()
+				if os.clock() - now < n4 then
+					task.wait(0.25)
+					return
+				end
+				local saeNightRetreat = fn21("sae_night_retreat") or 20
+				local night = tbl4.IsNight()
+
+				if night and not flag2 then
+					n3 = 0
+				end
+
+				local flag4 = not night
+
+				if flag4 and flag2 then
+					n3 = os.clock() + n2
+				end
+
+				flag2 = night
+				local wallStartCollision = tbl2.AreasRoot() and tbl2.AreasRoot():FindFirstChild("WallStartCollision")
+				local isBasePart = wallStartCollision and wallStartCollision:IsA("BasePart")
+				local flag5 = false
+
+				if isBasePart then
+					flag5 = wallStartCollision.CanCollide
+				end
+
+				local flag6 = night or tbl4.PhaseLeft() <= saeNightRetreat or os.clock() < n3 or flag5
+
+				if flag4 and n3 > 0 and os.clock() >= n3 and not flag5 then
+					n3 = 0
+					fn50()
+					tbl12.bad = {}
+				end
+
+				tbl7.night = night
+				tbl7.resetting = flag4 and (os.clock() < n3 or flag5)
+				tbl7.retreat = flag4 and not tbl7.resetting and flag6
+
+				if flag6 and fn42() then
+					local treadmillOn = tbl7.treadmillOn
+
+					if treadmillOn then
+						treadmillOn = tbl2.InGameplaySide(fn9() and fn9().Position or Vector3.zero)
+					end
+
+					if treadmillOn then
+						f.TreadmillSet(false)
+					end
+
+					local v9 = fn9()
+
+					if v9 and tbl2.InGameplaySide(v9.Position) then
+						fn49()
+					end
+
+					local v10 = fn27
+					night = night and "Waiting for night to pass"
+
+					if not night then
+						night = tbl7.resetting and "Eggs are resetting" or "Getting to safety before night"
+					end
+
+					v10(night)
+				end
+
+				if fn45() then
+					local saeSteal = fn21("sae_steal")
+
+					if saeSteal then
+						saeSteal = (tbl7.arenaLeaveTries or 0) < 4
+					end
+
+					if saeSteal then
+						saeSteal = os.clock() - (tbl7.arenaLeaveAt or 0) > 3
+					end
+
+					if saeSteal then
+						local v9 = fn46()
+						local v10 = fn9()
+
+						if v9 and v10 then
+							tbl7.arenaLeaveAt = os.clock()
+							tbl7.arenaLeaveTries = (tbl7.arenaLeaveTries or 0) + 1
+							fn27("Leaving the boss arena")
+							fn25("steal", "Leaving the boss arena", 4)
+
+							fhSaeMover.GoTo(Vector3.new(v9.Position.X, v10.Position.Y, v9.Position.Z), {
+								reach = 2,
+								tick = function()
+									if not fn45() then
+										return "out"
+									end
+								end,
+							})
+
+							if not fn45() then
+								tbl7.arenaLeaveTries = 0
+								fn22("Auto Steal", "Left the boss arena.", 4)
+								task.wait(0.5)
+								return
+							end
+						end
+					end
+
+					fn27((tbl7.arenaLeaveTries or 0) >= 4 and "In the boss arena, could not find the way out" or "In the boss arena, waiting for it to finish")
+					task.wait(1)
+					return
+				end
+
+				tbl7.arenaLeaveTries = 0
+				if tbl7.travelActive then
+					task.wait(0.3)
+					return
+				end
+				local v9 = fn10()
+
+				if not fn9() or not v9 or v9.Health <= 0 then
+					fn48()
+					fn27("Idle")
+					task.wait(1)
+					return
+				end
+
+				if Workspace:GetServerTimeNow() < (tonumber(localPlayer:GetAttribute("RagdollEndTime")) or 0) then
+					fn27("Getting back up")
+					task.wait(0.25)
+					return
+				end
+
+				local eggCap = data.EggCap
+				tbl7.invFull = fn20() >= eggCap
+
+				if fhSaeMover.handoff and not fhSaeMover.active and (flag6 or tbl7.invFull or not fn42()) then
+					fhSaeMover.Release()
+				end
+
+				if tbl7.invFull then
+					if fn21("sae_place") or fn21("sae_hatch") then
+						if fn43() and not f.AtPlot() and f.PetsWorkPending() then
+							if tbl7.treadmillOn then
+								f.TreadmillSet(false)
+							end
+
+							fn27("Egg inventory is full, walking to your plot")
+							f.GoToPlot()
+						end
+
+						if f.PetsPass() then
+							fn27("Egg inventory is full, hatching eggs")
+							task.wait(0.3)
+							return
+						end
+
+						fn27("Stand in your plot to continue")
+					else
+						fn27("Egg inventory is full")
+					end
+
+					if not fn21("sae_treadmill") then
+						task.wait(0.6)
+						return
+					end
+				end
+
+				local flag7 = not flag6
+
+				if flag7 and not tbl7.invFull and fn42() then
+					if tbl7.treadmillOn then
+						f.TreadmillSet(false)
+					end
+
+					local v10 = fn9()
+					local v11 = fn55()
+
+					if v10 and v11 and fn44(v10.Position, v11.Position) < 9 then
+						tbl3.Unpin()
+						task.wait(0.3)
+					end
+
+					local saeRift = not tbl7.carrying and fn21("sae_rift")
+
+					if saeRift then
+						saeRift = os.clock() - (tbl7.riftAt or 0) > 5
+					end
+
+					if saeRift and tbl8.WorkPending() then
+						local flag8 = true
+
+						if tbl8.EggWork() then
+							local v12 = fn41()
+							local v13 = fn9()
+
+							if v12 and v12.PetArea and v13 then
+								local mult = fhSaeMover.mult
+								local n5 = fn44(v13.Position, v12.PetArea.Position) / math.max(fn29() * mult, 1) + 6
+								flag8 = tbl4.PhaseLeft() > (fn21("sae_night_retreat") or 3) + n5
+							end
+						end
+
+						if flag8 then
+							local v12 = tbl8.EggWork()
+							tbl7.riftAt = os.clock()
+
+							if tbl7.treadmillOn then
+								f.TreadmillSet(false)
+							end
+
+							if tbl8.Pass() then
+								task.wait(0.3)
+								return
+							end
+
+							if v12 then
+								tbl7.riftAt = os.clock() + 55
+							end
+						end
+					end
+
+					if not tbl7.carrying and f.DayTripDue() then
+						local v12 = fn41()
+						local v13 = fn9()
+
+						if v12 and v12.PetArea and v13 then
+							local mult = fhSaeMover.mult
+							local n5 = math.max(fn29() * mult, 1)
+							local n6 = fn44(v13.Position, v12.PetArea.Position) / n5 + 6
+
+							if tbl4.PhaseLeft() > (fn21("sae_night_retreat") or 3) + n6 then
+								tbl7.dayTripAt = os.clock()
+								local v14 = f.DayTripCount()
+								fn27("Walking home to hatch eggs")
+								fn25("pets", "Walking home with " .. v14 .. (v14 == 1 and " egg" or " eggs") .. " waiting", 5)
+								f.GoToPlot()
+
+								if f.AtPlot(v12) then
+									if fn21("sae_rift") and tbl8.EggWork() then
+										tbl8.GuardAutoSell()
+										tbl8.HatchReserved(v12)
+										tbl8.Rebuild()
+									end
+
+									f.PetsPass()
+								end
+
+								if v14 <= f.DayTripCount() then
+									tbl7.dayTripCool = math.min((tbl7.dayTripCool or 60) * 2, 600)
+									fn25("pets", "Nothing more fits on the plot, next trip in " .. fn11(tbl7.dayTripCool), 6)
+								else
+									tbl7.dayTripCool = 60
+								end
+
+								task.wait(0.3)
+								return
+							end
+						end
+					end
+
+					local flag8 = false
+
+					if fn21("sae_recover") then
+						flag8 = fn53()
+					end
+
+					if not flag8 and fn21("sae_steal") then
+						fn51()
+						flag8 = fn52()
+					end
+
+					if flag8 then
+						task.wait(0.2)
+						return
+					end
+
+					if tbl7.goAgain then
+						local v12 = tbl7
+						tbl7.goAgain = nil
+						v12.retarget = nil
+						return
+					end
+
+					if fhSaeMover.handoff then
+						fhSaeMover.Release()
+					end
+
+					if fn21("sae_steal") and not tbl7.stealIdleSince then
+						task.wait(1)
+						return
+					end
+				end
+
+				local saeRift = fn21("sae_rift")
+
+				if saeRift then
+					saeRift = os.clock() - (tbl7.riftAt or 0) > 5
+				end
+
+				if saeRift then
+					saeRift = flag6 or tbl7.invFull or not fn21("sae_steal") or tbl7.stealIdleSince or tbl8.PendingReward() or fn21("sae_rift_trade") and tbl8.ReadyToTrade()
+				end
+
+				if saeRift and tbl8.WorkPending() then
+					tbl7.riftAt = os.clock()
+
+					if tbl7.treadmillOn then
+						f.TreadmillSet(false)
+					end
+
+					if tbl8.Pass() then
+						task.wait(0.4)
+						return
+					end
+				end
+
+				if f.PetsWorkPending() then
+					local flag8 = fn43() and not f.AtPlot()
+
+					if flag8 then
+						flag8 = os.clock() - (tbl7.petsWalkAt or 0) > (tbl7.petsWalkGap or 20)
+					end
+
+					if flag8 then
+						tbl7.petsWalkAt = os.clock()
+
+						if tbl7.treadmillOn then
+							f.TreadmillSet(false)
+						end
+
+						fn27("Walking to your plot to hatch")
+						f.GoToPlot()
+
+						if f.PetsPass() then
+							tbl7.petsWalkGap = 20
+							task.wait(0.4)
+							return
+						end
+
+						tbl7.petsWalkGap = math.min((tbl7.petsWalkGap or 20) * 2, 300)
+
+						if tbl7.petsWalkGap < 60 then
+							tbl7.petsWalkGap = 60
+						end
+					elseif f.PetsPass() then
+						task.wait(0.4)
+						return
+					end
+				end
+
+				local flag8 = not fn21("sae_steal")
+
+				if not flag8 then
+					flag8 = tbl7.stealIdleSince ~= nil
+
+					if flag8 then
+						local stealIdleSince = tbl7.stealIdleSince
+						flag8 = os.clock() - stealIdleSince > 15
+					end
+				end
+
+				if fn21("sae_treadmill") and flag8 then
+					if f.TreadmillSet(true) then
+						local v10 = fn17()
+						local now2 = os.clock()
+
+						if tbl7.spSample and now2 - tbl7.spSample.t >= 3 then
+							tbl7.speedRate = math.max(0, (v10 - tbl7.spSample.sp) / (now2 - tbl7.spSample.t))
+							tbl7.spSample = { sp = v10, t = now2 }
+						elseif not tbl7.spSample then
+							tbl7.spSample = { sp = v10, t = now2 }
+						end
+
+						fn27("Training on the treadmill")
+						task.wait(1.5)
+						return
+					end
+				elseif tbl7.treadmillOn then
+					f.TreadmillSet(false)
+					local v10 = tbl7
+					tbl7.spSample = nil
+					v10.speedRate = nil
+				end
+
+				if flag7 then
+					fn27("Idle")
+				end
+
+				task.wait(0.5)
+			end)
+
+			flag3 = flag3 and fhSaeMover.handoff and not fhSaeMover.active
+
+			if flag3 then
+				flag3 = (fhSaeMover.walks or 0) == walks
+			end
+
+			if flag3 then
+				fhSaeMover.Release()
+			end
+
+			if not ok then
+				tbl7.lastSkipReason = tostring(result)
+				fn48()
+				task.wait(1)
+			end
+		end
+
+		fn48()
+	end)
+
+	local function fn62(arg, arg2)
+		local n5 = 0
+
+		while n5 < arg and tbl7.running and fn14() do
+			if arg2 and not arg2() then
+				return false
+			end
+			task.wait(0.5)
+			n5 += 0.5
+		end
+
+		return true
+	end
+
+	local function fn63(...)
+		local tbl14 = { ... }
+		local tbl15 = {}
+
+		for _, v9 in ipairs(tbl14) do
+			tbl15[v9] = fn21(v9) and true or false
+		end
+
+		return function()
+			for _, v9 in ipairs(tbl14) do
+				if fn21(v9) and not tbl15[v9] then
+					return false
+				end
+			end
+
+			return true
+		end
+	end
+
+	task.spawn(function()
+		while tbl7.running and fn14() do
+			local n5 = tonumber(fn21("sae_equip_interval")) or 30
+
+			pcall(function()
+				if fn21("sae_equip") then
+					f.EquipBest()
+					fn25("equip", "Equipped your best pets", 4)
+				end
+			end)
+
+			tbl7.equipNext = os.clock() + n5
+			fn62(n5)
+		end
+	end)
+
+	task.spawn(function()
+		while tbl7.running and fn14() do
+			pcall(function()
+				if os.clock() - now < n4 then
+					return
+				end
+
+				if fn21("sae_sell") then
+					f.CaptureNativeAutoSell()
+					f.PushNativeAutoSell(tbl8.SafeMap(fn54(fn21("sae_sell_rarity") or data.Rarities[1])))
+
+					if not (tbl7.busy or tbl7.travelActive or tbl7.riftBusy) then
+						local v9, v10 = f.SellSweep(8)
+
+						if v9 > 0 then
+							fn25("sell", "Sold " .. v9 .. (v9 == 1 and " pet" or " pets"), 5)
+						elseif v10 > 0 then
+							fn25("sell", "Could not sell those pets", 6)
+						end
+					end
+				elseif tbl7.nativeAutoSell ~= nil then
+					f.PushNativeAutoSell(tbl7.nativeAutoSell)
+					tbl7.nativeAutoSell = nil
+				end
+			end)
+
+			fn62(15, fn63("sae_sell"))
+		end
+	end)
+
+	task.spawn(function()
+		while tbl7.running and fn14() do
+			pcall(function()
+				if fn21("sae_treadmill_upgrade") then
+					f.TreadmillUpgrade()
+				end
+
+				if fn21("sae_base_upgrade") then
+					f.BaseUpgrade()
+				end
+
+				if fn21("sae_trail") then
+					f.TrailPass()
+				end
+			end)
+
+			fn62(20, fn63("sae_treadmill_upgrade", "sae_base_upgrade", "sae_trail"))
+		end
+	end)
+
+	task.spawn(function()
+		local n5 = 0
+
+		while tbl7.running and fn14() do
+			pcall(function()
+				local n6 = 0
+
+				if fn21("sae_claim_index") then
+					if f.ClaimIndex() then
+						n6 = 1
+					end
+				end
+
+				if fn21("sae_claim_offline") then
+					if f.ClaimOffline() then
+						n6 += 1
+					end
+				end
+
+				if fn21("sae_claim_limited") and os.clock() - n5 > 300 then
+					n5 = os.clock()
+
+					if f.ClaimLimited() then
+						n6 += 1
+					end
+				end
+
+				if fn21("sae_claim_boss") then
+					if f.ClaimBossMastery() then
+						n6 += 1
+					end
+				end
+
+				if n6 > 0 then
+					fn25("claim", "Claimed " .. n6 .. (n6 == 1 and " reward" or " rewards"), 6)
+				end
+			end)
+
+			tbl7.claimNext = os.clock() + 60
+			fn62(60, fn63("sae_claim_index", "sae_claim_offline", "sae_claim_limited", "sae_claim_boss"))
+		end
+	end)
+
+	tbl7.events = {}
+	tbl7.eventConns = tbl7.eventConns or {}
+
+	local function fn64(arg, arg2)
+		if type(arg2) == "table" then
+			local displayName = arg2.DisplayName or arg2.Name or arg2.Title
+			if type(displayName) == "string" and displayName ~= "" then
+				return displayName
+			end
+		end
+
+		return (tostring(arg):gsub("(%l)(%u)", "%1 %2"))
+	end
+
+	local function fn65(arg)
+		local v9 = tbl7.events[arg]
+		if not v9 or type(v9.endsAt) ~= "number" then
+			return nil
+		end
+		return math.max(0, v9.endsAt - Workspace:GetServerTimeNow())
+	end
+
+	local LiveEvents = fn4("LiveEvents", "BEGAN")
+	local LiveEvents2 = fn4("LiveEvents", "ENDED")
+	local LiveEvents3 = fn4("LiveEvents", "FETCH_RUNNING")
+
+	if LiveEvents3 then
+		task.spawn(function()
+			local v9, v10 = fn5(LiveEvents3, 6)
+
+			if type(v9) == "table" then
+				for k, v11 in pairs(v9) do
+					tbl7.events[k] = { endsAt = tonumber(v11), meta = type(v10) == "table" and v10[k] or nil }
+				end
+			end
+		end)
+	end
+
+	if LiveEvents and LiveEvents:IsA("RemoteEvent") then
+		tbl7.eventConns[#tbl7.eventConns + 1] = LiveEvents.OnClientEvent:Connect(function(arg, arg2, arg3)
+			if not fn14() then
+				return
+			end
+			tbl7.events[arg] = { endsAt = Workspace:GetServerTimeNow() + (tonumber(arg2) or 0), meta = arg3 }
+
+			if fn21("sae_events") then
+				local n5 = tonumber(arg2) or 0
+				fn22("Live Event", fn64(arg, arg3) .. " has started" .. (n5 > 0 and " (" .. fn11(n5) .. ")" or "") .. ".", 6)
+			end
+		end)
+	end
+
+	if LiveEvents2 and LiveEvents2:IsA("RemoteEvent") then
+		tbl7.eventConns[#tbl7.eventConns + 1] = LiveEvents2.OnClientEvent:Connect(function(arg)
+			if not fn14() then
+				return
+			end
+			local v9 = tbl7.events[arg]
+			tbl7.events[arg] = nil
+
+			if fn21("sae_events") then
+				fn22("Live Event", fn64(arg, v9 and v9.meta) .. " has ended.", 5)
+			end
+		end)
+	end
+
+	local tbl14 = {
+		{
+			"steal",
+			function()
+				if not fn21("sae_steal") then
+					return "Idle"
+				end
+
+				if fn45() then
+					return (tbl7.arenaLeaveTries or 0) >= 4 and "In the boss arena, could not find the way out" or "Leaving the boss arena"
+				end
+
+				if tbl7.night then
+					return "Waiting for night to pass"
+				end
+
+				if tbl7.resetting then
+					return "Eggs are resetting"
+				end
+
+				if tbl7.retreat then
+					return "Getting to safety before night"
+				end
+
+				if tbl7.invFull then
+					return "Egg inventory is full"
+				end
+
+				if tbl7.carrying then
+					return "Running back with the egg"
+				end
+				return nil
+			end,
+		},
+		{
+			"recover",
+			function()
+				if not fn21("sae_recover") then
+					return "Idle"
+				end
+
+				if tbl7.night or tbl7.retreat then
+					return "Waiting for night to pass"
+				end
+				return "Watching for dropped eggs"
+			end,
+		},
+		{
+			"pets",
+			function()
+				if not (fn21("sae_place") or fn21("sae_hatch")) then
+					return "Idle"
+				end
+				local flag3 = fn21("sae_steal") and not tbl7.invFull and not tbl7.stealIdleSince
+
+				if flag3 then
+					flag3 = not (tbl7.night or tbl7.retreat or tbl7.resetting)
+				end
+
+				if flag3 and not f.AtPlot() then
+					local n5 = tonumber(fn21("sae_pets_daytrip")) or 0
+					if n5 > 0 then
+						return f.DayTripCount() .. " of " .. n5 .. " eggs waiting for the next trip home"
+					end
+					return "Waiting for night (auto steal is active)"
+				end
+
+				if not f.AtPlot() then
+					if fn21("sae_pets_walk") then
+						return f.PetsWorkPending() and "Walking to your plot" or "Nothing to place or hatch"
+					end
+					return "Stand in your plot to continue"
+				end
+
+				if not f.PetsWorkPending() then
+					return "Nothing to place or hatch"
+				end
+				return nil
+			end,
+		},
+		{
+			"equip",
+			function()
+				if not fn21("sae_equip") then
+					return "Idle"
+				end
+
+				if not tbl7.equipNext then
+					return "Checking your pets"
+				end
+				return "Next check in " .. math.max(0, math.floor(tbl7.equipNext - os.clock())) .. "s"
+			end,
+		},
+		{
+			"sell",
+			function()
+				if not fn21("sae_sell") then
+					return "Idle"
+				end
+
+				if tbl7.busy or tbl7.travelActive then
+					return "Paused while stealing"
+				end
+
+				if tbl7.riftBusy then
+					return "Paused while trading at the Rift"
+				end
+				return "Watching for pets to sell"
+			end,
+		},
+		{
+			"tread",
+			function()
+				if not fn21("sae_treadmill") then
+					return "Idle"
+				end
+
+				if not tbl7.treadmillOn then
+					return "Paused while stealing"
+				end
+
+				if not tbl7.speedRate then
+					return "Training on the treadmill"
+				end
+				return "Training, +" .. fn12(tbl7.speedRate) .. " speed/s"
+			end,
+		},
+		{
+			"treadup",
+			function()
+				if not fn21("sae_treadmill_upgrade") then
+					return "Idle"
+				end
+				return nil
+			end,
+		},
+		{
+			"trail",
+			function()
+				if not fn21("sae_trail") then
+					return "Idle"
+				end
+				return nil
+			end,
+		},
+		{
+			"base",
+			function()
+				if not fn21("sae_base_upgrade") then
+					return "Idle"
+				end
+				return nil
+			end,
+		},
+		{
+			"fuse",
+			function()
+				if not fn21("sae_fuse") then
+					return "Idle"
+				end
+				return nil
+			end,
+		},
+		{
+			"trap",
+			function()
+				if not fn21("sae_antitrap") then
+					return "Idle"
+				end
+				local n5 = #fn47()
+				if n5 == 0 then
+					return "No traps out"
+				end
+				return n5 == 1 and "1 trap to walk around" or n5 .. " traps to walk around"
+			end,
+		},
+		{
+			"events",
+			function()
+				if not fn21("sae_events") then
+					return "Idle"
+				end
+
+				if not fn4("LiveEvents", "FETCH_RUNNING") then
+					return "Live events are not available"
+				end
+				local tbl14 = {}
+
+				for k, event in pairs(tbl7.events) do
+					local v9 = fn65(k)
+					tbl14[#tbl14 + 1] = fn64(k, event.meta) .. (v9 and ", " .. fn11(v9) .. " left" or "")
+				end
+
+				table.sort(tbl14)
+
+				if fn21("sae_boss_alert") then
+					local v9 = tbl8.BossLine()
+
+					if v9 then
+						tbl14[#tbl14 + 1] = v9
+					end
+				end
+
+				if #tbl14 == 0 then
+					return "No live events right now"
+				end
+				return table.concat(tbl14, " / ")
+			end,
+		},
+		{
+			"rift",
+			function()
+				if not fn21("sae_rift") then
+					return "Idle"
+				end
+
+				if not fn4("Rift", "ASK_STATE") then
+					return "The Rift is not in this game"
+				end
+
+				if not tbl8.Live() then
+					return "The Rift is closed right now"
+				end
+
+				if not tbl8.Unlocked() then
+					return "You need " .. fn12(tbl8.SpeedNeeded()) .. " speed to use the Rift"
+				end
+
+				if tbl7.riftBusy then
+					return nil
+				end
+
+				if not tbl8.state then
+					return "Reading the Rift"
+				end
+
+				if #tbl8.slots == 0 then
+					return "The Rift is not asking for anything right now"
+				end
+				local n5 = 0
+
+				for _, slot in ipairs(tbl8.slots) do
+					if slot.how == "pet" then
+						n5 += 1
+					end
+				end
+
+				local str
+
+				if tbl8.ReadyToTrade() then
+					str = fn21("sae_rift_trade") and "All pets ready, heading to the Rift" or "All pets ready to trade in"
+				else
+					str = n5 .. " of " .. #tbl8.slots .. " pets ready"
+				end
+
+				local tbl14 = { str }
+
+				for _, slot in ipairs(tbl8.slots) do
+					tbl14[#tbl14 + 1] = utf8.char(8226) .. " " .. tbl8.SlotText(slot)
+				end
+
+				local v9 = tbl8.RotationLeft()
+
+				if v9 then
+					tbl14[#tbl14 + 1] = "New banner in " .. fn13(v9)
+				end
+
+				return table.concat(tbl14, "\n")
+			end,
+		},
+		{
+			"claim",
+			function()
+				if not (fn21("sae_claim_index") or fn21("sae_claim_offline") or fn21("sae_claim_limited")) then
+					return "Idle"
+				end
+
+				if not tbl7.claimNext then
+					return "Checking for rewards"
+				end
+				return "Next check in " .. math.max(0, math.floor(tbl7.claimNext - os.clock())) .. "s"
+			end,
+		},
+	}
+
+	local function fn66()
+		for _, v9 in ipairs(tbl14) do
+			local ok, result = pcall(v9[2])
+
+			if ok and result then
+				fn26(v9[1], result)
+			end
+		end
+
+		local now2 = os.clock()
+
+		for _, v9 in pairs(tbl9) do
+			if v9.want ~= v9.shown and now2 - v9.since >= 1 then
+				v9.shown = v9.want
+				v9.since = now2
+				local text = "Status: " .. v9.shown
+				local label = v9.label
+				local row = v9.row
+				local root = v9.root
+
+				fn23(function()
+					if label then
+						label.Text = text
+
+						if root then
+							local x = label.AbsoluteSize.X
+
+							if x < 20 then
+								x = root.AbsoluteSize.X - 22
+							end
+
+							if x >= 20 then
+								root.Size = UDim2.new(1, 0, 0, math.max(30, TextService:GetTextSize(text, label.TextSize, label.Font, Vector2.new(x, math.huge)).Y + 12))
+							end
+						end
+					else
+						row:SetText(text)
+					end
+				end)
+			end
+		end
+	end
+
+	task.spawn(function()
+		while tbl7.running and fn14() do
+			pcall(function()
+				if fn21("sae_fuse") then
+					f.FusePass()
+				end
+			end)
+
+			fn62(10, fn63("sae_fuse"))
+		end
+	end)
+
+	localPlayer.CharacterAdded:Connect(function()
+		if fhSaeMover.active then
+			fhSaeMover.Stop("respawn")
+		end
+
+		flag = nil
+		tbl7.treadmillOn = false
+		tbl7.carrying = nil
+	end)
+
+	fn15(function()
+		local flag3 = false
+
+		while tbl7.running and fn14() do
+			pcall(function()
+				local saeHudStats = fn21("sae_hud_stats")
+				local saeCycle = fn21("sae_cycle")
+				local v9 = tbl4.IsNight()
+				local v10 = tbl4.PhaseLeft()
+				local v11 = fn13(os.clock() - (tbl7.startedAtWall or os.clock()))
+				local str = fn12(fn18()) .. "/s"
+				local v12 = fn12(fn17())
+				local v13 = fn11(v10)
+
+				fn23(function()
+					clock:SetVisible(saeHudStats)
+					wallet:SetVisible(saeHudStats)
+					v2:SetVisible(saeHudStats)
+
+					if saeHudStats then
+						clock:SetText(v11)
+						wallet:SetText(str)
+						v2:SetText(v12)
+					end
+
+					sun:SetVisible(saeCycle and not v9)
+					moon:SetVisible(saeCycle and v9)
+
+					if saeCycle then
+						if v9 then
+							moon:SetText(v13)
+						else
+							sun:SetText(v13)
+						end
+					end
+				end)
+
+				local saeNightRetreat = fn21("sae_night_retreat") or 20
+
+				fn23(function()
+					if v9 then
+						v4:SetColor("Red")
+						v4:SetRender(true)
+					elseif v10 <= saeNightRetreat then
+						v4:SetColor("White")
+						v4:SetRender(true)
+					else
+						v4:SetRender(false)
+					end
+				end)
+
+				if fn21("sae_cycle_warn") then
+					if not v9 and v10 <= tbl4.EndingSoonSeconds() then
+						if not flag3 then
+							flag3 = true
+							fn22("Night", "Night falls in " .. math.floor(v10) .. " seconds.", 4)
+						end
+					elseif v9 then
+						flag3 = false
+					end
+				end
+			end)
+
+			task.wait(1)
+		end
+	end)
+
+	fn15(function()
+		while tbl7.running and fn14() do
+			pcall(refreshAreas)
+			task.wait(30)
+		end
+	end)
+
+	fn15(function()
+		local flag3 = false
+
+		while tbl7.running and fn14() do
+			pcall(function()
+				local flag4 = false
+				local v9 = nil
+
+				for _, v10 in ipairs(data.AreaOrder) do
+					if tbl5.IsTargetingMe(v10) then
+						flag4 = true
+						v9 = v10
+						break
+					else
+						v9 = nil
+					end
+				end
+
+				v3:SetRender(flag4)
+
+				if flag4 then
+					v3:SetColor("Red")
+
+					if fn21("sae_guard_alert") and not flag3 then
+						flag3 = true
+						fn22("Guard", "The " .. tostring(v9) .. " guard is chasing you.", 3)
+					end
+				else
+					flag3 = false
+				end
+			end)
+
+			task.wait(0.4)
+		end
+	end)
+
+	fn15(function()
+		while tbl7.running and fn14() do
+			pcall(function()
+				local str = "Status: " .. tbl7.status
+				local str2 = string.format("Eggs: %d / %d / %d", tbl7.eggsStolen, tbl7.eggsLost, tbl7.eggsRecovered)
+				local str3 = "Pets Hatched: " .. tbl7.petsHatched
+				local str4 = "Income: " .. fn12(fn18()) .. "/s"
+				local v9 = fn19()
+				local str5 = "Earned: " .. fn12(math.max(0, v9 - (tbl7.startMoney or v9)))
+				local v10 = fn17()
+				local str6 = "Speed Gained: +" .. fn12(math.max(0, v10 - (tbl7.startSpeed or v10)))
+				local str7 = "Rift Eggs: " .. tbl7.riftTrades
+
+				fn23(function()
+					tbl11.status:SetText(str)
+					tbl11.eggs:SetText(str2)
+					tbl11.hatched:SetText(str3)
+					tbl11.income:SetText(str4)
+					tbl11.earned:SetText(str5)
+					tbl11.speed:SetText(str6)
+					tbl11.rift:SetText(str7)
+				end)
+			end)
+
+			pcall(fn66)
+			pcall(fn51)
+			task.wait(1)
+		end
+	end)
+
+	fn15(function()
+		while tbl7.running and fn14() do
+			pcall(function()
+				local position = fn9()
+				position = position and position.Position
+				local tbl15 = { left = n }
+				local tbl16 = { left = math.max(0, n - 6) }
+				local flag3 = fn21("sae_esp_egg") and true or false
+				local flag4 = fn21("sae_esp_rift") and fn21("sae_rift") and tbl8.WantsAny() and true or false
+
+				if (flag3 or flag4) and position then
+					local saeEspEggColor = fn21("sae_esp_egg_color") or Color3.fromRGB(120, 200, 255)
+					local saeEspEggRarity = fn21("sae_esp_egg_rarity")
+					local n5 = tonumber(fn21("sae_esp_egg_dist")) or 3000
+
+					if n5 >= 3000 then
+						n5 = 100000
+					end
+
+					local saeEspRiftColor = fn21("sae_esp_rift_color") or Color3.fromRGB(196, 152, 255)
+
+					for _, v9 in ipairs(fn39()) do
+						if v9.State == "Slot" or v9.State == "Dropped" then
+							local v10 = tbl2.EggModel(v9.Uid)
+							local v11 = v10 and fn40(v9)
+							local v12 = flag4 and tbl8.WantsRec(v9)
+
+							if v10 and v11 and (v11 - position).Magnitude <= n5 and (v12 or flag3 and fn37(v9.AssetCategory, saeEspEggRarity)) then
+								local str = v9.State == "Dropped" and "[DROPPED] " or ""
+
+								if v12 then
+									str = "[RIFT] " .. str
+								end
+
+								local str2 = fn38(v9) and " *" or ""
+								fn60(tbl13.egg, v9.Uid, v10, v12 and saeEspRiftColor or saeEspEggColor, string.format("%s%s%s\n%s · %.0f studs", str, tostring(v9.AssetCategory), str2, tostring(fn36(v9.AssetCategory) or "?"), (v11 - position).Magnitude), n5, (v11 - position).Magnitude)
+							end
+						end
+					end
+				end
+
+				fn61(tbl13.egg, tbl16)
+				local left = tbl16.left
+				tbl15.left = tbl15.left - math.max(0, n - 6) - left
+
+				if fn21("sae_esp_player") and position then
+					local saeEspPlayerColor = fn21("sae_esp_player_color") or Color3.fromRGB(255, 120, 120)
+					local tbl17 = {}
+
+					for _, v9 in ipairs(fn39()) do
+						if v9.State == "Carried" and v9.CarrierUserId then
+							tbl17[v9.CarrierUserId] = tostring(v9.AssetCategory)
+						end
+					end
+
+					local saeEspCarriers = fn21("sae_esp_carriers")
+					local saeEspMoney = fn21("sae_esp_money")
+					local n5 = tonumber(fn21("sae_esp_player_dist")) or 3000
+
+					if n5 >= 3000 then
+						n5 = 100000
+					end
+
+					for _, player in ipairs(Players:GetPlayers()) do
+						local character = player ~= localPlayer and player.Character
+						local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
+						local v9 = tbl17[player.UserId]
+
+						if humanoidRootPart and (not saeEspCarriers or v9) and (humanoidRootPart.Position - position).Magnitude <= n5 then
+							local displayName = player.DisplayName
+
+							if v9 then
+								displayName ..= "  [CARRYING " .. v9 .. "]"
+							end
+
+							if saeEspMoney then
+								local leaderstats = player:FindFirstChild("leaderstats")
+
+								if leaderstats then
+									leaderstats = leaderstats:FindFirstChild("Money/s") or leaderstats:FindFirstChild("Money")
+								end
+
+								if leaderstats then
+									displayName ..= "\n$" .. fn12(leaderstats.Value) .. "/s"
+								end
+							end
+
+							local magnitude = (humanoidRootPart.Position - position).Magnitude
+							fn60(tbl13.player, player.UserId, character, saeEspPlayerColor, displayName .. string.format("  %.0f studs", (humanoidRootPart.Position - position).Magnitude), n5, magnitude)
+						end
+					end
+				end
+
+				fn61(tbl13.player, tbl15)
+
+				if fn21("sae_esp_guard") and position then
+					local saeEspGuardColor = fn21("sae_esp_guard_color") or Color3.fromRGB(255, 80, 80)
+					local n5 = tonumber(fn21("sae_esp_guard_dist")) or 3000
+
+					if n5 >= 3000 then
+						n5 = 100000
+					end
+
+					for _, v9 in ipairs(data.AreaOrder) do
+						local v10 = tbl2.Guard(v9)
+						local v11 = v10 and tbl5.Pos(v9)
+
+						if v10 and v11 and (v11 - position).Magnitude <= n5 then
+							local magnitude = (v11 - position).Magnitude
+							local v12 = tbl5.EffectiveSpeed(v9, magnitude)
+							fn60(tbl13.guard, v9, v10, saeEspGuardColor, string.format("%s Guard · %s\n%s · %.0f studs", v9, tostring(tbl5.State(v9) or "?"), v12 and string.format("%.0f speed", v12) or "?", magnitude), n5, magnitude)
+						end
+					end
+				end
+
+				fn61(tbl13.guard, tbl15)
+
+				if fn21("sae_esp_trap") and position then
+					local saeEspTrapColor = fn21("sae_esp_trap_color") or Color3.fromRGB(255, 160, 60)
+					local n5 = tonumber(fn21("sae_esp_trap_dist")) or 3000
+
+					if n5 >= 3000 then
+						n5 = 100000
+					end
+
+					local ok, result = pcall(function()
+						return game:GetService("CollectionService"):GetTagged("PlacedTrap")
+					end)
+
+					if ok then
+						for _, v9 in ipairs(result) do
+							if v9:IsDescendantOf(Workspace) then
+								local isBasePart = v9:IsA("BasePart") and v9 or v9:FindFirstChild("Hitbox")
+
+								if not isBasePart and v9:IsA("Model") then
+									isBasePart = v9.PrimaryPart
+								end
+
+								local attribute = v9:GetAttribute("Owner")
+
+								if isBasePart and isBasePart:IsA("BasePart") and v9:GetAttribute("TrapActive") ~= true and attribute ~= localPlayer.Name then
+									local magnitude = (isBasePart.Position - position).Magnitude
+
+									if magnitude <= n5 then
+										fn60(tbl13.trap, v9, v9, saeEspTrapColor, string.format("%s\n%.0f studs", attribute and tostring(attribute) .. "'s Trap" or "Trap", magnitude), n5, magnitude)
+									end
+								end
+							end
+						end
+					end
+				end
+
+				fn61(tbl13.trap, tbl15)
+			end)
+
+			task.wait(0.5)
+		end
+	end)
+
+	local function fn67(arg)
+		if arg == "Treadmill" then
+			local v9 = fn55()
+			if v9 then
+				return v9.Position
+			end
+			return nil
+		end
+
+		local v9 = fn41()
+		if v9 and v9.CenterPoint then
+			return v9.CenterPoint.Position
+		end
+		return nil
+	end
+
+	local function fn68()
+		if fn21("sae_steal") then
+			fn22("Teleport", "Turn Auto Steal off first.", 4)
+			return
+		end
+
+		if tbl7.busy then
+			fn22("Teleport", "You are in the middle of a run. Try again in a moment.", 4)
+			return
+		end
+
+		if tbl7.travelActive then
+			return
+		end
+		local saeTravelDest = fn21("sae_travel_dest") or "Base"
+		local v9 = fn67(saeTravelDest)
+		if not v9 then
+			fn22("Teleport", "Could not find your " .. string.lower(tostring(saeTravelDest)) .. ".", 4)
+			return
+		end
+		tbl7.travelActive = true
+
+		task.spawn(function()
+			if tbl7.treadmillOn then
+				f.TreadmillSet(false)
+			end
+
+			local v10 = fn9()
+
+			if v10 then
+				fhSaeMover.GoTo(Vector3.new(v9.X, v10.Position.Y, v9.Z), { reach = 2 })
+			end
+
+			if saeTravelDest ~= "Treadmill" and not fn21("sae_treadmill") then
+				tbl3.Unpin()
+			end
+
+			tbl7.travelActive = false
+		end)
+	end
+
+	v5:AddButton({ Icon = "person-teleport", Name = "Go", Callback = fn68 })
+
+	v6:AddButton({
+		Icon = "arrow-rotate-right",
+		Name = "Respawn Now",
+		ToolTip = "Resets your character at your plot. Takes about 3 seconds, and a carried egg returns to its nest.",
+		Callback = function()
+			fn48()
+
+			if tbl7.treadmillOn then
+				f.TreadmillSet(false)
+			end
+
+			local ClientCharacter = fn4("ClientCharacter", "REQUEST_CHARACTER_RESET")
+
+			if not (ClientCharacter and fn6(ClientCharacter, localPlayer.Character)) then
+				fn22("Respawn", "Could not respawn you right now.", 4)
+			end
+		end,
+	})
+
+	game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then
+			return
+		end
+		local saeTpBind = fn21("sae_tp_bind")
+		if not saeTpBind or saeTpBind == "" then
+			return
+		end
+
+		if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode.Name == saeTpBind then
+			fn68()
+		end
+	end)
+
+	local function fn69()
+		local v9 = ipairs
+		local eventConns = tbl7.eventConns or {}
+
+		for _, eventConn in v9(eventConns) do
+			pcall(function()
+				eventConn:Disconnect()
+			end)
+		end
+
+		tbl7.running = false
+		tbl7.travelActive = false
+		fn48()
+
+		if getgenv().__FH_SAE_MOVER == fhSaeMover then
+			getgenv().__FH_SAE_MOVER = nil
+		end
+
+		fn59(tbl13.egg)
+		fn59(tbl13.player)
+		fn59(tbl13.guard)
+		fn59(tbl13.trap)
+		local Treadmills2 = fn4("Treadmills", "REQUEST_UNEQUIP")
+
+		if Treadmills2 then
+			pcall(function()
+				fn5(Treadmills2, 3)
+			end)
+		end
+
+		tbl7.treadmillOn = false
+
+		if tbl7.nativeAutoSell ~= nil then
+			f.PushNativeAutoSell(tbl7.nativeAutoSell)
+			tbl7.nativeAutoSell = nil
+		end
+
+		tbl8.ReleaseLocks()
+	end
+
+	v7:AddButton({
+		Icon = "x",
+		Name = "Unload",
+		Callback = function()
+			fn69()
+			task.wait(0.2)
+
+			pcall(function()
+				lib:Unload()
+			end)
+		end,
+	})
+end
+
+task.delay(3, function()
+	if not fn14() then
+		return
+	end
+	fn22("Forge Hub", "Steal an Egg is ready.", 5)
+
+	if lib.IsMobile then
+		fn22("Forge Hub", "Tap Menu at the top of your screen to show or hide this window.", 5)
+	end
+end)
