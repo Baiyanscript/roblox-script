@@ -1,0 +1,161 @@
+local v1 = game
+
+do
+end
+
+local v2 = v1.GetService(v1, "Players")
+
+do
+end
+
+local tweenService = (game:GetService("TweenService"))
+local localPlayer = v2.LocalPlayer
+local lennonHubUpdated = Instance.new("ScreenGui")
+local v3, v4, v5
+
+lennonHubUpdated.Name = "LennonHubUpdated"
+lennonHubUpdated.ResetOnSpawn = false
+lennonHubUpdated.IgnoreGuiInset = true
+lennonHubUpdated.DisplayOrder = 999
+
+local v6 = localPlayer
+lennonHubUpdated.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.Position = UDim2.fromScale(0.5, 0.5)
+frame.Size = UDim2.fromOffset(310, 225)
+frame.BackgroundColor3 = Color3.fromRGB(7, 10, 8)
+frame.BorderSizePixel = 0
+frame.Parent = lennonHubUpdated
+
+;(Instance.new("UICorner", frame)).CornerRadius = UDim.new(0, 16)
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(0, 220, 100)
+uiStroke.Thickness = 2
+uiStroke.Transparency = 0.15
+uiStroke.Parent = frame
+
+local imageLabel = Instance.new("ImageLabel")
+imageLabel.AnchorPoint = Vector2.new(0.5, 0)
+imageLabel.Position = UDim2.new(0.5, 0, 0, 18)
+imageLabel.Size = UDim2.fromOffset(78, 78)
+imageLabel.BackgroundTransparency = 1
+imageLabel.Image = "rbxassetid://103090301992311"
+imageLabel.ScaleType = Enum.ScaleType.Fit
+imageLabel.Parent = frame
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Position = UDim2.new(0, 15, 0, 105)
+textLabel.Size = UDim2.new(1, -30, 0, 25)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "LENNON HUB IS UPDATED!"
+textLabel.TextColor3 = Color3.fromRGB(240, 255, 245)
+textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+textLabel.TextStrokeTransparency = 0.25
+textLabel.Font = Enum.Font.GothamBold
+textLabel.TextSize = 18
+textLabel.Parent = frame
+
+local textLabel2 = Instance.new("TextLabel")
+textLabel2.Position = UDim2.new(0, 15, 0, 132)
+textLabel2.Size = UDim2.new(1, -30, 0, 20)
+textLabel2.BackgroundTransparency = 1
+textLabel2.Text = "LENNON HUB FOI ATUALIZADO"
+textLabel2.TextColor3 = Color3.fromRGB(115, 190, 135)
+textLabel2.Font = Enum.Font.GothamMedium
+textLabel2.TextSize = 11
+textLabel2.Parent = frame
+
+local textButton = (Instance.new("TextButton"))
+textButton.Position = UDim2.new(0, 18, 1, -57)
+textButton.Size = UDim2.new(1, -36, 0, 40)
+textButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+textButton.BorderSizePixel = 0
+textButton.Text = "GET SCRIPT"
+textButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton.Font = Enum.Font.GothamBold
+textButton.TextSize = 14
+textButton.AutoButtonColor = false
+textButton.Parent = frame
+
+;(Instance.new("UICorner", textButton)).CornerRadius = UDim.new(0, 10)
+
+local imageLabel2 = Instance.new("ImageLabel")
+imageLabel2.AnchorPoint = Vector2.new(0, 0.5)
+imageLabel2.Position = UDim2.new(0, 13, 0.5, 0)
+imageLabel2.Size = UDim2.fromOffset(22, 22)
+imageLabel2.BackgroundTransparency = 1
+imageLabel2.Image = "rbxassetid://121807029290075"
+imageLabel2.ScaleType = Enum.ScaleType.Fit
+imageLabel2.Parent = textButton
+
+do
+end
+
+textButton.MouseEnter:Connect(function()
+  local v7 = tweenService
+
+  do
+  end
+
+  ;(tweenService:Create(textButton, (TweenInfo.new(0.12)), {
+    BackgroundColor3 = (Color3.fromRGB(105, 117, 255)),
+  })):Play()
+
+  return
+end)
+
+do
+end
+
+textButton.MouseLeave:Connect(function()
+  local v8 = tweenService
+
+  do
+  end
+
+  ;(tweenService:Create(textButton, (TweenInfo.new(0.12)), {
+    BackgroundColor3 = (Color3.fromRGB(88, 101, 242)),
+  })):Play()
+
+  return
+end)
+
+do
+end
+
+textButton.MouseButton1Click:Connect(function()
+  pcall(function()
+    if setclipboard then
+      setclipboard("https://discord.gg/xuPkkjQfRR")
+    else
+      if toclipboard then
+        toclipboard("https://discord.gg/xuPkkjQfRR")
+      end
+    end
+
+    return
+  end)
+
+  local text = textButton.Text
+  textButton.Text = "DISCORD COPIED!"
+
+  task.delay(1.5, function()
+    local v9 = textButton
+
+    do
+    end
+
+    if textButton and textButton.Parent then
+      textButton.Text = text
+    end
+
+    return
+  end)
+
+  return
+end)
+
+return
