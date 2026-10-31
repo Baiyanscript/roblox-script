@@ -1,0 +1,232 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Main GUI
+local piterHUB = Instance.new("ScreenGui")
+piterHUB.Name = "Piter HUB"
+piterHUB.ResetOnSpawn = false
+piterHUB.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Floating Button Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 65, 0, 65)
+frame.Position = UDim2.new(0.5, -32.5, 0.5, -32.5)
+frame.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
+frame.BackgroundTransparency = 0.4
+frame.BorderSizePixel = 0
+frame.Active = false
+frame.Parent = piterHUB
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(1, 0)
+uiCorner.Parent = frame
+
+-- Floating Button
+local textButton = Instance.new("TextButton")
+textButton.Size = UDim2.new(0, 60, 0, 60)
+textButton.Position = UDim2.new(0.5, -30, 0.5, -30)
+textButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+textButton.BackgroundTransparency = 0.1
+textButton.Text = "VoidX"
+textButton.Font = Enum.Font.Arcade
+textButton.TextSize = 20
+textButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton.Active = true
+textButton.Draggable = true
+textButton.Parent = piterHUB
+
+local uiCorner2 = Instance.new("UICorner")
+uiCorner2.CornerRadius = UDim.new(1, 0)
+uiCorner2.Parent = textButton
+
+-- Floating Frame Animation
+RunService.Heartbeat:Connect(function()
+    local v = (math.sin(tick() * 3) + 1) / 2
+
+    frame.BackgroundColor3 = Color3.fromRGB(
+        128 + 127 * v,
+        255 * v,
+        128 + 127 * v
+    )
+
+    frame.BackgroundTransparency = 0.4 + 0.3 * v
+
+    frame.Position = textButton.Position - UDim2.new(0, 2.5, 0, 2.5)
+end)
+
+-- Main Window
+local frame2 = Instance.new("Frame")
+frame2.Size = UDim2.new(0, 160, 0, 120)
+frame2.Position = UDim2.new(0, 5, 0, 5)
+frame2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame2.BackgroundTransparency = 0.3
+frame2.BorderSizePixel = 0
+frame2.Active = true
+frame2.Draggable = true
+frame2.Visible = false
+frame2.Parent = piterHUB
+
+local uiStroke2 = Instance.new("UIStroke")
+uiStroke2.Color = Color3.fromRGB(0, 190, 0)
+uiStroke2.Thickness = 2
+uiStroke2.Parent = frame2
+
+local uiCorner3 = Instance.new("UICorner")
+uiCorner3.CornerRadius = UDim.new(0, 12)
+uiCorner3.Parent = frame2
+
+-- Title
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 0, 25)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "Piter Hub"
+textLabel.Font = Enum.Font.Arcade
+textLabel.TextSize = 16
+textLabel.TextColor3 = Color3.fromRGB(0, 190, 0)
+textLabel.TextStrokeTransparency = 0
+textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+textLabel.Parent = frame2
+
+-- TikTok
+local textLabel2 = Instance.new("TextLabel")
+textLabel2.Size = UDim2.new(1, 0, 0, 32)
+textLabel2.Position = UDim2.new(0, 0, 0, 20)
+textLabel2.BackgroundTransparency = 1
+textLabel2.Text = [[
+TIKTOK:
+@piterhub7]]
+textLabel2.Font = Enum.Font.Arcade
+textLabel2.TextSize = 14
+textLabel2.TextColor3 = Color3.fromRGB(0, 190, 0)
+textLabel2.TextStrokeTransparency = 0
+textLabel2.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+textLabel2.ZIndex = 5
+textLabel2.TextYAlignment = Enum.TextYAlignment.Center
+textLabel2.Parent = frame2
+
+-- TP Button
+local textButton3 = Instance.new("TextButton")
+textButton3.Size = UDim2.new(0, 140, 0, 28)
+textButton3.Position = UDim2.new(0, 10, 0, 55)
+textButton3.Text = "TP TO SAVED"
+textButton3.Font = Enum.Font.Arcade
+textButton3.TextSize = 16
+textButton3.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton3.TextStrokeTransparency = 0.5
+textButton3.TextStrokeColor3 = Color3.fromRGB(46, 139, 87)
+textButton3.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+textButton3.AutoButtonColor = false
+textButton3.Parent = frame2
+
+local uiCorner5 = Instance.new("UICorner")
+uiCorner5.CornerRadius = UDim.new(0, 8)
+uiCorner5.Parent = textButton3
+
+-- Save Button
+local textButton4 = Instance.new("TextButton")
+textButton4.Size = UDim2.new(0, 140, 0, 28)
+textButton4.Position = UDim2.new(0, 10, 0, 85)
+textButton4.Text = "SAVE POSITION"
+textButton4.Font = Enum.Font.Arcade
+textButton4.TextSize = 16
+textButton4.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton4.TextStrokeTransparency = 0.5
+textButton4.TextStrokeColor3 = Color3.fromRGB(46, 139, 87)
+textButton4.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+textButton4.AutoButtonColor = false
+textButton4.Parent = frame2
+
+local uiCorner6 = Instance.new("UICorner")
+uiCorner6.CornerRadius = UDim.new(0, 8)
+uiCorner6.Parent = textButton4
+
+local uiStroke3 = Instance.new("UIStroke")
+uiStroke3.Color = Color3.fromRGB(0, 85, 255)
+uiStroke3.Thickness = 4
+uiStroke3.Transparency = 1
+uiStroke3.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+uiStroke3.Parent = textButton4
+
+-- Save Position
+local savedPosition = nil
+
+textButton4.MouseButton1Click:Connect(function()
+    local character = LocalPlayer.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+
+    if root then
+        savedPosition = root.Position
+
+        local oldText = textButton4.Text
+        textButton4.Text = "Position Saved!"
+        textButton4.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+
+        task.wait(2)
+
+        textButton4.Text = oldText
+        textButton4.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    else
+        local oldText = textButton4.Text
+        textButton4.Text = "No Character!"
+        textButton4.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+        task.wait(2)
+
+        textButton4.Text = oldText
+        textButton4.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end
+end)
+
+-- Teleport to Saved Position
+textButton3.MouseButton1Click:Connect(function()
+    if savedPosition then
+        local character = LocalPlayer.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+
+        if root then
+            root.CFrame = CFrame.new(savedPosition)
+
+            local oldText = textButton3.Text
+            textButton3.Text = "Teleported!"
+            textButton3.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+
+            task.wait(1)
+
+            textButton3.Text = oldText
+            textButton3.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        else
+            local oldText = textButton3.Text
+            textButton3.Text = "No Character!"
+            textButton3.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+            task.wait(2)
+
+            textButton3.Text = oldText
+            textButton3.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        end
+    else
+        textButton3.Text = "No Position!"
+        textButton3.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+
+        task.wait(2)
+
+        textButton3.Text = "TP TO SAVED"
+        textButton3.BackgroundColor3 = Color3.fromRGB(182, 78, 78)
+    end
+end)
+
+-- Open / Close UI
+local isOpen = false
+
+textButton.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    frame2.Visible = isOpen
+end)
+
+print("Piter Hub Carregado com Sucesso!")
+print("Save Position / TP to Saved carregados!")
+
+return
