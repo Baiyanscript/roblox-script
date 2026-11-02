@@ -1,0 +1,851 @@
+local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local LogoId = "rbxassetid://111331179075915"
+
+-- Safe GUI Parent detection
+local targetParent = (gethui and gethui()) or PlayerGui
+
+-- Remove existing GUI to prevent duplicates
+if targetParent:FindFirstChild("SourcesHubGui") then
+    targetParent.SourcesHubGui:Destroy()
+end
+
+-- Logic Variables
+local AntiHitEnabled = false
+local InstantGrabEnabled = false
+local AntiTrapEnabled = false
+local AntiRagdollEnabled = false
+local IsTeleporting = false
+local IsStealing = false
+local originalDurations = {}
+local antiRagdollConn = nil
+
+-- Anti-Trap State Variables
+local escapeCount = 0
+local isTrapped = false
+local savedJumpHeight = 7.2
+local touchSave = {
+    saved = {},
+    char = nil,
+    at = 0,
+}
+
+local StealTargetPos = Vector3.new(543.8, 70.5, -364.8)
+
+local TeleportPoints = {
+	Vector3.new(500.62, 241.28, -366.64),
+	Vector3.new(504.45, 155.80, -366.35),
+	Vector3.new(508.30, 70.28, -366.03),
+	Vector3.new(513.86, 70.28, -366.25),
+	Vector3.new(519.43, 70.28, -366.47),
+	Vector3.new(524.32, 70.28, -366.59),
+	Vector3.new(529.22, 70.28, -366.71),
+	Vector3.new(538.01, 70.28, -365.55),
+	Vector3.new(546.80, 70.28, -364.40)
+}
+
+-- Create ScreenGui container
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SourcesHubGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.DisplayOrder = 1000
+screenGui.Parent = targetParent
+
+-- Floating Circle Open Button (Left Side)
+local openBtn = Instance.new("ImageButton")
+openBtn.Name = "OpenBtn"
+openBtn.Size = UDim2.fromOffset(45, 45)
+openBtn.Position = UDim2.new(0, 15, 0.5, -22)
+openBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+openBtn.BorderSizePixel = 0
+openBtn.Image = LogoId
+openBtn.Visible = false
+openBtn.Active = true
+openBtn.Draggable = true
+openBtn.Parent = screenGui
+
+local openCorner = Instance.new("UICorner")
+openCorner.CornerRadius = UDim.new(1, 0)
+openCorner.Parent = openBtn
+
+local openStroke = Instance.new("UIStroke")
+openStroke.Color = Color3.fromRGB(200, 30, 30)
+openStroke.Thickness = 1.5
+openStroke.Parent = openBtn
+
+-- Create Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 240, 0, 270)
+mainFrame.Position = UDim2.new(0.5, -120, 0.5, -135)
+mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+mainFrame.BackgroundTransparency = 0.4
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local uiScale = Instance.new("UIScale")
+uiScale.Scale = 1.0
+uiScale.Parent = mainFrame
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 10)
+uiCorner.Parent = mainFrame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(200, 30, 30)
+uiStroke.Thickness = 1.5
+uiStroke.Parent = mainFrame
+
+-- Custom Background Image Layer
+local bgImage = Instance.new("ImageLabel")
+bgImage.Name = "SourcesBackgroundImage"
+bgImage.Size = UDim2.fromScale(1, 1)
+bgImage.BackgroundTransparency = 1
+bgImage.Image = LogoId
+bgImage.ScaleType = Enum.ScaleType.Crop
+bgImage.ImageTransparency = 0.5
+bgImage.Visible = true
+bgImage.Parent = mainFrame
+
+local bgCorner = Instance.new("UICorner")
+bgCorner.CornerRadius = UDim.new(0, 10)
+bgCorner.Parent = bgImage
+
+-- Logo Image Next to Title
+local titleLogo = Instance.new("ImageLabel")
+titleLogo.Size = UDim2.fromOffset(30, 30)
+titleLogo.Position = UDim2.new(0, 10, 0, 5)
+titleLogo.BackgroundTransparency = 1
+titleLogo.Image = LogoId
+titleLogo.ScaleType = Enum.ScaleType.Fit
+titleLogo.Parent = mainFrame
+
+-- Title Label ("SOURCES HUB")
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, -95, 0, 18)
+titleLabel.Position = UDim2.new(0, 46, 0, 4)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "SOURCES HUB"
+titleLabel.TextColor3 = Color3.fromRGB(255, 60, 60)
+titleLabel.TextSize = 14
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = mainFrame
+
+-- Discord Subtitle Below Name
+local discordSubLabel = Instance.new("TextLabel")
+discordSubLabel.Name = "DiscordSubLabel"
+discordSubLabel.Size = UDim2.new(1, -95, 0, 14)
+discordSubLabel.Position = UDim2.new(0, 46, 0, 20)
+discordSubLabel.BackgroundTransparency = 1
+discordSubLabel.Text = "discord.gg/sourceshubs"
+discordSubLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+discordSubLabel.TextSize = 10
+discordSubLabel.Font = Enum.Font.Gotham
+discordSubLabel.TextXAlignment = Enum.TextXAlignment.Left
+discordSubLabel.Parent = mainFrame
+
+-- Minimize Button (_)
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 22, 0, 22)
+minimizeBtn.Position = UDim2.new(1, -52, 0, 6)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+minimizeBtn.Text = "_"
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.TextSize = 13
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.Parent = mainFrame
+
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(0, 5)
+minCorner.Parent = minimizeBtn
+
+local minStroke = Instance.new("UIStroke")
+minStroke.Color = Color3.fromRGB(200, 30, 30)
+minStroke.Thickness = 1
+minStroke.Parent = minimizeBtn
+
+-- Close Button (X)
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 22, 0, 22)
+closeBtn.Position = UDim2.new(1, -26, 0, 6)
+closeBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+closeBtn.Text = "×"
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.TextSize = 15
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.Parent = mainFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 5)
+closeCorner.Parent = closeBtn
+
+minimizeBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    openBtn.Visible = true
+end)
+
+openBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = true
+    openBtn.Visible = false
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+    IsStealing = false
+    if antiRagdollConn then
+        antiRagdollConn:Disconnect()
+    end
+    screenGui:Destroy()
+end)
+
+-- Tab Bar Buttons (Main / Misc)
+local tabMainBtn = Instance.new("TextButton")
+tabMainBtn.Size = UDim2.new(0.5, -12, 0, 22)
+tabMainBtn.Position = UDim2.new(0, 8, 0, 38)
+tabMainBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+tabMainBtn.Text = "Main"
+tabMainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tabMainBtn.TextSize = 12
+tabMainBtn.Font = Enum.Font.GothamBold
+tabMainBtn.Parent = mainFrame
+
+local tabMainCorner = Instance.new("UICorner")
+tabMainCorner.CornerRadius = UDim.new(0, 5)
+tabMainCorner.Parent = tabMainBtn
+
+local tabMiscBtn = Instance.new("TextButton")
+tabMiscBtn.Size = UDim2.new(0.5, -12, 0, 22)
+tabMiscBtn.Position = UDim2.new(0.5, 4, 0, 38)
+tabMiscBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 20)
+tabMiscBtn.Text = "Misc"
+tabMiscBtn.TextColor3 = Color3.fromRGB(180, 150, 150)
+tabMiscBtn.TextSize = 12
+tabMiscBtn.Font = Enum.Font.GothamSemibold
+tabMiscBtn.Parent = mainFrame
+
+local tabMiscCorner = Instance.new("UICorner")
+tabMiscCorner.CornerRadius = UDim.new(0, 5)
+tabMiscCorner.Parent = tabMiscBtn
+
+-- Containers for Tabs
+local mainTabContainer = Instance.new("Frame")
+mainTabContainer.Size = UDim2.new(1, 0, 1, -68)
+mainTabContainer.Position = UDim2.new(0, 0, 0, 66)
+mainTabContainer.BackgroundTransparency = 1
+mainTabContainer.Visible = true
+mainTabContainer.Parent = mainFrame
+
+local miscTabContainer = Instance.new("Frame")
+miscTabContainer.Size = UDim2.new(1, 0, 1, -68)
+miscTabContainer.Position = UDim2.new(0, 0, 0, 66)
+miscTabContainer.BackgroundTransparency = 1
+miscTabContainer.Visible = false
+miscTabContainer.Parent = mainFrame
+
+-- Tab Switching Logic
+tabMainBtn.MouseButton1Click:Connect(function()
+    mainTabContainer.Visible = true
+    miscTabContainer.Visible = false
+    tabMainBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+    tabMainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tabMainBtn.Font = Enum.Font.GothamBold
+    tabMiscBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 20)
+    tabMiscBtn.TextColor3 = Color3.fromRGB(180, 150, 150)
+    tabMiscBtn.Font = Enum.Font.GothamSemibold
+end)
+
+tabMiscBtn.MouseButton1Click:Connect(function()
+    mainTabContainer.Visible = false
+    miscTabContainer.Visible = true
+    tabMiscBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+    tabMiscBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tabMiscBtn.Font = Enum.Font.GothamBold
+    tabMainBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 20)
+    tabMainBtn.TextColor3 = Color3.fromRGB(180, 150, 150)
+    tabMainBtn.Font = Enum.Font.GothamSemibold
+end)
+
+-- [MAIN TAB] Anti-Hit Button
+local antiHitBtn = Instance.new("TextButton")
+antiHitBtn.Name = "AntiHitBtn"
+antiHitBtn.Size = UDim2.new(1, -20, 0, 32)
+antiHitBtn.Position = UDim2.new(0, 10, 0, 6)
+antiHitBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+antiHitBtn.BackgroundTransparency = 0.2
+antiHitBtn.Text = "Anti-Hit: OFF"
+antiHitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiHitBtn.TextSize = 12
+antiHitBtn.Font = Enum.Font.GothamSemibold
+antiHitBtn.Parent = mainTabContainer
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 6)
+btnCorner.Parent = antiHitBtn
+
+-- [MAIN TAB] Instant Grab Button
+local instantGrabBtn = Instance.new("TextButton")
+instantGrabBtn.Name = "InstantGrabBtn"
+instantGrabBtn.Size = UDim2.new(1, -20, 0, 32)
+instantGrabBtn.Position = UDim2.new(0, 10, 0, 44)
+instantGrabBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+instantGrabBtn.BackgroundTransparency = 0.2
+instantGrabBtn.Text = "Instant Grab: OFF"
+instantGrabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+instantGrabBtn.TextSize = 12
+instantGrabBtn.Font = Enum.Font.GothamSemibold
+instantGrabBtn.Parent = mainTabContainer
+
+local instantBtnCorner = Instance.new("UICorner")
+instantBtnCorner.CornerRadius = UDim.new(0, 6)
+instantBtnCorner.Parent = instantGrabBtn
+
+-- [MAIN TAB] Anti-Trap Button (Replaces Hold Jump)
+local antiTrapBtn = Instance.new("TextButton")
+antiTrapBtn.Name = "AntiTrapBtn"
+antiTrapBtn.Size = UDim2.new(1, -20, 0, 32)
+antiTrapBtn.Position = UDim2.new(0, 10, 0, 82)
+antiTrapBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+antiTrapBtn.BackgroundTransparency = 0.2
+antiTrapBtn.Text = "Anti-Trap: OFF"
+antiTrapBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiTrapBtn.TextSize = 12
+antiTrapBtn.Font = Enum.Font.GothamSemibold
+antiTrapBtn.Parent = mainTabContainer
+
+local antiTrapCorner = Instance.new("UICorner")
+antiTrapCorner.CornerRadius = UDim.new(0, 6)
+antiTrapCorner.Parent = antiTrapBtn
+
+-- [MAIN TAB] Anti-Ragdoll Button
+local antiRagdollBtn = Instance.new("TextButton")
+antiRagdollBtn.Name = "AntiRagdollBtn"
+antiRagdollBtn.Size = UDim2.new(1, -20, 0, 32)
+antiRagdollBtn.Position = UDim2.new(0, 10, 0, 120)
+antiRagdollBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+antiRagdollBtn.BackgroundTransparency = 0.2
+antiRagdollBtn.Text = "Anti-Ragdoll: OFF"
+antiRagdollBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiRagdollBtn.TextSize = 12
+antiRagdollBtn.Font = Enum.Font.GothamSemibold
+antiRagdollBtn.Parent = mainTabContainer
+
+local antiRagdollCorner = Instance.new("UICorner")
+antiRagdollCorner.CornerRadius = UDim.new(0, 6)
+antiRagdollCorner.Parent = antiRagdollBtn
+
+-- [MAIN TAB] Steal Button
+local stealBtn = Instance.new("TextButton")
+stealBtn.Name = "StealBtn"
+stealBtn.Size = UDim2.new(1, -20, 0, 32)
+stealBtn.Position = UDim2.new(0, 10, 0, 158)
+stealBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+stealBtn.BackgroundTransparency = 0.2
+stealBtn.Text = "Steal"
+stealBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+stealBtn.TextSize = 12
+stealBtn.Font = Enum.Font.GothamSemibold
+stealBtn.Parent = mainTabContainer
+
+local stealCorner = Instance.new("UICorner")
+stealCorner.CornerRadius = UDim.new(0, 6)
+stealCorner.Parent = stealBtn
+
+-- Continuous Move Loop to bypass 8-second MoveTo timeout
+stealBtn.MouseButton1Click:Connect(function()
+    if IsStealing then
+        IsStealing = false
+        stealBtn.Text = "Steal"
+        stealBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+        return
+    end
+
+    local character = LocalPlayer.Character
+    if not character then return end
+    
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not hrp or humanoid.Health <= 0 then return end
+
+    IsStealing = true
+    stealBtn.Text = "Running..."
+    stealBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+
+    task.spawn(function()
+        while IsStealing do
+            local char = LocalPlayer.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+
+            if not char or not hum or not root or hum.Health <= 0 then
+                break
+            end
+
+            -- Flat distance check to stop when arrived
+            local currentPos = Vector3.new(root.Position.X, 0, root.Position.Z)
+            local targetPos = Vector3.new(StealTargetPos.X, 0, StealTargetPos.Z)
+            
+            if (currentPos - targetPos).Magnitude <= 3.5 then
+                break
+            end
+
+            -- Continually command MoveTo to prevent auto-stopping
+            hum:MoveTo(StealTargetPos)
+            task.wait(0.2)
+        end
+
+        IsStealing = false
+        stealBtn.Text = "Steal"
+        stealBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+    end)
+end)
+
+-- Anti-Ragdoll Logic
+local function applyHumanoidStateLock(hum)
+    if not hum then return end
+    pcall(function()
+        hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, not AntiRagdollEnabled)
+        hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, not AntiRagdollEnabled)
+    end)
+end
+
+local function startAntiRagdoll()
+    if antiRagdollConn then return end
+    antiRagdollConn = RunService.Heartbeat:Connect(function()
+        if not AntiRagdollEnabled then return end
+        local char = LocalPlayer.Character
+        if not char then return end
+        
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            pcall(function()
+                local currentState = hum:GetState()
+                if currentState == Enum.HumanoidStateType.Physics
+                or currentState == Enum.HumanoidStateType.Ragdoll
+                or currentState == Enum.HumanoidStateType.FallingDown then
+                    
+                    for _, part in ipairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.AssemblyLinearVelocity = Vector3.zero
+                            part.AssemblyAngularVelocity = Vector3.zero
+                        end
+                    end
+                    
+                    hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
+            end)
+        end
+    end)
+end
+
+antiRagdollBtn.MouseButton1Click:Connect(function()
+    AntiRagdollEnabled = not AntiRagdollEnabled
+    
+    local char = LocalPlayer.Character
+    if char then
+        applyHumanoidStateLock(char:FindFirstChildOfClass("Humanoid"))
+    end
+    
+    if AntiRagdollEnabled then
+        antiRagdollBtn.Text = "Anti-Ragdoll: ON"
+        antiRagdollBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+        startAntiRagdoll()
+    else
+        antiRagdollBtn.Text = "Anti-Ragdoll: OFF"
+        antiRagdollBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    task.wait(0.5)
+    if AntiRagdollEnabled then
+        applyHumanoidStateLock(char:FindFirstChildOfClass("Humanoid"))
+    end
+end)
+
+-- Instant Grab Logic Functions
+local function applyPromptGrab(prompt)
+    if prompt:IsA("ProximityPrompt") then
+        if InstantGrabEnabled then
+            if originalDurations[prompt] == nil then
+                originalDurations[prompt] = prompt.HoldDuration
+            end
+            prompt.HoldDuration = 0.01
+        elseif originalDurations[prompt] ~= nil then
+            prompt.HoldDuration = originalDurations[prompt]
+            originalDurations[prompt] = nil
+        end
+    end
+end
+
+-- Hook existing and future Proximity Prompts
+ProximityPromptService.PromptShown:Connect(function(prompt)
+    if InstantGrabEnabled then
+        applyPromptGrab(prompt)
+    end
+end)
+
+workspace.DescendantAdded:Connect(function(descendant)
+    if InstantGrabEnabled and descendant:IsA("ProximityPrompt") then
+        applyPromptGrab(descendant)
+    end
+end)
+
+instantGrabBtn.MouseButton1Click:Connect(function()
+    InstantGrabEnabled = not InstantGrabEnabled
+    if InstantGrabEnabled then
+        instantGrabBtn.Text = "Instant Grab: ON"
+        instantGrabBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+        for _, prompt in ipairs(workspace:GetDescendants()) do
+            applyPromptGrab(prompt)
+        end
+    else
+        instantGrabBtn.Text = "Instant Grab: OFF"
+        instantGrabBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+        for prompt, original in pairs(originalDurations) do
+            if prompt and prompt.Parent then
+                prompt.HoldDuration = original
+            end
+        end
+        table.clear(originalDurations)
+    end
+end)
+
+-- Core Anti-Trap Logic
+local function untrap(reason)
+    if not AntiTrapEnabled then
+        isTrapped = false
+        return false
+    end
+
+    local char = LocalPlayer.Character
+    if not char then return false end
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hum or not hrp or hum.Health <= 0 then return false end
+
+    if type(hum.JumpHeight) == "number" and hum.JumpHeight > 0.5 then
+        savedJumpHeight = hum.JumpHeight
+    end
+
+    local trappedAttr = char:GetAttribute("IsTrapped") == true
+
+    if not trappedAttr and (not hrp.Anchored and hum.JumpHeight ~= 0) then
+        isTrapped = false
+        return false
+    end
+
+    pcall(function()
+        if trappedAttr then
+            char:SetAttribute("IsTrapped", nil)
+        end
+
+        hrp.Anchored = false
+        hum.PlatformStand = false
+        hum.Sit = false
+        hum.AutoRotate = true
+
+        if hum.JumpHeight < 0.5 then
+            hum.JumpHeight = savedJumpHeight
+        end
+
+        local state = hum:GetState()
+        if state == Enum.HumanoidStateType.Physics
+            or state == Enum.HumanoidStateType.PlatformStanding
+            or state == Enum.HumanoidStateType.Seated then
+            hum:ChangeState(Enum.HumanoidStateType.Running)
+        end
+    end)
+
+    pcall(function()
+        local billboard = char:FindFirstChild("TrapBillboard", true)
+        if billboard then
+            billboard:Destroy()
+        end
+    end)
+
+    if not isTrapped then
+        isTrapped = true
+        escapeCount += 1
+    end
+
+    return true
+end
+
+local function applyNoTouch()
+    if not AntiTrapEnabled then
+        -- Restore part properties when disabled
+        for part, old in pairs(touchSave.saved) do
+            if part and part.Parent then
+                pcall(function() part.CanTouch = old end)
+            end
+        end
+        touchSave.saved = {}
+        return
+    end
+
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    if char ~= touchSave.char then
+        touchSave.saved = {}
+        touchSave.char = char
+        touchSave.at = 0
+    end
+
+    -- Throttle application to 0.25s
+    local now = os.clock()
+    if now - (touchSave.at or 0) < 0.25 then return end
+    touchSave.at = now
+
+    for _, d in ipairs(char:GetDescendants()) do
+        if d:IsA("BasePart") then
+            if touchSave.saved[d] == nil then
+                touchSave.saved[d] = d.CanTouch
+            end
+            if d.CanTouch ~= false then
+                d.CanTouch = false
+            end
+        end
+    end
+end
+
+-- Anti-Trap Loop
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if AntiTrapEnabled then
+            untrap("loop")
+            applyNoTouch()
+        end
+    end
+end)
+
+antiTrapBtn.MouseButton1Click:Connect(function()
+    AntiTrapEnabled = not AntiTrapEnabled
+    if AntiTrapEnabled then
+        antiTrapBtn.Text = "Anti-Trap: ON"
+        antiTrapBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+    else
+        antiTrapBtn.Text = "Anti-Trap: OFF"
+        antiTrapBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+        applyNoTouch() -- restores CanTouch when turned off
+    end
+end)
+
+-- [MISC TAB] Background Style Selector
+local bgStyleBtn = Instance.new("TextButton")
+bgStyleBtn.Name = "BgStyleBtn"
+bgStyleBtn.Size = UDim2.new(1, -20, 0, 30)
+bgStyleBtn.Position = UDim2.new(0, 10, 0, 4)
+bgStyleBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+bgStyleBtn.BackgroundTransparency = 0.2
+bgStyleBtn.Text = "Background: Sources Background"
+bgStyleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+bgStyleBtn.TextSize = 11
+bgStyleBtn.Font = Enum.Font.GothamSemibold
+bgStyleBtn.Parent = miscTabContainer
+
+local bgBtnCorner = Instance.new("UICorner")
+bgBtnCorner.CornerRadius = UDim.new(0, 6)
+bgBtnCorner.Parent = bgStyleBtn
+
+local bgMode = 3
+bgStyleBtn.MouseButton1Click:Connect(function()
+    bgMode = bgMode + 1
+    if bgMode > 3 then bgMode = 1 end
+    
+    if bgMode == 1 then
+        bgStyleBtn.Text = "Background: Plain Black"
+        bgImage.Visible = false
+        mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+        mainFrame.BackgroundTransparency = 0.2
+    elseif bgMode == 2 then
+        bgStyleBtn.Text = "Background: Transparent"
+        bgImage.Visible = false
+        mainFrame.BackgroundTransparency = 1
+    elseif bgMode == 3 then
+        bgStyleBtn.Text = "Background: Sources Background"
+        mainFrame.BackgroundTransparency = 0.4
+        bgImage.Visible = true
+    end
+end)
+
+-- [MISC TAB] GUI Scale Selector
+local scaleBtn = Instance.new("TextButton")
+scaleBtn.Name = "ScaleBtn"
+scaleBtn.Size = UDim2.new(1, -20, 0, 30)
+scaleBtn.Position = UDim2.new(0, 10, 0, 38)
+scaleBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+scaleBtn.BackgroundTransparency = 0.2
+scaleBtn.Text = "GUI Scale: 1.0x"
+scaleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+scaleBtn.TextSize = 11
+scaleBtn.Font = Enum.Font.GothamSemibold
+scaleBtn.Parent = miscTabContainer
+
+local scaleBtnCorner = Instance.new("UICorner")
+scaleBtnCorner.CornerRadius = UDim.new(0, 6)
+scaleBtnCorner.Parent = scaleBtn
+
+local scales = {0.8, 1.0, 1.2, 1.4}
+local scaleIndex = 2
+scaleBtn.MouseButton1Click:Connect(function()
+    scaleIndex = scaleIndex + 1
+    if scaleIndex > #scales then scaleIndex = 1 end
+    local currentScale = scales[scaleIndex]
+    uiScale.Scale = currentScale
+    scaleBtn.Text = "GUI Scale: " .. currentScale .. "x"
+end)
+
+-- [MISC TAB] Discord Button
+local discordBtn = Instance.new("TextButton")
+discordBtn.Name = "DiscordBtn"
+discordBtn.Size = UDim2.new(1, -20, 0, 30)
+discordBtn.Position = UDim2.new(0, 10, 0, 72)
+discordBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+discordBtn.BackgroundTransparency = 0.2
+discordBtn.Text = "Discord: Copy Link"
+discordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+discordBtn.TextSize = 11
+discordBtn.Font = Enum.Font.GothamSemibold
+discordBtn.Parent = miscTabContainer
+
+local discordBtnCorner = Instance.new("UICorner")
+discordBtnCorner.CornerRadius = UDim.new(0, 6)
+discordBtnCorner.Parent = discordBtn
+
+discordBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard("discord.gg/sourceshubs")
+    end
+    discordBtn.Text = "COPIED DISCORD LINK!"
+    task.wait(1.2)
+    discordBtn.Text = "Discord: Copy Link"
+end)
+
+-- Red & Black Fullscreen Loading Overlay
+local teleportOverlay = Instance.new("Frame")
+teleportOverlay.Name = "TeleportOverlay"
+teleportOverlay.Size = UDim2.fromScale(1, 1)
+teleportOverlay.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
+teleportOverlay.BackgroundTransparency = 1
+teleportOverlay.Visible = false
+teleportOverlay.ZIndex = 5000
+teleportOverlay.Parent = screenGui
+
+local overlayLogo = Instance.new("ImageLabel")
+overlayLogo.AnchorPoint = Vector2.new(0.5, 0.5)
+overlayLogo.Position = UDim2.new(0.5, 0, 0.42, 0)
+overlayLogo.Size = UDim2.fromOffset(90, 90)
+overlayLogo.BackgroundTransparency = 1
+overlayLogo.Image = LogoId
+overlayLogo.ScaleType = Enum.ScaleType.Fit
+overlayLogo.ZIndex = 5001
+overlayLogo.Parent = teleportOverlay
+
+local loadingText = Instance.new("TextLabel")
+loadingText.AnchorPoint = Vector2.new(0.5, 0)
+loadingText.Position = UDim2.new(0.5, 0, 0.52, 10)
+loadingText.Size = UDim2.fromOffset(300, 30)
+loadingText.BackgroundTransparency = 1
+loadingText.Text = "Sources Hub Loading..."
+loadingText.TextColor3 = Color3.fromRGB(255, 60, 60)
+loadingText.Font = Enum.Font.GothamBold
+loadingText.TextSize = 15
+loadingText.ZIndex = 5001
+loadingText.Parent = teleportOverlay
+
+local loadingBarBg = Instance.new("Frame")
+loadingBarBg.AnchorPoint = Vector2.new(0.5, 0)
+loadingBarBg.Position = UDim2.new(0.5, 0, 0.58, 10)
+loadingBarBg.Size = UDim2.fromOffset(220, 4)
+loadingBarBg.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+loadingBarBg.BorderSizePixel = 0
+loadingBarBg.ZIndex = 5001
+loadingBarBg.Parent = teleportOverlay
+
+local barBgCorner = Instance.new("UICorner")
+barBgCorner.CornerRadius = UDim.new(1, 0)
+barBgCorner.Parent = loadingBarBg
+
+local loadingBarFill = Instance.new("Frame")
+loadingBarFill.Size = UDim2.new(0, 0, 1, 0)
+loadingBarFill.BackgroundColor3 = Color3.fromRGB(200, 20, 20)
+loadingBarFill.BorderSizePixel = 0
+loadingBarFill.ZIndex = 5002
+loadingBarFill.Parent = loadingBarBg
+
+local barFillCorner = Instance.new("UICorner")
+barFillCorner.CornerRadius = UDim.new(1, 0)
+barFillCorner.Parent = loadingBarFill
+
+-- Teleport Route with Overlay Animation Logic
+local function TeleportRoute(Character)
+	if not AntiHitEnabled then return end
+	if not Character or not Character.Parent then return end
+	
+	teleportOverlay.Visible = true
+	teleportOverlay.BackgroundTransparency = 0
+	loadingBarFill.Size = UDim2.new(0, 0, 1, 0)
+	loadingText.Text = "Sources Hub Anti-Hit Loading..."
+	
+	local totalPoints = #TeleportPoints
+	for Index, Position in ipairs(TeleportPoints) do
+		if not AntiHitEnabled then 
+			teleportOverlay.Visible = false
+			return 
+		end
+		
+		local progress = Index / totalPoints
+		TweenService:Create(loadingBarFill, TweenInfo.new(0.12), {Size = UDim2.new(progress, 0, 1, 0)}):Play()
+		
+		if Index == totalPoints then
+			loadingText.Text = "Sources Hub Loaded!"
+		end
+		
+		Character:PivotTo(CFrame.new(Position))
+		if Index < totalPoints then
+			RunService.Heartbeat:Wait()
+		end
+	end
+	
+	task.wait(0.25)
+	local fadeOut = TweenService:Create(teleportOverlay, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1})
+	fadeOut:Play()
+	fadeOut.Completed:Wait()
+	teleportOverlay.Visible = false
+end
+
+antiHitBtn.MouseButton1Click:Connect(function()
+    AntiHitEnabled = not AntiHitEnabled
+    if AntiHitEnabled then
+        antiHitBtn.Text = "Anti-Hit: ON"
+        antiHitBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+    else
+        antiHitBtn.Text = "Anti-Hit: OFF"
+        antiHitBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+    end
+end)
+
+ProximityPromptService.PromptTriggered:Connect(function(Prompt, TriggeredPlayer)
+	if TriggeredPlayer ~= LocalPlayer then return end
+	if not AntiHitEnabled or IsTeleporting then return end
+	local Character = LocalPlayer.Character
+	if not Character then return end
+	IsTeleporting = true
+	TeleportRoute(Character)
+	IsTeleporting = false
+end)
