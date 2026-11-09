@@ -1,0 +1,926 @@
+-- SERVICES
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local SoundService = game:GetService("SoundService")
+local StarterGui = game:GetService("StarterGui")
+
+local LocalPlayer = Players.LocalPlayer
+local GUI_NAME = "BaiyanAudioGitHub"
+
+pcall(function()
+    local old = CoreGui:FindFirstChild(GUI_NAME)
+    if old then old:Destroy() end
+end)
+
+-- AUDIO STATE
+local soundSettings = setmetatable({}, {__mode = "k"})
+local volumeScale, pitchScale = 1, 1
+local lowGain, midGain, highGain = 0, 0, 0
+local selectedEffect = "None"
+
+local function isSound(obj)
+    return obj and obj:IsA("Sound")
+end
+
+local function rememberSound(sound)
+    if not soundSettings[sound] then
+        soundSettings[sound] = {
+            volume = sound.Volume,
+            speed = sound.PlaybackSpeed,
+        }
+    end
+end
+
+local function removeAdjustmentEffects(sound)
+    for _, child in ipairs(sound:GetChildren()) do
+        if child.Name == "BaiyanAudioEQ" or child.Name == "BaiyanAudioFX" then
+            child:Destroy()
+        end
+    end
+end
+
+local function addEqualizer(sound)
+    local eq = sound:FindFirstChild("BaiyanAudioEQ")
+    if not eq then
+        eq = Instance.new("EqualizerSoundEffect")
+        eq.Name = "BaiyanAudioEQ"
+        eq.Parent = sound
+    end
+    eq.LowGain, eq.MidGain, eq.HighGain = lowGain, midGain, highGain
+end
+
+local function applySound(sound)
+    if not isSound(sound) then return end
+    rememberSound(sound)
+    local original = soundSettings[sound]
+    pcall(function()
+        sound.Volume = math.clamp(original.volume * volumeScale, 0, 10)
+        sound.PlaybackSpeed = math.clamp(original.speed * pitchScale, 0.05, 4)
+        addEqualizer(sound)
+    end)
+end
+
+local function applyAllSounds()
+    for sound in pairs(soundSettings) do
+        if sound.Parent then applySound(sound) end
+    end
+    for _, obj in ipairs(game:GetDescendants()) do
+        if isSound(obj) then applySound(obj) end
+    end
+end
+
+for _, obj in ipairs(game:GetDescendants()) do
+    if isSound(obj) then rememberSound(obj) end
+end
+game.DescendantAdded:Connect(function(obj)
+    if isSound(obj) then
+        rememberSound(obj)
+        task.defer(applySound, obj)
+    end
+end)
+
+local function makeEffect(className, name, sound)
+    local effect = Instance.new(className)
+    effect.Name = name
+    effect.Parent = sound
+    return effect
+end
+
+local function applyEffect(sound, effectName)
+    removeAdjustmentEffects(sound)
+    if effectName == "None" then return end
+
+    if effectName == "Reverb" or effectName == "Cinema" or effectName == "Underwater" then
+        local e = makeEffect("ReverbSoundEffect", "BaiyanAudioFX", sound)
+        if effectName == "Cinema" then
+            e.DecayTime, e.Density, e.WetLevel, e.DryLevel = 5, 0.7, -15, 0
+        elseif effectName == "Underwater" then
+            e.DecayTime, e.Density, e.WetLevel, e.DryLevel = 1.5, 1, -6, -4
+        else
+            e.DecayTime, e.Density, e.WetLevel, e.DryLevel = 2.6, 0.75, -9, 0
+        end
+    elseif effectName == "Echo" then
+        local e = makeEffect("EchoSoundEffect", "BaiyanAudioFX", sound)
+        e.Delay, e.Feedback, e.WetLevel, e.DryLevel = 0.7, 0.5, -6, 0
+    elseif effectName == "Distortion" then
+        local e = makeEffect("DistortionSoundEffect", "BaiyanAudioFX", sound)
+        e.Level = 0.4
+    elseif effectName == "Chorus" then
+        local e = makeEffect("ChorusSoundEffect", "BaiyanAudioFX", sound)
+        e.Depth, e.Rate, e.Mix = 0.25, 1.2, 0.6
+    elseif effectName == "Flanger" then
+        local e = makeEffect("FlangeSoundEffect", "BaiyanAudioFX", sound)
+        e.Depth, e.Rate, e.Mix = 0.4, 2, 0.5
+    elseif effectName == "Tremolo" then
+        local e = makeEffect("TremoloSoundEffect", "BaiyanAudioFX", sound)
+        e.Depth, e.Frequency = 0.5, 8
+    elseif effectName == "Compressor" then
+        local e = makeEffect("CompressorSoundEffect", "BaiyanAudioFX", sound)
+        e.Threshold, e.Ratio, e.Attack, e.Release = -25, 15, 0.02, 0.1
+    elseif effectName == "Radio" then
+        local d = makeEffect("DistortionSoundEffect", "BaiyanAudioFX", sound)
+        d.Level = 0.25
+        local c = makeEffect("CompressorSoundEffect", "BaiyanAudioFX", sound)
+        c.Threshold, c.Ratio = -10, 12
+    elseif effectName == "Robot" then
+        local f = makeEffect("FlangeSoundEffect", "BaiyanAudioFX", sound)
+        f.Depth, f.Rate = 0.5, 3
+        local t = makeEffect("TremoloSoundEffect", "BaiyanAudioFX", sound)
+        t.Depth, t.Frequency = 1, 4
+    end
+end
+
+local function chooseEffect(effectName)
+    selectedEffect = effectName
+    pitchScale = 1
+    lowGain, midGain, highGain = 0, 0, 0
+    if effectName == "Kid" then
+        pitchScale, lowGain, midGain, highGain = 1.45, -5, 2, 4
+    elseif effectName == "Robot" then
+        lowGain, midGain, highGain = -5, 5, 2
+    elseif effectName == "Slowed" then
+        pitchScale, lowGain, midGain, highGain = 0.72, 8, -2, -12
+    elseif effectName == "Cinema" then
+        lowGain, midGain, highGain = 6, -2, 2
+    elseif effectName == "Underwater" then
+        lowGain, midGain, highGain = 4, -12, -25
+    end
+    for sound in pairs(soundSettings) do
+        if sound.Parent then
+            applyEffect(sound, effectName)
+            applySound(sound)
+        end
+    end
+end
+
+-- GITHUB MEDIA STATE
+local MEDIA_API = "https://api.github.com/repos/Baiyanscript/music/contents/funk"
+local MEDIA_FOLDER = "BaiyanHubMedia"
+local mediaItems, mediaIndex, mediaBusy = {}, 0, false
+local mp3Only = false
+local mediaSound = Instance.new("Sound")
+mediaSound.Name = "BaiyanGitHubMediaSound"
+mediaSound.Volume = 1
+mediaSound.Parent = SoundService
+
+pcall(function()
+    if not isfolder(MEDIA_FOLDER) then makefolder(MEDIA_FOLDER) end
+end)
+
+local function safeFileName(name)
+    return tostring(name):gsub("[^%w%._%-]", "_")
+end
+
+-- UI THEME
+local Themes = {
+    Dark = {
+        Background = Color3.fromRGB(10, 10, 10),
+        TitleBar = Color3.fromRGB(15, 15, 15),
+        Button = Color3.fromRGB(25, 25, 25),
+        ButtonHover = Color3.fromRGB(35, 35, 35),
+        Text = Color3.fromRGB(220, 220, 220),
+        Border = Color3.fromRGB(60, 60, 60),
+        TopButtons = Color3.fromRGB(40, 40, 40),
+    },
+    Light = {
+        Background = Color3.fromRGB(240, 240, 240),
+        TitleBar = Color3.fromRGB(220, 220, 220),
+        Button = Color3.fromRGB(255, 255, 255),
+        ButtonHover = Color3.fromRGB(230, 230, 230),
+        Text = Color3.fromRGB(20, 20, 20),
+        Border = Color3.fromRGB(180, 180, 180),
+        TopButtons = Color3.fromRGB(200, 200, 200),
+    }
+}
+local CurrentTheme = "Dark"
+local UIWidth, UIHeight = 200, 240
+
+local MainGui = Instance.new("ScreenGui")
+MainGui.Name = GUI_NAME
+MainGui.ResetOnSpawn = false
+MainGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+MainGui.Parent = CoreGui
+
+local Frame = Instance.new("Frame")
+Frame.Name = "MainFrame"
+Frame.Size = UDim2.new(0, UIWidth, 0, UIHeight)
+Frame.Position = UDim2.new(0.5, -UIWidth/2, 0.5, -UIHeight/2)
+Frame.BackgroundColor3 = Themes.Dark.Background
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.ClipsDescendants = true
+Frame.Parent = MainGui
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 10)
+local FrameStroke = Instance.new("UIStroke", Frame)
+FrameStroke.Thickness = 1.5
+FrameStroke.Color = Themes.Dark.Border
+FrameStroke.Transparency = 0.2
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.BackgroundColor3 = Themes.Dark.TitleBar
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = Frame
+Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 10)
+local TitleFix = Instance.new("Frame")
+TitleFix.Size = UDim2.new(1, 0, 0, 10)
+TitleFix.Position = UDim2.new(0, 0, 1, -10)
+TitleFix.BackgroundColor3 = Themes.Dark.TitleBar
+TitleFix.BorderSizePixel = 0
+TitleFix.Parent = TitleBar
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -85, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.Text = "Baiyan Hub || Audio"
+Title.TextColor3 = Themes.Dark.Text
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 11
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TitleBar
+
+-- Draggable title bar
+local dragging, dragInput, dragStart, startPos
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging, dragStart, startPos = true, input.Position, Frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+TitleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+local function topButton(text, x, width)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0, width or 22, 0, 22)
+    b.Position = UDim2.new(1, x, 0.5, -11)
+    b.BackgroundColor3 = Themes.Dark.TopButtons
+    b.Text = text
+    b.TextColor3 = Themes.Dark.Text
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 12
+    b.Parent = TitleBar
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    return b
+end
+local SettingsBtn = topButton("⚙", -74)
+local MinimizeBtn = topButton("−", -49)
+local CloseBtn = topButton("×", -24)
+
+local Content = Instance.new("ScrollingFrame")
+Content.Size = UDim2.new(1, -6, 1, -36)
+Content.Position = UDim2.new(0, 3, 0, 33)
+Content.BackgroundTransparency = 1
+Content.BorderSizePixel = 0
+Content.ScrollBarThickness = 2
+Content.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+Content.CanvasSize = UDim2.fromOffset(0, 760)
+Content.Parent = Frame
+
+local function sectionLabel(text, y)
+    local l = Instance.new("TextLabel")
+    l.Size = UDim2.new(1, -6, 0, 22)
+    l.Position = UDim2.fromOffset(3, y)
+    l.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    l.BackgroundTransparency = 0.55
+    l.Text = text
+    l.TextColor3 = Color3.fromRGB(255, 80, 80)
+    l.Font = Enum.Font.GothamBold
+    l.TextSize = 10
+    l.Parent = Content
+    Instance.new("UICorner", l).CornerRadius = UDim.new(0, 5)
+    return l
+end
+
+local function textInput(labelText, value, y, callback)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, -6, 0, 28)
+    row.Position = UDim2.fromOffset(3, y)
+    row.BackgroundColor3 = Themes.Dark.Button
+    row.BorderSizePixel = 0
+    row.Parent = Content
+    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 5)
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.52, 0, 1, 0)
+    label.Position = UDim2.fromOffset(6, 0)
+    label.BackgroundTransparency = 1
+    label.Text = labelText
+    label.TextColor3 = Themes.Dark.Text
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 9
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = row
+
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0.43, -4, 1, -4)
+    box.Position = UDim2.new(0.57, 0, 0, 2)
+    box.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    box.Text = tostring(value)
+    box.TextColor3 = Color3.new(1, 1, 1)
+    box.Font = Enum.Font.Gotham
+    box.TextSize = 10
+    box.ClearTextOnFocus = false
+    box.Parent = row
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 4)
+    box.FocusLost:Connect(function()
+        local n = tonumber(box.Text)
+        if n then callback(n) else box.Text = tostring(value) end
+    end)
+    return box
+end
+
+local function smallButton(text, x, y, width, callback)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.fromOffset(width, 25)
+    b.Position = UDim2.fromOffset(x, y)
+    b.BackgroundColor3 = Themes.Dark.Button
+    b.Text = text
+    b.TextColor3 = Themes.Dark.Text
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 9
+    b.BorderSizePixel = 0
+    b.Parent = Content
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 5)
+    b.MouseButton1Click:Connect(callback)
+    return b
+end
+
+-- Audio adjustment controls
+sectionLabel("AUDIO ADJUSTMENT", 3)
+local volumeBox = textInput("VOLUME MULTIPLIER", volumeScale, 29, function(n)
+    volumeScale = math.clamp(n, 0, 10)
+    applyAllSounds()
+end)
+local pitchBox = textInput("PITCH / SPEED", pitchScale, 61, function(n)
+    pitchScale = math.clamp(n, 0.05, 4)
+    applyAllSounds()
+end)
+local bassBox = textInput("BASS (dB)", lowGain, 93, function(n)
+    lowGain = math.clamp(n, -80, 10)
+    applyAllSounds()
+end)
+local midsBox = textInput("MIDS (dB)", midGain, 125, function(n)
+    midGain = math.clamp(n, -80, 10)
+    applyAllSounds()
+end)
+local trebleBox = textInput("TREBLE (dB)", highGain, 157, function(n)
+    highGain = math.clamp(n, -80, 10)
+    applyAllSounds()
+end)
+
+sectionLabel("SOUND EFFECT PRESETS", 190)
+local effectNames = {"None", "Reverb", "Echo", "Distortion", "Chorus", "Flanger", "Tremolo", "Compressor", "Radio", "Cinema", "Underwater", "Kid", "Robot", "Slowed"}
+local effectButtons = {}
+for i, effectName in ipairs(effectNames) do
+    local col = (i - 1) % 2
+    local row = math.floor((i - 1) / 2)
+    local b = smallButton(effectName, 3 + col * 96, 216 + row * 29, 92, function()
+        chooseEffect(effectName)
+        volumeBox.Text, pitchBox.Text = tostring(volumeScale), tostring(pitchScale)
+        bassBox.Text, midsBox.Text, trebleBox.Text = tostring(lowGain), tostring(midGain), tostring(highGain)
+        for name, button in pairs(effectButtons) do
+            button.BackgroundColor3 = name == selectedEffect and Color3.fromRGB(120, 35, 35) or Themes[CurrentTheme].Button
+        end
+    end)
+    effectButtons[effectName] = b
+end
+effectButtons.None.BackgroundColor3 = Color3.fromRGB(120, 35, 35)
+
+smallButton("RESET AUDIO", 3, 216 + math.ceil(#effectNames / 2) * 29, 188, function()
+    volumeScale, pitchScale = 1, 1
+    lowGain, midGain, highGain = 0, 0, 0
+    selectedEffect = "None"
+    for sound, original in pairs(soundSettings) do
+        if sound.Parent then
+            removeAdjustmentEffects(sound)
+            pcall(function()
+                sound.Volume = original.volume
+                sound.PlaybackSpeed = original.speed
+            end)
+            applySound(sound)
+        end
+    end
+    volumeBox.Text, pitchBox.Text = "1", "1"
+    bassBox.Text, midsBox.Text, trebleBox.Text = "0", "0", "0"
+    for name, button in pairs(effectButtons) do
+        button.BackgroundColor3 = name == "None" and Color3.fromRGB(120, 35, 35) or Themes[CurrentTheme].Button
+    end
+end)
+
+-- GitHub Media Player panel
+local mediaY = 216 + math.ceil(#effectNames / 2) * 29 + 38
+sectionLabel("GITHUB MEDIA PLAYER", mediaY)
+local mediaStatus = Instance.new("TextLabel")
+mediaStatus.Size = UDim2.new(1, -8, 0, 22)
+mediaStatus.Position = UDim2.fromOffset(4, mediaY + 24)
+mediaStatus.BackgroundTransparency = 1
+mediaStatus.Text = "Loading GitHub /funk ..."
+mediaStatus.TextColor3 = Themes.Dark.Text
+mediaStatus.Font = Enum.Font.Gotham
+mediaStatus.TextSize = 9
+mediaStatus.TextXAlignment = Enum.TextXAlignment.Left
+mediaStatus.Parent = Content
+
+local mediaName = Instance.new("TextLabel")
+mediaName.Size = UDim2.new(1, -8, 0, 22)
+mediaName.Position = UDim2.fromOffset(4, mediaY + 44)
+mediaName.BackgroundTransparency = 1
+mediaName.Text = "No media selected"
+mediaName.TextColor3 = Themes.Dark.Text
+mediaName.Font = Enum.Font.GothamBold
+mediaName.TextSize = 9
+mediaName.TextTruncate = Enum.TextTruncate.AtEnd
+mediaName.Parent = Content
+
+local mp3FilterButton = Instance.new("TextButton")
+mp3FilterButton.Size = UDim2.new(1, -8, 0, 20)
+mp3FilterButton.Position = UDim2.fromOffset(4, mediaY + 66)
+mp3FilterButton.BackgroundColor3 = Themes.Dark.Button
+mp3FilterButton.BorderSizePixel = 0
+mp3FilterButton.Text = "MP3 ONLY: OFF"
+mp3FilterButton.TextColor3 = Themes.Dark.Text
+mp3FilterButton.Font = Enum.Font.GothamBold
+mp3FilterButton.TextSize = 9
+mp3FilterButton.Parent = Content
+Instance.new("UICorner", mp3FilterButton).CornerRadius = UDim.new(0, 4)
+
+local mediaVideo = Instance.new("VideoFrame")
+mediaVideo.Size = UDim2.new(1, -8, 0, 100)
+mediaVideo.Position = UDim2.fromOffset(4, mediaY + 90)
+mediaVideo.BackgroundColor3 = Color3.new(0, 0, 0)
+mediaVideo.Visible = false
+mediaVideo.Parent = Content
+
+local mediaList = Instance.new("ScrollingFrame")
+mediaList.Size = UDim2.new(1, -8, 0, 100)
+mediaList.Position = UDim2.fromOffset(4, mediaY + 90)
+mediaList.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+mediaList.BorderSizePixel = 0
+mediaList.ScrollBarThickness = 2
+mediaList.CanvasSize = UDim2.fromOffset(0, 0)
+mediaList.Parent = Content
+Instance.new("UICorner", mediaList).CornerRadius = UDim.new(0, 5)
+
+local controlY = mediaY + 202
+local mediaPlayButton
+local function mediaControl(label, x, width, callback)
+    return smallButton(label, x, controlY, width, callback)
+end
+
+local function stopMedia()
+    pcall(function() mediaSound:Stop() end)
+    pcall(function() mediaVideo:Pause() end)
+    mediaVideo.Visible = false
+    mediaList.Visible = true
+    if mediaPlayButton then mediaPlayButton.Text = "PLAY" end
+end
+
+local function getMediaExtension(fileName)
+    return string.lower(tostring(fileName):match("%.([^%.]+)$") or "")
+end
+
+local function playMediaAt(index, autoplay)
+    if mediaBusy or #mediaItems == 0 then return end
+    if index < 1 then index = #mediaItems end
+    if index > #mediaItems then index = 1 end
+
+    mediaIndex = index
+    local item = mediaItems[index]
+    local ext = getMediaExtension(item.name)
+    if ext ~= "mp3" and ext ~= "mp4" and ext ~= "webm" then
+        mediaStatus.Text = "Unsupported format: " .. ext
+        return
+    end
+
+    mediaBusy = true
+    mediaStatus.Text = "Downloading: " .. item.name
+    mediaName.Text = item.name
+    stopMedia()
+
+    task.spawn(function()
+        local ok, asset = pcall(function()
+            local response = game:HttpGet(item.download_url)
+            if type(response) ~= "string" or #response == 0 then
+                error("Empty download")
+            end
+            local localPath = MEDIA_FOLDER .. "/" .. safeFileName(item.name)
+            writefile(localPath, response)
+            return getcustomasset(localPath)
+        end)
+
+        if ok and asset then
+            if ext == "mp3" then
+                mediaSound.SoundId = asset
+                mediaVideo.Visible = false
+                mediaList.Visible = true
+                mediaStatus.Text = "Ready · MP3"
+                if autoplay then
+                    local played = pcall(function() mediaSound:Play() end)
+                    mediaPlayButton.Text = played and "PAUSE" or "PLAY"
+                end
+            else
+                -- VideoFrame is used for both MP4 and WEBM local assets.
+                mediaSound:Stop()
+                mediaVideo.Visible = true
+                mediaList.Visible = false
+                local assigned = pcall(function() mediaVideo.Video = asset end)
+                if assigned then
+                    mediaStatus.Text = "Ready · " .. string.upper(ext)
+                    if autoplay then
+                        task.wait(0.15)
+                        local played = pcall(function() mediaVideo:Play() end)
+                        mediaPlayButton.Text = played and "PAUSE" or "PLAY"
+                        if not played then
+                            mediaStatus.Text = string.upper(ext) .. " loaded, but playback is unsupported"
+                        end
+                    end
+                else
+                    mediaVideo.Visible = false
+                    mediaList.Visible = true
+                    mediaStatus.Text = string.upper(ext) .. " video asset is unsupported"
+                end
+            end
+        else
+            mediaVideo.Visible = false
+            mediaList.Visible = true
+            mediaStatus.Text = "Download failed / executor asset unsupported"
+        end
+        mediaBusy = false
+    end)
+end
+
+local function nextMedia()
+    if #mediaItems > 0 then playMediaAt(mediaIndex + 1, true) end
+end
+
+mediaControl("PREV", 3, 43, function()
+    if #mediaItems > 0 then playMediaAt(mediaIndex - 1, true) end
+end)
+mediaPlayButton = mediaControl("PLAY", 50, 43, function()
+    if mediaIndex == 0 then
+        playMediaAt(1, true)
+    elseif mediaVideo.Visible then
+        if mediaVideo.IsPlaying then
+            mediaVideo:Pause()
+            mediaPlayButton.Text = "PLAY"
+        else
+            pcall(function() mediaVideo:Play() end)
+            mediaPlayButton.Text = "PAUSE"
+        end
+    else
+        if mediaSound.IsPlaying then
+            mediaSound:Pause()
+            mediaPlayButton.Text = "PLAY"
+        else
+            mediaSound:Resume()
+            mediaPlayButton.Text = "PAUSE"
+        end
+    end
+end)
+mediaControl("RANDOM", 97, 58, function()
+    if #mediaItems > 0 then
+        local n = math.random(1, #mediaItems)
+        if #mediaItems > 1 and n == mediaIndex then n = (n % #mediaItems) + 1 end
+        playMediaAt(n, true)
+    end
+end)
+mediaControl("NEXT", 159, 39, nextMedia)
+
+mediaSound.Ended:Connect(nextMedia)
+mediaVideo.Ended:Connect(nextMedia)
+
+local function loadMedia()
+    local ok, items = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(MEDIA_API))
+    end)
+    if not ok or type(items) ~= "table" then
+        mediaStatus.Text = "GitHub API request failed"
+        return
+    end
+
+    mediaItems = {}
+    for _, item in ipairs(items) do
+        if item.type == "file" and item.download_url then
+            local ext = string.lower(item.name:match("%.([^%.]+)$") or "")
+            if ext == "mp3" or ext == "mp4" or ext == "webm" then
+                if not mp3Only or ext == "mp3" then
+                    table.insert(mediaItems, item)
+                end
+            end
+        end
+    end
+    table.sort(mediaItems, function(a, b) return string.lower(a.name) < string.lower(b.name) end)
+
+    for _, child in ipairs(mediaList:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+    local listY = 2
+    for i, item in ipairs(mediaItems) do
+        local b = Instance.new("TextButton")
+        b.Size = UDim2.new(1, -5, 0, 23)
+        b.Position = UDim2.fromOffset(2, listY)
+        b.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+        b.BorderSizePixel = 0
+        b.Text = "  " .. item.name
+        b.TextColor3 = Themes[CurrentTheme].Text
+        b.Font = Enum.Font.Gotham
+        b.TextSize = 9
+        b.TextXAlignment = Enum.TextXAlignment.Left
+        b.Parent = mediaList
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
+        b.MouseButton1Click:Connect(function() playMediaAt(i, true) end)
+        listY = listY + 26
+    end
+    mediaList.CanvasSize = UDim2.fromOffset(0, listY)
+    local filterLabel = mp3Only and "MP3 files" or "media files"
+    mediaStatus.Text = tostring(#mediaItems) .. " " .. filterLabel .. " found in /funk"
+    mediaIndex = 0
+    if #mediaItems > 0 then
+        playMediaAt(1, false)
+    else
+        mediaName.Text = "No matching files"
+        stopMedia()
+    end
+end
+
+mp3FilterButton.MouseButton1Click:Connect(function()
+    mp3Only = not mp3Only
+    mp3FilterButton.Text = mp3Only and "MP3 ONLY: ON" or "MP3 ONLY: OFF"
+    mediaStatus.Text = mp3Only and "Filtering MP3 files..." or "Loading all media..."
+    stopMedia()
+    task.spawn(loadMedia)
+end)
+task.spawn(loadMedia)
+
+Content.CanvasSize = UDim2.fromOffset(0, controlY + 42)
+
+-- SETTINGS PANEL
+local SettingsFrame = Instance.new("Frame")
+SettingsFrame.Size = UDim2.new(1, 0, 1, 0)
+SettingsFrame.BackgroundColor3 = Themes.Dark.Background
+SettingsFrame.Visible = false
+SettingsFrame.ZIndex = 20
+SettingsFrame.Parent = Frame
+Instance.new("UICorner", SettingsFrame).CornerRadius = UDim.new(0, 10)
+
+local SettingsTitle = Instance.new("TextLabel")
+SettingsTitle.Size = UDim2.new(1, 0, 0, 35)
+SettingsTitle.Position = UDim2.fromOffset(0, 5)
+SettingsTitle.Text = "SETTINGS"
+SettingsTitle.TextColor3 = Themes.Dark.Text
+SettingsTitle.Font = Enum.Font.GothamBold
+SettingsTitle.TextSize = 12
+SettingsTitle.BackgroundTransparency = 1
+SettingsTitle.ZIndex = 21
+SettingsTitle.Parent = SettingsFrame
+
+local ThemeLabel = Instance.new("TextLabel")
+ThemeLabel.Size = UDim2.new(1, -20, 0, 20)
+ThemeLabel.Position = UDim2.fromOffset(10, 40)
+ThemeLabel.Text = "THEME:"
+ThemeLabel.TextColor3 = Themes.Dark.Text
+ThemeLabel.Font = Enum.Font.GothamBold
+ThemeLabel.TextSize = 10
+ThemeLabel.BackgroundTransparency = 1
+ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left
+ThemeLabel.ZIndex = 21
+ThemeLabel.Parent = SettingsFrame
+
+local function settingsButton(text, pos, color)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0.45, -5, 0, 28)
+    b.Position = pos
+    b.BackgroundColor3 = color
+    b.Text = text
+    b.TextColor3 = Color3.new(1, 1, 1)
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 10
+    b.ZIndex = 21
+    b.Parent = SettingsFrame
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    return b
+end
+local DarkThemeBtn = settingsButton("DARK", UDim2.new(0, 10, 0, 65), Color3.fromRGB(50, 150, 100))
+local LightThemeBtn = settingsButton("LIGHT", UDim2.new(0.55, 0, 0, 65), Themes.Dark.Button)
+local BackBtn = Instance.new("TextButton")
+BackBtn.Size = UDim2.new(0.9, 0, 0, 28)
+BackBtn.Position = UDim2.new(0.05, 0, 1, -40)
+BackBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+BackBtn.Text = "BACK"
+BackBtn.TextColor3 = Color3.new(1, 1, 1)
+BackBtn.Font = Enum.Font.GothamBold
+BackBtn.TextSize = 10
+BackBtn.ZIndex = 21
+BackBtn.Parent = SettingsFrame
+Instance.new("UICorner", BackBtn).CornerRadius = UDim.new(0, 6)
+
+-- CLOSE CONFIRMATION
+local ConfirmFrame = Instance.new("Frame")
+ConfirmFrame.Size = UDim2.new(1, 0, 1, 0)
+ConfirmFrame.BackgroundColor3 = Themes.Dark.Background
+ConfirmFrame.BackgroundTransparency = 0.05
+ConfirmFrame.Visible = false
+ConfirmFrame.ZIndex = 25
+ConfirmFrame.Parent = Frame
+Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 10)
+
+local ConfirmText = Instance.new("TextLabel")
+ConfirmText.Size = UDim2.new(1, -20, 0, 50)
+ConfirmText.Position = UDim2.fromOffset(10, 60)
+ConfirmText.Text = "Are you sure you want\nto close the GUI?"
+ConfirmText.TextColor3 = Themes.Dark.Text
+ConfirmText.Font = Enum.Font.GothamBold
+ConfirmText.TextSize = 11
+ConfirmText.BackgroundTransparency = 1
+ConfirmText.ZIndex = 26
+ConfirmText.Parent = ConfirmFrame
+
+local YesBtn = Instance.new("TextButton")
+YesBtn.Size = UDim2.fromOffset(80, 28)
+YesBtn.Position = UDim2.new(0, 16, 1, -45)
+YesBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100)
+YesBtn.Text = "YES"
+YesBtn.TextColor3 = Color3.new(1, 1, 1)
+YesBtn.Font = Enum.Font.GothamBold
+YesBtn.TextSize = 10
+YesBtn.ZIndex = 26
+YesBtn.Parent = ConfirmFrame
+
+local NoBtn = Instance.new("TextButton")
+NoBtn.Size = UDim2.fromOffset(80, 28)
+NoBtn.Position = UDim2.new(1, -96, 1, -45)
+NoBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+NoBtn.Text = "NO"
+NoBtn.TextColor3 = Color3.new(1, 1, 1)
+NoBtn.Font = Enum.Font.GothamBold
+NoBtn.TextSize = 10
+NoBtn.ZIndex = 26
+NoBtn.Parent = ConfirmFrame
+Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 6)
+
+local function applyTheme(theme)
+    CurrentTheme = theme
+    local c = Themes[theme]
+
+    Frame.BackgroundColor3 = c.Background
+    FrameStroke.Color = c.Border
+    TitleBar.BackgroundColor3 = c.TitleBar
+    TitleFix.BackgroundColor3 = c.TitleBar
+    Title.TextColor3 = c.Text
+
+    for _, b in ipairs({SettingsBtn, MinimizeBtn, CloseBtn}) do
+        b.BackgroundColor3 = c.TopButtons
+        b.TextColor3 = c.Text
+    end
+
+    SettingsFrame.BackgroundColor3 = c.Background
+    SettingsTitle.TextColor3 = c.Text
+    ThemeLabel.TextColor3 = c.Text
+    ConfirmFrame.BackgroundColor3 = c.Background
+    ConfirmText.TextColor3 = c.Text
+
+    -- Keep the selected theme obvious and make both theme labels readable.
+    DarkThemeBtn.Text = "DARK"
+    LightThemeBtn.Text = "LIGHT"
+    DarkThemeBtn.TextColor3 = Color3.new(1, 1, 1)
+    LightThemeBtn.TextColor3 = Color3.new(1, 1, 1)
+    DarkThemeBtn.BackgroundColor3 = theme == "Dark" and Color3.fromRGB(50, 150, 100) or c.Button
+    LightThemeBtn.BackgroundColor3 = theme == "Light" and Color3.fromRGB(50, 150, 100) or c.Button
+    BackBtn.TextColor3 = Color3.new(1, 1, 1)
+
+    for _, obj in ipairs(Content:GetDescendants()) do
+        if obj:IsA("TextLabel") then
+            obj.TextColor3 = c.Text
+        elseif obj:IsA("TextBox") then
+            obj.TextColor3 = c.Text
+            obj.BackgroundColor3 = theme == "Dark" and Color3.fromRGB(45, 45, 45) or Color3.fromRGB(255, 255, 255)
+        elseif obj:IsA("TextButton") then
+            if effectButtons[obj.Text] then
+                obj.BackgroundColor3 = obj.Text == selectedEffect and Color3.fromRGB(120, 35, 35) or c.Button
+                obj.TextColor3 = Color3.new(1, 1, 1)
+            elseif obj.Text == "PREV" or obj.Text == "PLAY" or obj.Text == "PAUSE" or obj.Text == "RANDOM" or obj.Text == "NEXT" or obj.Text == "RESET AUDIO" then
+                obj.BackgroundColor3 = c.Button
+                obj.TextColor3 = c.Text
+            else
+                obj.BackgroundColor3 = theme == "Dark" and Color3.fromRGB(45, 45, 45) or Color3.fromRGB(225, 225, 225)
+                obj.TextColor3 = c.Text
+            end
+        end
+    end
+
+    mediaStatus.TextColor3 = c.Text
+    mediaName.TextColor3 = c.Text
+    mp3FilterButton.BackgroundColor3 = c.Button
+    mp3FilterButton.TextColor3 = c.Text
+    mediaList.BackgroundColor3 = theme == "Dark" and Color3.fromRGB(28, 28, 28) or Color3.fromRGB(230, 230, 230)
+end
+
+local minimized, settingsOpen, confirmOpen = false, false, false
+DarkThemeBtn.MouseButton1Click:Connect(function() applyTheme("Dark") end)
+LightThemeBtn.MouseButton1Click:Connect(function() applyTheme("Light") end)
+BackBtn.MouseButton1Click:Connect(function()
+    SettingsFrame.Visible = false
+    settingsOpen = false
+    if not minimized then Content.Visible = true end
+end)
+
+SettingsBtn.MouseButton1Click:Connect(function()
+    if confirmOpen then return end
+    if minimized then
+        minimized = false
+        TitleFix.Visible = true
+        Content.Visible = true
+        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.fromOffset(UIWidth, UIHeight)}):Play()
+        MinimizeBtn.Text = "−"
+    end
+    SettingsFrame.Visible = not SettingsFrame.Visible
+    settingsOpen = SettingsFrame.Visible
+    Content.Visible = not settingsOpen
+end)
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    if confirmOpen then return end
+    if settingsOpen then 
+        SettingsFrame.Visible = false
+        settingsOpen = false 
+    end
+    minimized = not minimized
+    if minimized then
+        TitleFix.Visible = false
+        Content.Visible = false
+        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.fromOffset(UIWidth, 30)}):Play()
+        MinimizeBtn.Text = "+"
+    else
+        TitleFix.Visible = true
+        Content.Visible = true
+        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.fromOffset(UIWidth, UIHeight)}):Play()
+        MinimizeBtn.Text = "−"
+    end
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    if confirmOpen then return end
+    confirmOpen = true
+    if settingsOpen then SettingsFrame.Visible = false; settingsOpen = false end
+    if minimized then
+        minimized = false
+        TitleFix.Visible = true
+        TweenService:Create(Frame, TweenInfo.new(0.1), {Size = UDim2.fromOffset(UIWidth, UIHeight)}):Play()
+        MinimizeBtn.Text = "−"
+    end
+    Content.Visible = false
+    ConfirmFrame.Visible = true
+end)
+
+NoBtn.MouseButton1Click:Connect(function()
+    ConfirmFrame.Visible = false
+    confirmOpen = false
+    if not minimized and not settingsOpen then
+        Content.Visible = true
+    end
+end)
+
+YesBtn.MouseButton1Click:Connect(function()
+    stopMedia()
+    pcall(function() mediaSound:Destroy() end)
+    TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+        Size = UDim2.fromOffset(0, 0),
+        Position = UDim2.new(0.5, 0, 0.5, 0)
+    }):Play()
+    task.wait(0.12)
+    MainGui:Destroy()
+end)
+
+-- OPENING ANIMATION + NOTIFICATION
+Frame.Size = UDim2.fromOffset(0, 0)
+Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+TweenService:Create(Frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    Size = UDim2.fromOffset(UIWidth, UIHeight),
+    Position = UDim2.new(0.5, -UIWidth/2, 0.5, -UIHeight/2)
+}):Play()
+pcall(function()
+    StarterGui:SetCore("SendNotification", {
+        Title = "Loaded",
+        Text = "Baiyan Hub Audio + GitHub Media Player",
+        Duration = 3
+    })
+end)
+
+applyAllSounds()
