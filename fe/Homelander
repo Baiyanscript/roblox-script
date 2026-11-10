@@ -1,0 +1,2536 @@
+local players, runService, userInputService, coreGui, workspaceService, debris, tweenService,
+  localPlayer, customClientUI, flag, flag3, list, flag4, flag5, v1, v2, flag6, flag7,
+  imageButton, textLabel, settingButton, frame, textButton, textButton2, textButton3, v6, flag8,
+  v7, v8, flag9, flag10, v9, flag11, flag12, flag13, flag14, v10, v11, v12, v13, v14, id,
+  flag15, lowest, v15, seen, flag16, v16, v17, v18, v19, v20, v22, actionButtons, v31, v32,
+  utilityButtons, flag17, v57, imageButton10, uiStroke7, flag23, f19, loadAnimation2,
+  imageButton11, uiStroke8
+
+do
+  players = game:GetService("Players")
+  runService = game:GetService("RunService")
+  userInputService = game:GetService("UserInputService")
+  local lighting = game:GetService("Lighting")
+end
+
+local replicatedStorage = game:GetService("ReplicatedStorage")
+
+do
+  local proximityPromptService = game:GetService("ProximityPromptService")
+  local starterGui = game:GetService("StarterGui")
+  coreGui = game:GetService("CoreGui")
+  workspaceService = game:GetService("Workspace")
+  debris = game:GetService("Debris")
+  tweenService = game:GetService("TweenService")
+end
+
+local textChatService = game:GetService("TextChatService")
+local chat = game:GetService("Chat")
+
+do
+  localPlayer = players.LocalPlayer
+
+  if game.PlaceId == 2788229376 then
+    loadstring(game:HttpGet("https://pastebin.com/raw/JFrBJBZw"))()
+  end
+
+  getgenv().FPDH = workspace.FallenPartsDestroyHeight
+  loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Module.Lua"))()
+
+  local client = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Client.Lua"))()
+
+  client:Notify({ Title = "made by GioBolqv1", Description = "follow me on Roblox plz" }, {
+    OutlineColor = Color3.fromRGB(80, 80, 80),
+    Time = 6,
+    Type = "default",
+  })
+
+  task.delay(6, function()
+    client:Notify(
+      { Title = "I CAN DO WHATEVER THE", Description = "FUUUUUUUCK I WANT *goons*" },
+      { OutlineColor = Color3.fromRGB(80, 80, 80), Time = 1, Type = "default" }
+    )
+  end)
+
+  customClientUI = Instance.new("ScreenGui")
+  customClientUI.Name = "CustomClientUI"
+  customClientUI.ResetOnSpawn = false
+  customClientUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+  customClientUI.Parent = coreGui
+end
+
+flag = false
+
+local function f1(p1)
+  local flag2 = false
+
+  if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+    local rbxGeneral = textChatService:FindFirstChild("TextChannels")
+      and textChatService.TextChannels:FindFirstChild("RBXGeneral")
+
+    if rbxGeneral then
+      rbxGeneral:SendAsync(p1)
+      flag2 = true
+    end
+  end
+
+  if not flag2 then
+    local findFirstChild = replicatedStorage:FindFirstChild("SayMessageRequest", true)
+
+    if findFirstChild and findFirstChild:IsA("RemoteEvent") then
+      findFirstChild:FireServer(p1, "All")
+    end
+
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("Head") then
+      chat:Chat(localPlayer.Character.Head, p1, Enum.ChatColor.White)
+    end
+  end
+end
+
+flag3 = true
+list = {}
+flag4 = false
+flag5 = true
+v1 = 0.15
+v2 = 3.5
+flag6 = false
+flag7 = true
+
+local function f2(p2, p3, p4)
+  local inputBegan = p2.InputBegan
+  local v3, position, position2
+
+  inputBegan:Connect(function(p5)
+    local mouseButton1 = p5.UserInputType == Enum.UserInputType.Touch or p5.MouseButton1
+    local connect, connect2
+
+    if mouseButton1 then
+      if p4 and flag then
+        connect2 = nil
+
+        connect2 = p5.Changed:Connect(function()
+          if p5.UserInputState == Enum.UserInputState.End then
+            connect2:Disconnect()
+
+            if p3 then
+              p3()
+            end
+          end
+        end)
+
+        return
+      end
+
+      v3 = true
+      position = p5.Position
+      position2 = p2.Position
+
+      connect = nil
+
+      connect = p5.Changed:Connect(function()
+        if p5.UserInputState == Enum.UserInputState.End then
+          if not v3 then
+            return
+          end
+
+          v3 = false
+          connect:Disconnect()
+
+          if (p5.Position - position).Magnitude < 6 then
+            if p3 then
+              p3()
+            end
+          end
+        end
+      end)
+    end
+  end)
+
+  local inputChanged = p2.InputChanged
+  local v4
+
+  inputChanged:Connect(function(p6)
+    if p6.UserInputType == Enum.UserInputType.Touch or p6.MouseMovement then
+      v4 = p6
+    end
+  end)
+
+  userInputService.InputChanged:Connect(function(input)
+    if input == v4 and v3 then
+      local v5 = input.Position - position
+
+      p2.Position = UDim2.new(
+        position2.X.Scale, position2.X.Offset + v5.X, position2.Y.Scale,
+        position2.Y.Offset + v5.Y
+      )
+    end
+  end)
+end
+
+imageButton = Instance.new("ImageButton")
+imageButton.Size = UDim2.new(0, 100, 0, 45)
+imageButton.Position = UDim2.new(0.95, -120, 0.45, 0)
+imageButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+imageButton.Image = "rbxthumb://type=Asset&id=101173184874869&w=150&h=150"
+imageButton.ScaleType = Enum.ScaleType.Stretch
+imageButton.Active = true
+imageButton.BorderSizePixel = 0
+imageButton.Parent = customClientUI
+
+textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 1, 0)
+textLabel.BackgroundTransparency = 1
+
+do
+  textLabel.Text = "Homelander: OFF"
+  textLabel.TextColor3 = Color3.new(1, 1, 1)
+  textLabel.Font = Enum.Font.Fantasy
+  textLabel.TextSize = 12.7
+  textLabel.ZIndex = 2
+  textLabel.Parent = imageButton
+
+  local uiStroke = Instance.new("UIStroke")
+  uiStroke.Thickness = 1.5
+  uiStroke.Color = Color3.fromRGB(0, 0, 0)
+  uiStroke.Parent = textLabel
+
+  local uiCorner = Instance.new("UICorner")
+  uiCorner.CornerRadius = UDim.new(0.2, 0)
+  uiCorner.Parent = imageButton
+end
+
+do
+  local uiStroke2 = Instance.new("UIStroke")
+  uiStroke2.Thickness = 2
+  uiStroke2.Color = Color3.fromRGB(50, 50, 50)
+  uiStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+  uiStroke2.Parent = imageButton
+
+  settingButton = Instance.new("ImageButton")
+  settingButton.Name = "SettingButton"
+  settingButton.Size = UDim2.new(0, 45, 0, 45)
+  settingButton.Position = UDim2.new(0.05, 0, 0.45, 0)
+  settingButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+  settingButton.Image = "rbxthumb://type=Asset&id=104077005427988&w=150&h=150"
+  settingButton.ScaleType = Enum.ScaleType.Stretch
+end
+
+do
+  settingButton.Active = true
+  settingButton.BorderSizePixel = 0
+  settingButton.Visible = false
+  settingButton.Parent = customClientUI
+
+  local uiCorner2 = Instance.new("UICorner")
+  uiCorner2.CornerRadius = UDim.new(0.3, 0)
+  uiCorner2.Parent = settingButton
+
+  local uiStroke3 = Instance.new("UIStroke")
+  uiStroke3.Thickness = 2
+  uiStroke3.Color = Color3.fromRGB(50, 50, 50)
+  uiStroke3.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+  uiStroke3.Parent = settingButton
+end
+
+do
+  frame = Instance.new("Frame")
+  frame.Size = UDim2.new(0, 230, 0, 265)
+  frame.Position = UDim2.new(1, 10, 0.5, -132)
+  frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+  frame.BorderSizePixel = 0
+  frame.Visible = false
+  frame.Parent = settingButton
+
+  local uiCorner3 = Instance.new("UICorner")
+  uiCorner3.CornerRadius = UDim.new(0.1, 0)
+  uiCorner3.Parent = frame
+
+  local uiStroke4 = Instance.new("UIStroke")
+  uiStroke4.Thickness = 2
+  uiStroke4.Color = Color3.fromRGB(60, 60, 60)
+  uiStroke4.Parent = frame
+end
+
+do
+  textButton = Instance.new("TextButton")
+  textButton.Size = UDim2.new(0, 100, 0, 26)
+  textButton.Position = UDim2.new(0.05, 0, 0, 6)
+  textButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+  textButton.TextColor3 = Color3.new(1, 1, 1)
+  textButton.Font = Enum.Font.Fantasy
+  textButton.TextSize = 11
+  textButton.Text = "lock buttons"
+  textButton.Parent = frame
+
+  local uiCorner4 = Instance.new("UICorner")
+  uiCorner4.CornerRadius = UDim.new(0.2, 0)
+  uiCorner4.Parent = textButton
+end
+
+do
+  textButton2 = Instance.new("TextButton")
+  textButton2.Size = UDim2.new(0, 110, 0, 26)
+  textButton2.Position = UDim2.new(0.5, 0, 0, 6)
+  textButton2.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+  textButton2.TextColor3 = Color3.new(1, 1, 1)
+  textButton2.Font = Enum.Font.Fantasy
+  textButton2.TextSize = 10
+  textButton2.Text = "camera follow: on"
+  textButton2.Parent = frame
+
+  local uiCorner5 = Instance.new("UICorner")
+  uiCorner5.CornerRadius = UDim.new(0.2, 0)
+  uiCorner5.Parent = textButton2
+end
+
+do
+  textButton3 = Instance.new("TextButton")
+  textButton3.Size = UDim2.new(0, 100, 0, 26)
+  textButton3.Position = UDim2.new(0.05, 0, 0, 38)
+  textButton3.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+  textButton3.TextColor3 = Color3.new(1, 1, 1)
+  textButton3.Font = Enum.Font.Fantasy
+  textButton3.TextSize = 11
+  textButton3.Text = "hide buttons"
+  textButton3.Parent = frame
+
+  local uiCorner6 = Instance.new("UICorner")
+  uiCorner6.CornerRadius = UDim.new(0.2, 0)
+  uiCorner6.Parent = textButton3
+end
+
+do
+  local textButton4 = Instance.new("TextButton")
+  textButton4.Size = UDim2.new(0, 110, 0, 26)
+  textButton4.Position = UDim2.new(0.5, 0, 0, 38)
+  textButton4.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+  textButton4.TextColor3 = Color3.new(1, 1, 1)
+  textButton4.Font = Enum.Font.Fantasy
+  textButton4.TextSize = 8.5
+  textButton4.Text = "camera lift during laser: on"
+  textButton4.Parent = frame
+
+  local uiCorner7 = Instance.new("UICorner")
+  uiCorner7.CornerRadius = UDim.new(0.2, 0)
+  uiCorner7.Parent = textButton4
+
+  textButton4.MouseButton1Click:Connect(function()
+    flag5 = not flag5
+    textButton4.Text = "camera lift during laser: " .. (flag5 and "on" or "off")
+  end)
+end
+
+do
+  local textLabel2 = Instance.new("TextLabel")
+  textLabel2.Size = UDim2.new(0.5, 0, 0, 22)
+  textLabel2.Position = UDim2.new(0.05, 0, 0, 70)
+  textLabel2.BackgroundTransparency = 1
+  textLabel2.TextColor3 = Color3.new(1, 1, 1)
+  textLabel2.Font = Enum.Font.Fantasy
+  textLabel2.TextSize = 10
+  textLabel2.Text = "laser eye offset:"
+  textLabel2.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel2.Parent = frame
+
+  local textButton5 = Instance.new("TextButton")
+  textButton5.Size = UDim2.new(0, 40, 0, 22)
+  textButton5.Position = UDim2.new(0.55, 0, 0, 70)
+  textButton5.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+  textButton5.TextColor3 = Color3.new(1, 1, 1)
+  textButton5.Font = Enum.Font.Fantasy
+  textButton5.TextSize = 13
+  textButton5.Text = "▲"
+  textButton5.Parent = frame
+
+  local uiCorner8 = Instance.new("UICorner")
+  uiCorner8.CornerRadius = UDim.new(0.2, 0)
+  uiCorner8.Parent = textButton5
+
+  local textButton6 = Instance.new("TextButton")
+  textButton6.Size = UDim2.new(0, 40, 0, 22)
+  textButton6.Position = UDim2.new(0.75, 0, 0, 70)
+  textButton6.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+  textButton6.TextColor3 = Color3.new(1, 1, 1)
+  textButton6.Font = Enum.Font.Fantasy
+  textButton6.TextSize = 13
+  textButton6.Text = "▼"
+  textButton6.Parent = frame
+
+  local uiCorner9 = Instance.new("UICorner")
+  uiCorner9.CornerRadius = UDim.new(0.2, 0)
+  uiCorner9.Parent = textButton6
+
+  textButton5.MouseButton1Click:Connect(function() v1 = v1 + 0.05 end)
+  textButton6.MouseButton1Click:Connect(function() v1 = v1 - 0.05 end)
+end
+
+do
+  local textButton7 = Instance.new("TextButton")
+  textButton7.Size = UDim2.new(0, 100, 0, 26)
+  textButton7.Position = UDim2.new(0.05, 0, 0, 102)
+  textButton7.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+  textButton7.TextColor3 = Color3.new(1, 1, 1)
+  textButton7.Font = Enum.Font.Fantasy
+  textButton7.TextSize = 11
+  textButton7.Text = "shiftlock: off"
+  textButton7.Parent = frame
+
+  local uiCorner10 = Instance.new("UICorner")
+  uiCorner10.CornerRadius = UDim.new(0.2, 0)
+  uiCorner10.Parent = textButton7
+
+  textButton7.MouseButton1Click:Connect(function()
+    flag6 = not flag6
+    textButton7.Text = "shiftlock: " .. (flag6 and "on" or "off")
+  end)
+end
+
+do
+  local textButton8 = Instance.new("TextButton")
+  textButton8.Size = UDim2.new(0, 110, 0, 26)
+  textButton8.Position = UDim2.new(0.5, 0, 0, 102)
+  textButton8.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+  textButton8.TextColor3 = Color3.new(1, 1, 1)
+  textButton8.Font = Enum.Font.Fantasy
+  textButton8.TextSize = 10
+  textButton8.Text = "laser fling: on"
+  textButton8.Parent = frame
+
+  local uiCorner11 = Instance.new("UICorner")
+  uiCorner11.CornerRadius = UDim.new(0.2, 0)
+  uiCorner11.Parent = textButton8
+
+  textButton8.MouseButton1Click:Connect(function()
+    flag7 = not flag7
+    textButton8.Text = "laser fling: " .. (flag7 and "on" or "off")
+
+    if not flag7 then
+      laserCurrentTarget = nil
+    end
+  end)
+end
+
+do
+  local textLabel3 = Instance.new("TextLabel")
+  textLabel3.Size = UDim2.new(0.5, 0, 0, 22)
+  textLabel3.Position = UDim2.new(0.05, 0, 0, 134)
+  textLabel3.BackgroundTransparency = 1
+  textLabel3.TextColor3 = Color3.new(1, 1, 1)
+  textLabel3.Font = Enum.Font.Fantasy
+  textLabel3.TextSize = 10
+  textLabel3.Text = "camera X offset:"
+  textLabel3.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel3.Parent = frame
+
+  local textButton9 = Instance.new("TextButton")
+  textButton9.Size = UDim2.new(0, 40, 0, 22)
+  textButton9.Position = UDim2.new(0.55, 0, 0, 134)
+  textButton9.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+  textButton9.TextColor3 = Color3.new(1, 1, 1)
+  textButton9.Font = Enum.Font.Fantasy
+  textButton9.TextSize = 13
+  textButton9.Text = "◀"
+  textButton9.Parent = frame
+
+  local uiCorner12 = Instance.new("UICorner")
+  uiCorner12.CornerRadius = UDim.new(0.2, 0)
+  uiCorner12.Parent = textButton9
+
+  local textButton10 = Instance.new("TextButton")
+  textButton10.Size = UDim2.new(0, 40, 0, 22)
+  textButton10.Position = UDim2.new(0.75, 0, 0, 134)
+  textButton10.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+  textButton10.TextColor3 = Color3.new(1, 1, 1)
+  textButton10.Font = Enum.Font.Fantasy
+  textButton10.TextSize = 13
+  textButton10.Text = "▶"
+  textButton10.Parent = frame
+
+  local uiCorner13 = Instance.new("UICorner")
+  uiCorner13.CornerRadius = UDim.new(0.2, 0)
+  uiCorner13.Parent = textButton10
+
+  textButton9.MouseButton1Click:Connect(function() v2 = v2 - 0.5 end)
+  textButton10.MouseButton1Click:Connect(function() v2 = v2 + 0.5 end)
+end
+
+do
+  local frame2 = Instance.new("Frame")
+  frame2.Size = UDim2.new(0.9, 0, 0, 60)
+  frame2.Position = UDim2.new(0.05, 0, 0, 168)
+  frame2.BackgroundTransparency = 1
+  frame2.Parent = frame
+
+  local function makeTextButton(text, udim)
+    local textButton11 = Instance.new("TextButton")
+    textButton11.Size = UDim2.new(0, 25, 0, 25)
+    textButton11.Position = udim
+    textButton11.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    textButton11.TextColor3 = Color3.new(1, 1, 1)
+    textButton11.Font = Enum.Font.Fantasy
+    textButton11.TextSize = 16
+    textButton11.Text = text
+    textButton11.Parent = frame2
+
+    local uiCorner14 = Instance.new("UICorner")
+    uiCorner14.CornerRadius = UDim.new(0.2, 0)
+    uiCorner14.Parent = textButton11
+
+    return textButton11
+  end
+
+  local textButton12 = makeTextButton("↑", UDim2.new(0.5, -12, 0, 0))
+  local textButton13 = makeTextButton("↓", UDim2.new(0.5, -12, 0, 32))
+  local textButton14 = makeTextButton("←", UDim2.new(0.5, -42, 0, 16))
+  local textButton15 = makeTextButton("→", UDim2.new(0.5, 18, 0, 16))
+
+  local function f3(p7, p8)
+    for _, value in ipairs(list) do
+      value.Position = UDim2.new(
+        value.Position.X.Scale, value.Position.X.Offset + p7, value.Position.Y.Scale,
+        value.Position.Y.Offset + p8
+      )
+    end
+  end
+
+  textButton12.MouseButton1Click:Connect(function() f3(0, -5) end)
+  textButton13.MouseButton1Click:Connect(function() f3(0, 5) end)
+  textButton14.MouseButton1Click:Connect(function() f3(-5, 0) end)
+  textButton15.MouseButton1Click:Connect(function() f3(5, 0) end)
+end
+
+textButton.MouseButton1Click:Connect(function()
+  flag = not flag
+  textButton.Text = flag and "unlock buttons" or "lock buttons"
+end)
+
+textButton2.MouseButton1Click:Connect(function()
+  flag3 = not flag3
+  textButton2.Text = flag3 and "camera follow: on" or "camera follow: off"
+end)
+
+f2(settingButton, function() frame.Visible = not frame.Visible end, false)
+v6 = false
+flag8 = false
+v7 = false
+v8 = 1
+flag9 = false
+flag10 = false
+v9 = 1
+flag11 = false
+flag12 = true
+flag13 = false
+flag14 = false
+v10 = 0
+v11 = { [0] = 1, [1] = 0.5, [2] = 1.5 }
+Color3.fromRGB(0, 255, 0)
+v12 = {}
+local list2 = {}
+v13 = 1
+
+v14 = {
+  { id = "rbxassetid://126046533185038", name = "idle V1" },
+  { id = "rbxassetid://116874847956719", name = "idle V2" },
+  { id = "rbxassetid://96251694399659", name = "idle V3" },
+  { id = "rbxassetid://70950173927129", name = "idle V4" },
+}
+
+id = "rbxassetid://126046533185038"
+flag15 = false
+lowest = 0
+v15 = 0
+seen = {}
+flag16 = false
+v16 = 0
+v17 = 0
+v18 = {}
+v19 = 0
+v20 = 0
+local connect3
+
+local function f4()
+  if connect3 then
+    connect3:Disconnect()
+  end
+
+  connect3 = runService.Heartbeat:Connect(function()
+    if not (flag13 or false) then
+      return
+    end
+
+    local character = localPlayer.Character
+    local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
+
+    if not humanoidRootPart then
+      return
+    end
+
+    task.spawn(function()
+      local velocity = humanoidRootPart.Velocity
+      humanoidRootPart.Velocity = Vector3.new(450000000, 4500000000, 450000000)
+      runService.RenderStepped:Wait()
+
+      if humanoidRootPart then
+        humanoidRootPart.Velocity = velocity
+      end
+    end)
+  end)
+end
+
+do
+  local heartbeat, renderStepped, zero
+
+  if game.PlaceId ~= 189707 then
+    print("Error not found natural disasters survival game!")
+  else
+    heartbeat = runService.Heartbeat
+    renderStepped = runService.RenderStepped
+    local localPlayer2 = players.LocalPlayer
+    zero = Vector3.zero
+
+    local function f5(character2)
+      local humanoidRootPart2 = character2:WaitForChild("HumanoidRootPart")
+      local connect4
+
+      if humanoidRootPart2 then
+        connect4 = nil
+
+        connect4 = heartbeat:Connect(function()
+          if not humanoidRootPart2.Parent then
+            connect4:Disconnect()
+          end
+
+          local assemblyLinearVelocity = humanoidRootPart2.AssemblyLinearVelocity
+          humanoidRootPart2.AssemblyLinearVelocity = zero
+          renderStepped:Wait()
+          humanoidRootPart2.AssemblyLinearVelocity = assemblyLinearVelocity
+        end)
+      end
+    end
+
+    if localPlayer2.Character then
+      f5(localPlayer2.Character)
+    end
+
+    localPlayer2.CharacterAdded:Connect(f5)
+  end
+end
+
+local function makeAnimation(id2, looped, p9)
+  local character3 = localPlayer.Character
+  local humanoid = character3 and character3:FindFirstChildOfClass("Humanoid")
+
+  if not humanoid then
+    return
+  end
+
+  local v21 = p9 or 0.4
+
+  local animation = Instance.new("Animation")
+  animation.AnimationId = id2
+
+  local loadAnimation = humanoid:LoadAnimation(animation)
+  loadAnimation.Looped = looped
+  loadAnimation:Play(v21)
+
+  table.insert(list2, loadAnimation)
+  return loadAnimation
+end
+
+local function f6(p10)
+  local v23 = p10 or 0.4
+
+  for _, value2 in pairs(list2) do
+    value2:Stop(v23)
+  end
+
+  if v22 then
+    if coroutine.status(v22) ~= "dead" then
+      task.cancel(v22)
+    end
+
+    v22 = nil
+  end
+
+  list2 = {}
+end
+
+local function f7(p11, p12)
+  local currentCamera = workspaceService.CurrentCamera
+  local v24 = tick()
+
+  task.spawn(function()
+    while tick() - v24 < p12 do
+      local new = Vector3.new
+      local roll = math.random(-100, 100)
+      local roll2 = math.random(-100, 100)
+      local roll3 = math.random(-100, 100)
+      local v25 = new(roll / 1000 * p11, roll2 / 1000 * p11, roll3 / 1000 * p11)
+      currentCamera.CFrame = currentCamera.CFrame * CFrame.new(v25)
+      runService.RenderStepped:Wait()
+    end
+  end)
+end
+
+local function makePart(p13, color, material, p14)
+  task.spawn(function()
+    local rounded = math.floor(15 * p14)
+
+    for i = 1, rounded do
+      local v26 = i / rounded * math.pi * 2
+      local v27 = math.random(4, 12) * p14
+      local vector = Vector3.new(math.cos(v26) * v27, 0, math.sin(v26) * v27)
+      local v28 = math.random(100, 300) / 100 * p14
+
+      local part = Instance.new("Part")
+      part.Size = Vector3.new(v28, v28, v28)
+      part.Position = p13 + vector + Vector3.new(0, -1, 0)
+      part.Color = color
+      part.Material = material
+      part.CanCollide = false
+      part.Anchored = false
+      part.Parent = workspace
+      part.AssemblyLinearVelocity = Vector3.new(0, 30 * p14, 0) + vector.Unit * (10 * p14)
+
+      part.AssemblyAngularVelocity = Vector3.new(
+        math.random(-20, 20), math.random(-20, 20), math.random(-20, 20)
+      )
+
+      debris:AddItem(part, 2.5)
+
+      task.spawn(function()
+        task.wait(1.5)
+        tweenService:Create(part, TweenInfo.new(1), { Transparency = 1 }):Play()
+      end)
+    end
+  end)
+end
+
+local function f8()
+  local currentCamera2 = workspaceService.CurrentCamera
+
+  task.spawn(function()
+    task.wait(0.5)
+
+    while flag8 and v9 == 3 and not flag9 and true do
+      local v29 = 0.5 + v8 / 10 * 0.7
+      local new2 = Vector3.new
+      local roll4 = math.random(-100, 100)
+      local roll5 = math.random(-100, 100)
+      local roll6 = math.random(-100, 100)
+      local v30 = new2(roll4 / 1000 * v29, roll5 / 1000 * v29, roll6 / 1000 * v29)
+      currentCamera2.CFrame = currentCamera2.CFrame * CFrame.new(v30)
+      runService.RenderStepped:Wait()
+    end
+  end)
+end
+
+actionButtons = Instance.new("Frame")
+actionButtons.Name = "ActionButtons"
+actionButtons.Size = UDim2.new(0, 400, 0, 400)
+actionButtons.Position = UDim2.new(1, -420, 0, 50)
+actionButtons.BackgroundTransparency = 1
+actionButtons.Visible = false
+
+local function getRaycastParams()
+  local raycastParams = RaycastParams.new()
+  raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+
+  local character4 = localPlayer.Character
+  local filterDescendantsInstances = {}
+
+  if character4 then
+    table.insert(filterDescendantsInstances, character4)
+  end
+
+  if v31 then
+    table.insert(filterDescendantsInstances, v31.origin)
+    table.insert(filterDescendantsInstances, v31.endpoint)
+  end
+
+  if v32 then
+    table.insert(filterDescendantsInstances, v32.origin)
+    table.insert(filterDescendantsInstances, v32.endpoint)
+  end
+
+  raycastParams.FilterDescendantsInstances = filterDescendantsInstances
+  return raycastParams
+end
+
+actionButtons.Parent = customClientUI
+
+utilityButtons = Instance.new("Frame")
+utilityButtons.Name = "UtilityButtons"
+
+local udim2 = UDim2.new(0, 310, 0, 100)
+
+local function f9(model)
+  if seen[model] then
+    return
+  end
+
+  seen[model] = true
+  local humanoid2 = model:FindFirstChildOfClass("Humanoid")
+
+  if humanoid2 and humanoid2.Health > 0 and not players:GetPlayerFromCharacter(model) then
+    humanoid2.Health = 0
+    model:BreakJoints()
+  end
+
+  task.delay(0.5, function() seen[model] = nil end)
+end
+
+utilityButtons.Size = udim2
+utilityButtons.Position = UDim2.new(1, -310, 0, 20)
+
+local function f10()
+  if v31 then
+    v31.origin:Destroy()
+    v31.endpoint:Destroy()
+    v31 = nil
+  end
+
+  if v32 then
+    v32.origin:Destroy()
+    v32.endpoint:Destroy()
+    v32 = nil
+  end
+end
+
+utilityButtons.BackgroundTransparency = 1
+utilityButtons.Visible = false
+utilityButtons.Parent = customClientUI
+
+local function makeImageButton(name, udim3, p15, text2, parent)
+  local imageButton2 = Instance.new("ImageButton")
+  imageButton2.Name = name
+  imageButton2.Size = UDim2.new(0, 45, 0, 45)
+  imageButton2.Position = udim3
+  imageButton2.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+  imageButton2.BorderSizePixel = 0
+  imageButton2.Active = true
+  imageButton2.AutoButtonColor = true
+  imageButton2.Parent = parent or actionButtons
+
+  table.insert(list, imageButton2)
+
+  local uiCorner15 = Instance.new("UICorner")
+  uiCorner15.CornerRadius = UDim.new(0.3, 0)
+  uiCorner15.Parent = imageButton2
+
+  local uiStroke5 = Instance.new("UIStroke")
+  uiStroke5.Thickness = 2
+  uiStroke5.Color = Color3.fromRGB(60, 60, 60)
+  uiStroke5.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+  uiStroke5.Parent = imageButton2
+
+  if p15 then
+    imageButton2.Image = "rbxthumb://type=Asset&id=" .. p15 .. "&w=150&h=150"
+  end
+
+  local textLabel4 = Instance.new("TextLabel")
+  textLabel4.Size = UDim2.new(1, 0, 1, 0)
+  textLabel4.BackgroundTransparency = 1
+  textLabel4.TextColor3 = Color3.new(1, 1, 1)
+  textLabel4.Font = Enum.Font.Fantasy
+  textLabel4.TextSize = 8
+  textLabel4.TextWrapped = true
+  textLabel4.Text = text2 or ""
+  textLabel4.Parent = imageButton2
+
+  return imageButton2, uiStroke5
+end
+
+flag17 = false
+local f11
+
+local function f12()
+  v31 = f11()
+  v32 = f11()
+end
+
+function f11()
+  local part2 = Instance.new("Part")
+  part2.Size = Vector3.new(0.05, 0.05, 0.05)
+  part2.Anchored = true
+  part2.CanCollide = false
+  part2.Transparency = 1
+  part2.CastShadow = false
+  part2.Parent = workspaceService
+
+  local instance = Instance.new("Attachment", part2)
+
+  local part3 = Instance.new("Part")
+  part3.Size = Vector3.new(0.05, 0.05, 0.05)
+  part3.Anchored = true
+  part3.CanCollide = false
+  part3.Transparency = 1
+  part3.CastShadow = false
+  part3.Parent = workspaceService
+
+  local instance2 = Instance.new("Attachment", part3)
+
+  local function makeBeam(width0, width1, p16, p17, p18)
+    local instance3 = Instance.new("Beam", part2)
+    instance3.Attachment0 = instance
+    instance3.Attachment1 = instance2
+    instance3.LightEmission = 1
+    instance3.LightInfluence = 0
+    instance3.FaceCamera = true
+    instance3.Segments = 1
+    instance3.Width0 = width0
+    instance3.Width1 = width1
+    instance3.Color = ColorSequence.new(p18)
+
+    instance3.Transparency = NumberSequence.new({
+      NumberSequenceKeypoint.new(0, p16), NumberSequenceKeypoint.new(1, p17),
+    })
+  end
+
+  makeBeam(0.09, 0.04, 0, 0, {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 220)),
+    ColorSequenceKeypoint.new(0.04, Color3.fromRGB(255, 40, 40)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(160, 0, 0)),
+  })
+
+  makeBeam(0.5, 0.15, 0.25, 0.88, {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 50)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 0, 0)),
+  })
+
+  makeBeam(1.1, 0.3, 0.65, 1, {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0)),
+  })
+
+  return { origin = part2, endpoint = part3 }
+end
+
+local connect5
+local v33, laserStableCameraProxy
+
+local function f13()
+  if connect5 then
+    connect5:Disconnect()
+    connect5 = nil
+  end
+
+  if laserStableCameraProxy then
+    laserStableCameraProxy:Destroy()
+    laserStableCameraProxy = nil
+  end
+
+  v33 = nil
+end
+
+local function f14(getPlayerFromCharacter)
+  if not getPlayerFromCharacter or getPlayerFromCharacter == localPlayer
+    or not getPlayerFromCharacter.Character then
+    return false
+  end
+
+  if v18[getPlayerFromCharacter] and tick() - v18[getPlayerFromCharacter] < 8 then
+    return false
+  end
+
+  local character5 = getPlayerFromCharacter.Character
+  local humanoidRootPart3 = character5:FindFirstChild("HumanoidRootPart")
+  local humanoid3 = character5:FindFirstChildOfClass("Humanoid")
+  local v34 = not humanoidRootPart3
+  local bodyEffects = character5:FindFirstChild("BodyEffects")
+
+  if v34 or not humanoid3 or humanoid3.Health < 2 then
+    return false
+  end
+
+  if character5:FindFirstChildOfClass("ForceField") then
+    return false
+  end
+
+  local kO = bodyEffects
+    and (bodyEffects:FindFirstChild("K.O") or bodyEffects:FindFirstChild("KO"))
+
+  if kO and kO.Value == true then
+    return false
+  end
+
+  local character6 = localPlayer.Character
+  local humanoidRootPart4 = character6 and character6:FindFirstChild("HumanoidRootPart")
+
+  if not humanoidRootPart4 then
+    return false
+  end
+
+  if (humanoidRootPart4.Position - humanoidRootPart3.Position).Magnitude > 1000 then
+    return false
+  end
+
+  return true
+end
+
+local function makePart2()
+  if connect5 then
+    connect5:Disconnect()
+  end
+
+  connect5 = runService.Heartbeat:Connect(function()
+    local character7 = localPlayer.Character
+    local humanoidRootPart5 = character7 and character7:FindFirstChild("HumanoidRootPart")
+    local humanoid4 = character7 and character7:FindFirstChildOfClass("Humanoid")
+    local currentCamera3 = workspaceService.CurrentCamera
+
+    if not (humanoidRootPart5 and humanoid4 and currentCamera3) then
+      return
+    end
+
+    local cframe = humanoidRootPart5.CFrame
+    local velocity2 = humanoidRootPart5.Velocity
+    local rotVelocity = humanoidRootPart5.RotVelocity
+    local cframe2 = cframe
+    local flag18 = false
+    local v35
+
+    if v33 then
+      local character8 = v33.Character
+      local humanoidRootPart6 = character8 and character8:FindFirstChild("HumanoidRootPart")
+
+      local humanoid5 = character8
+      humanoid5 = character8 and character8:FindFirstChildOfClass("Humanoid")
+
+      local v36 = flag7
+      local v37 = humanoid5
+
+      if v36 and humanoidRootPart6 and v37 and f14(v33) then
+        local magnitude = humanoidRootPart6.Velocity.Magnitude
+        local v38 = tick() - v16
+
+        if magnitude > 500 or v37.Health < 2 or v38 > 3 then
+          v18[v33] = tick()
+          v33 = nil
+        else
+          v19 = v19 + 1
+          flag18 = true
+          v20 = v20 + 100
+          local walkSpeed = v37.WalkSpeed
+          local moveDirection = v37.MoveDirection
+          CFrame.new()
+
+          if magnitude >= 50 then
+            local v39 = v19 % 3
+
+            if v39 == 0 then
+              v35 = CFrame.new(0, 1.5, walkSpeed) * CFrame.Angles(math.rad(90), 0, 0)
+            elseif v39 == 1 then
+              v35 = CFrame.new(0, -1.5, -walkSpeed) * CFrame.Angles(0, 0, 0)
+            else
+              v35 = CFrame.new(0, 1.5, walkSpeed) * CFrame.Angles(math.rad(90), 0, 0)
+            end
+          else
+            local v40 = v19
+
+            v35 = (CFrame.new(0, v40 % 2 == 0 and 1.5 or -1.5, 0)
+                + moveDirection * magnitude / 1.25)
+              * CFrame.Angles(math.rad(v20), 0, 0)
+          end
+
+          cframe2 = CFrame.new(humanoidRootPart6.Position) * v35
+          humanoidRootPart5.Velocity = Vector3.new(90000000, 900000000, 90000000)
+
+          pcall(function()
+            humanoidRootPart5.RotVelocity = Vector3.new(900000000, 900000000, 900000000)
+          end)
+        end
+      else
+        v33 = nil
+      end
+    end
+
+    local cframe3
+
+    if flag18 then
+      if not laserStableCameraProxy then
+        laserStableCameraProxy = Instance.new("Part")
+        laserStableCameraProxy.Name = "LaserStableCameraProxy"
+        laserStableCameraProxy.Size = Vector3.new(0.1, 0.1, 0.1)
+        laserStableCameraProxy.Transparency = 1
+        laserStableCameraProxy.Anchored = true
+        laserStableCameraProxy.CanCollide = false
+        laserStableCameraProxy.Parent = workspaceService
+
+        currentCamera3.CameraSubject = laserStableCameraProxy
+      end
+
+      local v41 = cframe * CFrame.new(0, 1.5, 0)
+
+      if flag5 then
+        cframe3 = v41 * CFrame.new(v2 * lowest, 0.5, 0)
+      else
+        cframe3 = v41 * CFrame.new(0, 0.5, 0)
+      end
+
+      laserStableCameraProxy.CFrame = cframe3
+      humanoidRootPart5.CFrame = cframe2
+      runService.RenderStepped:Wait()
+
+      humanoidRootPart5.CFrame = cframe
+      humanoidRootPart5.Velocity = velocity2
+
+      pcall(function() humanoidRootPart5.RotVelocity = rotVelocity end)
+    else
+      if laserStableCameraProxy then
+        laserStableCameraProxy:Destroy()
+        laserStableCameraProxy = nil
+      end
+
+      local character9 = localPlayer.Character
+
+      local humanoid6 = character9
+      humanoid6 = character9 and character9:FindFirstChildOfClass("Humanoid")
+
+      if v12.camPart and currentCamera3.CameraSubject ~= v12.camPart then
+        currentCamera3.CameraSubject = v12.camPart
+      elseif not v12.camPart and humanoid6 and currentCamera3.CameraSubject ~= humanoid6 then
+        currentCamera3.CameraSubject = humanoid6
+      end
+    end
+  end)
+end
+
+local sound, f15
+
+local function f16()
+  f15()
+
+  if not sound then
+    return
+  end
+
+  sound.Looped = false
+  sound.TimePosition = 1.65
+  sound:Play()
+end
+
+local v42
+
+function f15()
+  if v42 then
+    task.cancel(v42)
+    v42 = nil
+  end
+end
+
+local function f17()
+  f15()
+
+  if not sound then
+    return
+  end
+
+  v42 = task.spawn(function()
+    sound.TimePosition = 0
+    sound.Looped = false
+    sound:Play()
+
+    local v43 = tick()
+
+    if sound.IsPlaying then
+      local v44 = sound.TimePosition >= 1.5 or tick() - v43 > 5
+    end
+
+    local v45
+
+    repeat
+      task.wait()
+      local v46 = not sound.IsPlaying
+
+      v45 = v46
+      v45 = v46 or sound.TimePosition >= 1.5 or tick() - v43 > 5
+    until v45
+
+    local v47
+
+    while flag15 and flag16 do
+      sound.TimePosition = 1.1
+      sound.Looped = false
+
+      if not sound.IsPlaying then
+        sound:Play()
+      end
+
+      local v48 = tick()
+
+      if flag16 then
+        if not not flag15 then
+          local v49 = sound.TimePosition >= 1.5 or tick() - v48 > 2
+        end
+      end
+
+      repeat
+        task.wait()
+        local v50 = not flag16
+
+        v47 = v50
+        v47 = v50 or not flag15 or sound.TimePosition >= 1.5 or tick() - v48 > 2
+      until v47
+
+      if not flag15 or not flag16 then
+        break
+      end
+    end
+  end)
+end
+
+local connect6
+
+local function makeSound()
+  if flag16 then
+    return
+  end
+
+  flag16 = true
+  flag15 = false
+  lowest = 0
+  v15 = tick()
+  seen = {}
+  v33 = nil
+  v16 = 0
+  v17 = 0
+  v18 = {}
+  v19 = 0
+  v20 = 0
+  f10()
+  local character10 = localPlayer.Character
+
+  local head = character10
+  head = character10 and character10:FindFirstChild("Head")
+
+  if not sound then
+    sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://80876450442880"
+    sound.Looped = false
+    sound.Volume = 0.6
+  end
+
+  if head then
+    sound.Parent = head
+  end
+
+  makePart2()
+
+  connect6 = runService.RenderStepped:Connect(function()
+    local character11 = localPlayer.Character
+    local head2 = character11 and character11:FindFirstChild("Head")
+
+    if not head2 then
+      return
+    end
+
+    local v51 = tick()
+    local lowest2 = math.min(v51 - v15, 0.05)
+    v15 = v51
+    local cframe4 = head2.CFrame
+    local lookVector = cframe4.LookVector
+    local position3 = (cframe4 * CFrame.new(-0.23, v1, -0.55)).Position
+    local position4 = (cframe4 * CFrame.new(0.23, v1, -0.55)).Position
+
+    if flag15 then
+      lowest = math.min(1, lowest + lowest2 / 0.7)
+    else
+      lowest = math.max(0, lowest - lowest2 / 0.4)
+    end
+
+    if v12.camWeld then
+      if flag5 then
+        v12.camWeld.C0 = CFrame.new(v2 * lowest, 0.5, 0)
+      else
+        v12.camWeld.C0 = CFrame.new(0, 0.5, 0)
+      end
+    end
+
+    if lowest > 0 then
+      if not v31 or not v32 then
+        f12()
+      end
+
+      local v52 = lowest ^ 3 * 1000
+      local raycastParams2 = getRaycastParams()
+      local raycast = workspaceService:Raycast(position3, lookVector * v52, raycastParams2)
+      local raycast2 = workspaceService:Raycast(position4, lookVector * v52, raycastParams2)
+      local position5 = raycast and raycast.Position or position3 + lookVector * v52
+      local position6 = raycast2 and raycast2.Position or position4 + lookVector * v52
+
+      v31.origin.Position = position3
+      v31.endpoint.Position = position5
+
+      v32.origin.Position = position4
+      v32.endpoint.Position = position6
+
+      local v53
+
+      if flag15 then
+        for _, value3 in ipairs({ raycast, raycast2 }) do
+          if value3 and value3.Instance then
+            local model2 = value3.Instance:FindFirstAncestorOfClass("Model")
+
+            if model2 then
+              local getPlayerFromCharacter2 = players:GetPlayerFromCharacter(model2)
+
+              if getPlayerFromCharacter2 and f14(getPlayerFromCharacter2) then
+                v53 = getPlayerFromCharacter2
+              end
+
+              f9(model2)
+            end
+          end
+        end
+      end
+
+      if v53 then
+        if v33 ~= v53 then
+          v33 = v53
+          v16 = tick()
+        end
+
+        v17 = tick()
+      elseif v33 then
+        if not (tick() - v17 < 0.7) then
+          v33 = nil
+        end
+      else
+        v33 = nil
+      end
+    else
+      f10()
+      v33 = nil
+    end
+  end)
+end
+
+local function f18(p19)
+  if not flag16 then
+    return
+  end
+
+  local v54 = flag15
+  flag16 = false
+  flag15 = false
+  lowest = 0
+  seen = {}
+  f10()
+
+  if v54 and p19 then
+    f16()
+  else
+    f15()
+
+    if sound then
+      sound:Stop()
+    end
+  end
+
+  if v12.camWeld then
+    v12.camWeld.C0 = CFrame.new(0, 0.5, 0)
+  end
+
+  if connect6 then
+    connect6:Disconnect()
+    connect6 = nil
+  end
+
+  f13()
+end
+
+do
+  f4()
+
+  local imageButton3 = makeImageButton(
+    "RandVoiceBtn", UDim2.new(0, 305, 0, 70), "126139598282367", "Random Voicelines"
+  )
+
+  local list3 = {}
+
+  local list4 = {
+    "you people should be thanking Christ that I am who and what I am, because you need ME!",
+    "I am your lord, your saviour. I am your God.",
+    "I don't make mistakes, i'm not just like the rest of you.. I'm stronger, I'm smarter... I'm better. I AM BETTER!!",
+    "I'm the homelander and I can do whatever the #### I want",
+    "the only man in the sky, is me", "I AM GOD!",
+  }
+
+  f2(imageButton3, function()
+    local list5 = {}
+
+    for _, value4 in ipairs(list4) do
+      local flag19 = false
+
+      for _, value5 in ipairs(list3) do
+        if value4 == value5 then
+          flag19 = true
+        end
+      end
+
+      if not flag19 then
+        table.insert(list5, value4)
+      end
+    end
+
+    if #list5 == 0 then
+      list5 = list4
+    end
+
+    if #list5 > 0 then
+      local v55 = list5[math.random(1, #list5)]
+      f1(v55)
+      table.insert(list3, v55)
+
+      if #list3 > 2 then
+        table.remove(list3, 1)
+      end
+    end
+  end, true)
+
+  local imageButton4 = makeImageButton(
+    "MemeVoiceBtn", UDim2.new(0, 255, 0, 70), "78691293764532", ""
+  )
+
+  local list6 = {
+    "have you seen the memes about me?",
+    "Ashley don't look at him look at me! ASHLEY! look. at. me.", "hahahaha.... HAHAHAHAHAHA",
+    "yummers", "hahahaha, alriiight",
+    "it was perfect. perfect, down to the last minute detail.",
+  }
+
+  local list7 = {}
+
+  f2(imageButton4, function()
+    local list8 = {}
+
+    for _, value6 in ipairs(list6) do
+      local flag20 = false
+
+      for _, value7 in ipairs(list7) do
+        if value6 == value7 then
+          flag20 = true
+        end
+      end
+
+      if not flag20 then
+        table.insert(list8, value6)
+      end
+    end
+
+    if #list8 == 0 then
+      list8 = list6
+    end
+
+    if #list8 > 0 then
+      local v56 = list8[math.random(1, #list8)]
+      f1(v56)
+      table.insert(list7, v56)
+
+      if #list7 > 2 then
+        table.remove(list7, 1)
+      end
+    end
+  end, true)
+
+  local imageButton5 = makeImageButton(
+    "SpeedBtn", UDim2.new(0, 210, 0, 0), "129624286483532", "Normal", utilityButtons
+  )
+
+  local uiStroke6 = Instance.new("UIStroke")
+  uiStroke6.Thickness = 1.5
+  uiStroke6.Color = Color3.fromRGB(0, 0, 0)
+  uiStroke6.Parent = imageButton5.TextLabel
+
+  f2(imageButton5, function()
+    v10 = (v10 + 1) % 3
+
+    imageButton5.TextLabel.Text = v11[v10] == 1 and "Normal" or v11[v10] == 0.5 and "Slow"
+      or "Fast"
+  end, true)
+end
+
+do
+  local imageButton6 = makeImageButton(
+    "LandBtn", UDim2.new(0, 195, 0, 145), nil, "Ground Land: ON"
+  )
+
+  f2(imageButton6, function()
+    flag12 = not flag12
+    imageButton6.TextLabel.Text = "Ground Land: " .. (flag12 and "ON" or "OFF")
+  end, true)
+
+  local imageButton7 = makeImageButton("IdleAnimBtn", UDim2.new(0, 260, 0, 0), nil, [[
+fly idle:
+idle V1]], utilityButtons)
+
+  imageButton7.TextLabel.Text = [[
+fly idle:
+]] .. v14[v13].name
+
+  f2(imageButton7, function()
+    v13 = v13 % #v14 + 1
+
+    imageButton7.TextLabel.Text = [[
+fly idle:
+]] .. v14[v13].name
+
+    id = v14[v13].id
+
+    if flag8 and v57 == false and not flag9 and true then
+      f6(0.8)
+      makeAnimation(id, true, 0.8)
+    end
+  end, true)
+
+  local imageButton8 = makeImageButton("FlingBtn", UDim2.new(0, 140, 0, 125), nil, "Fling: OFF")
+
+  f2(imageButton8, function()
+    flag13 = not flag13
+    imageButton8.TextLabel.Text = "Fling: " .. (flag13 and "ON" or "OFF")
+  end, true)
+
+  local flag21 = false
+  local map = {}
+  local imageButton9 = makeImageButton("XRayBtn", UDim2.new(0, 155, 0, 70), nil, "X-Ray: OFF")
+
+  f2(imageButton9, function()
+    flag21 = not flag21
+    imageButton9.TextLabel.Text = "X-Ray: " .. (flag21 and "ON" or "OFF")
+
+    if flag21 then
+      map = {}
+
+      for _, value8 in ipairs(workspaceService:GetDescendants()) do
+        if value8:IsA("BasePart") then
+          local flag22 = false
+          local model3 = value8:FindFirstAncestorOfClass("Model")
+
+          if model3 and model3:FindFirstChildOfClass("Humanoid") then
+            flag22 = true
+          end
+
+          if not flag22 and value8.Transparency < 1 then
+            map[value8] = value8.Transparency
+            value8.Transparency = 0.6
+          end
+        end
+      end
+    else
+      for key, value9 in pairs(map) do
+        if key and key.Parent then
+          key.Transparency = value9
+        end
+      end
+
+      map = {}
+    end
+  end, true)
+end
+
+do
+  imageButton10, uiStroke7 = makeImageButton(
+    "TryingFlyBtn", UDim2.new(0.95, -120, 0.45, 50), "127754775766218", "", customClientUI
+  )
+
+  imageButton10.Visible = false
+
+  flag23 = false
+
+  f2(imageButton10, function()
+    if not flag8 then
+      return
+    end
+
+    flag23 = not flag23
+    uiStroke7.Color = flag23 and Color3.fromRGB(0, 80, 0) or Color3.fromRGB(60, 60, 60)
+
+    if flag23 then
+      f6(0.2)
+      local character12 = localPlayer.Character
+      local humanoid7 = character12 and character12:FindFirstChildOfClass("Humanoid")
+
+      if humanoid7 then
+        local animation2 = Instance.new("Animation")
+        animation2.AnimationId = "rbxassetid://89569027537835"
+
+        loadAnimation2 = humanoid7:LoadAnimation(animation2)
+        loadAnimation2.Priority = Enum.AnimationPriority.Action4
+        loadAnimation2.Looped = true
+        loadAnimation2:Play(0.2)
+      end
+    else
+      if loadAnimation2 then
+        loadAnimation2:Stop(0.2)
+        loadAnimation2 = nil
+      end
+
+      v57 = nil
+
+      if f19 then
+        f19(false)
+      end
+    end
+  end, true)
+
+  imageButton11, uiStroke8 = makeImageButton(
+    "CompoundBtn", UDim2.new(0.95, -70, 0.45, 50), "112901173121233", "", customClientUI
+  )
+
+  imageButton11.Visible = false
+
+  local flag24 = false
+
+  local function f20()
+    if flag4 then
+      actionButtons.Visible = false
+      utilityButtons.Visible = false
+      imageButton10.Visible = false
+      imageButton11.Visible = false
+    elseif flag8 then
+      actionButtons.Visible = true
+      utilityButtons.Visible = true
+      imageButton10.Visible = true
+      imageButton11.Visible = true
+    end
+  end
+
+  local v58
+  local loadAnimation3
+
+  f2(imageButton11, function()
+    if not flag8 then
+      return
+    end
+
+    flag24 = not flag24
+    uiStroke8.Color = flag24 and Color3.fromRGB(0, 80, 0) or Color3.fromRGB(60, 60, 60)
+
+    if flag24 then
+      f6(0.2)
+      local character13 = localPlayer.Character
+      local humanoid8 = character13 and character13:FindFirstChildOfClass("Humanoid")
+
+      if humanoid8 then
+        local animation3 = Instance.new("Animation")
+        animation3.AnimationId = "rbxassetid://82731245433251"
+
+        loadAnimation3 = humanoid8:LoadAnimation(animation3)
+        loadAnimation3.Priority = Enum.AnimationPriority.Action4
+        loadAnimation3.Looped = false
+        loadAnimation3:Play(0.2)
+
+        v58 = task.spawn(function()
+          loadAnimation3.TimePosition = 0
+          loadAnimation3:AdjustSpeed(1)
+
+          local v59 = tick()
+
+          while flag24 and tick() - v59 < 3.5 do
+            task.wait()
+          end
+
+          if not flag24 then
+            return
+          end
+
+          while flag24 do
+            loadAnimation3.TimePosition = 3.5
+            loadAnimation3:AdjustSpeed(-0.2)
+
+            local v60 = tick()
+
+            while flag24 and tick() - v60 < 2.5 do
+              task.wait()
+            end
+
+            if not flag24 then
+              break
+            end
+          end
+        end)
+      end
+    else
+      if v58 then
+        task.cancel(v58)
+        v58 = nil
+      end
+
+      if loadAnimation3 then
+        loadAnimation3:Stop(0.2)
+        loadAnimation3 = nil
+      end
+
+      v57 = nil
+
+      if f19 then
+        f19(false)
+      end
+    end
+  end, true)
+
+  local imageButton12, uiStroke9 = makeImageButton(
+    "LaserEyesBtn", UDim2.new(0, 205, 0, 70), "137555465918674", ""
+  )
+
+  f2(imageButton12, function()
+    if flag16 then
+      flag15 = not flag15
+
+      if flag15 then
+        f17()
+      else
+        f16()
+      end
+
+      uiStroke9.Color = flag15 and Color3.fromRGB(180, 0, 0) or Color3.fromRGB(60, 60, 60)
+    else
+      makeSound()
+      flag15 = true
+      f17()
+      uiStroke9.Color = Color3.fromRGB(180, 0, 0)
+    end
+  end, true)
+
+  local v61, v62, v63, v64, v65, v66, v67
+
+  task.spawn(function()
+    while true do
+      if flag9 or false then
+        if flag17 then
+          flag17 = false
+
+          if v61 then
+            v61:Stop(0.3)
+          end
+
+          if v62 then
+            v62:Stop(0.3)
+          end
+
+          if v63 then
+            v63:Stop(0.3)
+          end
+
+          if v64 then
+            v64:Stop(0.3)
+          end
+
+          if v65 then
+            v65:Stop(0.3)
+          end
+
+          if v66 then
+            v66:Stop(0.3)
+          end
+
+          if v67 then
+            v67:Stop(0.3)
+          end
+        end
+
+        task.wait()
+      else
+        task.wait()
+      end
+    end
+  end)
+
+  local v68 = 0
+
+  userInputService.InputBegan:Connect(function(input2, p20)
+    if p20 or flag9 or false then
+      return
+    end
+
+    if input2.UserInputType == Enum.UserInputType.MouseButton1
+      or input2.UserInputType == Enum.UserInputType.Touch then
+      v68 = tick()
+    end
+  end)
+
+  userInputService.InputEnded:Connect(function(input3, p21)
+    if p21 or flag9 or false then
+      return
+    end
+
+    if input3.UserInputType == Enum.UserInputType.MouseButton1
+      or input3.UserInputType == Enum.UserInputType.Touch then
+      if tick() - v68 <= 0.2 then
+      end
+    end
+  end)
+
+  local list9 = {}
+
+  function rebuildNoclipCache()
+    list9 = {}
+
+    if localPlayer.Character then
+      for _, value10 in ipairs(localPlayer.Character:GetDescendants()) do
+        if value10:IsA("BasePart") then
+          table.insert(list9, value10)
+        end
+      end
+    end
+  end
+
+  local connect7
+
+  local function f21(p22)
+    v6 = p22
+
+    if connect7 then
+      connect7:Disconnect()
+      connect7 = nil
+    end
+
+    local humanoidRootPart7
+
+    if p22 then
+      rebuildNoclipCache()
+
+      connect7 = runService.RenderStepped:Connect(function()
+        for _, value11 in ipairs(list9) do
+          value11.CanCollide = false
+        end
+      end)
+    elseif localPlayer.Character then
+      humanoidRootPart7 = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+      if humanoidRootPart7 then
+        pcall(function() humanoidRootPart7.CanCollide = true end)
+      end
+    end
+  end
+
+  function f19(p23)
+    if flag9 or false then
+      return
+    end
+
+    if v57 == p23 then
+      return
+    end
+
+    v57 = p23
+
+    if not p23 then
+      f6(0.8)
+      makeAnimation(id, true, 0.8)
+      v8 = 1
+      v9 = 1
+    else
+      f6(0.4)
+
+      v22 = task.spawn(function()
+        local v69
+
+        if v9 == 3 then
+          v69 = makeAnimation("rbxassetid://114833664438028", true, 0.3)
+
+          if v69 then
+            v69.Priority = Enum.AnimationPriority.Action2
+            v69.TimePosition = 1
+            v69:AdjustSpeed(8)
+
+            task.delay(0.1, function()
+              if v69 then
+                v69:AdjustSpeed(1)
+              end
+            end)
+          end
+
+          f8()
+          return
+        end
+
+        v9 = 1
+        local v70 = tick()
+        local animation4 = makeAnimation("rbxassetid://114833664438028", false, 0.2)
+
+        if animation4 then
+          animation4:AdjustSpeed(2)
+        end
+
+        while tick() - v70 < 0.225 do
+          v8 = 1 + (tick() - v70) / 0.225 * 1
+          task.wait()
+        end
+
+        if animation4 then
+          animation4:Stop(0.2)
+        end
+
+        v9 = 2
+        local v71 = tick()
+        local animation5 = makeAnimation("rbxassetid://114833664438028", false, 0.2)
+
+        if animation5 then
+          animation5:AdjustSpeed(2)
+        end
+
+        while tick() - v71 < 0.33 do
+          v8 = 2 + (tick() - v71) / 0.33 * 3
+          task.wait()
+        end
+
+        if animation5 then
+          animation5:Stop(0.3)
+        end
+
+        v9 = 3
+        local animation6 = makeAnimation("rbxassetid://114833664438028", true, 0.3)
+
+        if animation6 then
+          animation6.Priority = Enum.AnimationPriority.Action2
+          animation6.TimePosition = 1
+          animation6:AdjustSpeed(8)
+
+          task.delay(0.1, function()
+            if animation6 then
+              animation6:AdjustSpeed(1)
+            end
+          end)
+        end
+
+        f8()
+        local v72 = tick()
+
+        while v57 == true do
+          local v73 = tick()
+          currentStage3Multiplier = 5 + math.min((v73 - v72) / 5, 1) * 5
+          v8 = currentStage3Multiplier
+          task.wait()
+        end
+      end)
+    end
+  end
+
+  local v74, bodyVelocity
+
+  local function f22(position7, instance4)
+    if flag9 or flag10 or not flag12 or false then
+      return
+    end
+
+    if v9 >= 2 or false then
+      flag9 = true
+      flag10 = true
+      v74 = nil
+      f6(0.1)
+      local character14 = localPlayer.Character
+
+      local humanoidRootPart8 = character14
+      humanoidRootPart8 = character14 and character14:FindFirstChild("HumanoidRootPart")
+
+      local humanoid9 = character14
+      humanoid9 = character14 and character14:FindFirstChildOfClass("Humanoid")
+
+      local color2 = instance4 and instance4.Color
+
+      local color3 = color2
+      color3 = color2 or Color3.fromRGB(100, 100, 100)
+
+      local material2 = instance4 and instance4.Material or Enum.Material.Plastic
+      local v75 = v8 / 5
+      makePart(position7, color3, material2, v75)
+      f7(v75 * 1.5, 0.8)
+
+      if bodyVelocity then
+        bodyVelocity.velocity = Vector3.new(0, 0, 0)
+      end
+
+      if humanoidRootPart8 then
+        humanoidRootPart8.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        humanoidRootPart8.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+      end
+
+      if humanoidRootPart8 and humanoid9 then
+        local y = humanoidRootPart8.Size.Y
+        local hipHeight = humanoid9.HipHeight
+        local v76 = position7.Y + (y / 2 + hipHeight)
+        local lookVector2 = humanoidRootPart8.CFrame.LookVector
+        local unit = Vector3.new(lookVector2.X, 0, lookVector2.Z).Unit
+        local tweenInfo = TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+        local cframe5 = CFrame.lookAt(Vector3.new(
+          humanoidRootPart8.Position.X, v76, humanoidRootPart8.Position.Z
+        ), Vector3.new(
+          humanoidRootPart8.Position.X, v76, humanoidRootPart8.Position.Z
+        ) + unit)
+
+        tweenService:Create(humanoidRootPart8, tweenInfo, { CFrame = cframe5 }):Play()
+        task.wait(0.08)
+        humanoidRootPart8.CFrame = cframe5
+      end
+
+      local animation7 = makeAnimation("rbxassetid://79698004825744", false, 0.1)
+
+      if animation7 then
+        animation7:AdjustSpeed(2)
+        local highest = math.max(0, animation7.Length / 2 - 0.5)
+        local v77 = tick()
+
+        while tick() - v77 < highest do
+          if not flag8 then
+            animation7:Stop(0.1)
+
+            if humanoid9 then
+              humanoid9.AutoRotate = true
+              humanoid9.PlatformStand = false
+            end
+
+            local currentCamera4 = workspaceService.CurrentCamera
+
+            if currentCamera4 and humanoid9 then
+              currentCamera4.CameraSubject = humanoid9
+              currentCamera4.CameraType = Enum.CameraType.Custom
+            end
+
+            f6(0)
+            flag9 = false
+            v57 = nil
+            task.delay(0.3, function() flag10 = false end)
+            return
+          end
+
+          task.wait()
+        end
+
+        if flag8 then
+          v9 = 1
+          makeAnimation(id, true, 0.5)
+          local v78 = tick()
+
+          while tick() - v78 < 0.5 do
+            if not flag8 then
+              if humanoid9 then
+                humanoid9.AutoRotate = true
+                humanoid9.PlatformStand = false
+              end
+
+              local currentCamera5 = workspaceService.CurrentCamera
+
+              if currentCamera5 and humanoid9 then
+                currentCamera5.CameraSubject = humanoid9
+                currentCamera5.CameraType = Enum.CameraType.Custom
+              end
+
+              f6(0)
+              flag9 = false
+              v57 = nil
+              task.delay(0.3, function() flag10 = false end)
+              return
+            end
+
+            task.wait()
+          end
+        end
+      end
+
+      flag9 = false
+      v57 = nil
+      task.delay(0.3, function() flag10 = false end)
+    end
+  end
+
+  local function f23()
+    local character15 = localPlayer.Character
+    local humanoid10 = character15 and character15:FindFirstChildOfClass("Humanoid")
+    local currentCamera6 = workspaceService.CurrentCamera
+
+    if not humanoid10 or not currentCamera6 then
+      return Vector3.new()
+    end
+
+    local vector2 = Vector3.new()
+    local flag25 = false
+
+    if userInputService:IsKeyDown(Enum.KeyCode.W) then
+      vector2 = vector2 + currentCamera6.CFrame.LookVector
+      flag25 = true
+    end
+
+    if userInputService:IsKeyDown(Enum.KeyCode.S) then
+      vector2 = vector2 - currentCamera6.CFrame.LookVector
+      flag25 = true
+    end
+
+    if userInputService:IsKeyDown(Enum.KeyCode.A) then
+      vector2 = vector2 - currentCamera6.CFrame.RightVector
+      flag25 = true
+    end
+
+    if userInputService:IsKeyDown(Enum.KeyCode.D) then
+      vector2 = vector2 + currentCamera6.CFrame.RightVector
+      flag25 = true
+    end
+
+    local vector3 = Vector3.new(0, 0, 0)
+
+    if userInputService:IsKeyDown(Enum.KeyCode.Space) then
+      local v79 = v9
+      vector3 = vector3 + Vector3.new(0, 1 * (v79 == 3 and 2 or 1), 0)
+      flag25 = true
+    end
+
+    if userInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+      local v80 = v9
+      vector3 = vector3 - Vector3.new(0, 1 * (v80 == 3 and 10 or 1), 0)
+      flag25 = true
+    end
+
+    local v81 = vector2 + vector3
+
+    if not flag25 and humanoid10.MoveDirection.Magnitude > 0.05 then
+      local moveDirection2 = humanoid10.MoveDirection
+
+      local unit2 = Vector3.new(
+        currentCamera6.CFrame.LookVector.X, 0, currentCamera6.CFrame.LookVector.Z
+      ).Unit
+
+      local unit3 = Vector3.new(
+        currentCamera6.CFrame.RightVector.X, 0, currentCamera6.CFrame.RightVector.Z
+      ).Unit
+
+      local dot = moveDirection2:Dot(unit2)
+      local dot2 = moveDirection2:Dot(unit3)
+
+      v81 = v81 + currentCamera6.CFrame.RightVector * dot2
+        + currentCamera6.CFrame.LookVector * dot
+    end
+
+    return v81.Magnitude > 0 and v81.Unit or Vector3.new()
+  end
+
+  local mobileFlyGroundPart, bodyGyro
+
+  local function makeAnimation2()
+    local character16 = localPlayer.Character
+    local humanoid11 = character16 and character16:FindFirstChildOfClass("Humanoid")
+    local humanoidRootPart9 = character16 and character16:FindFirstChild("HumanoidRootPart")
+    local head3 = character16 and character16:FindFirstChild("Head")
+    local currentCamera7 = workspaceService.CurrentCamera
+
+    if not humanoidRootPart9 or not humanoid11 or not currentCamera7 then
+      return
+    end
+
+    if not flag11 then
+      task.spawn(function()
+        humanoidRootPart9.Anchored = true
+
+        local animation8 = Instance.new("Animation")
+        animation8.AnimationId = "rbxassetid://79698004825744"
+
+        local loadAnimation4 = humanoid11:LoadAnimation(animation8)
+        loadAnimation4:Play()
+        loadAnimation4:Stop()
+
+        runService.Heartbeat:Wait()
+        humanoidRootPart9.Anchored = false
+        flag11 = true
+      end)
+    end
+
+    humanoid11.AutoRotate = false
+    humanoid11.PlatformStand = true
+
+    if not mobileFlyGroundPart then
+      mobileFlyGroundPart = Instance.new("Part")
+      mobileFlyGroundPart.Name = "MobileFlyGroundPart"
+      mobileFlyGroundPart.Size = Vector3.new(10, 10, 10)
+      mobileFlyGroundPart.Transparency = 1
+      mobileFlyGroundPart.CanCollide = false
+      mobileFlyGroundPart.Anchored = false
+      mobileFlyGroundPart.Massless = true
+      mobileFlyGroundPart.Parent = workspace
+    end
+
+    bodyGyro = Instance.new("BodyGyro")
+    bodyGyro.P = 40000
+    bodyGyro.D = 500
+    bodyGyro.maxTorque = Vector3.new(9000000000, 9000000000, 9000000000)
+    bodyGyro.Parent = humanoidRootPart9
+
+    bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.velocity = Vector3.zero
+    bodyVelocity.maxForce = Vector3.new(9000000000, 9000000000, 9000000000)
+    bodyVelocity.Parent = humanoidRootPart9
+
+    if head3 then
+      local camFocus = Instance.new("Part")
+      camFocus.Name = "CamFocus"
+      camFocus.Transparency = 1
+      camFocus.CanCollide = false
+      camFocus.Massless = true
+      camFocus.Size = Vector3.new(0.1, 0.1, 0.1)
+      camFocus.Parent = character16
+
+      local weld = Instance.new("Weld")
+      weld.Part0 = head3
+      weld.Part1 = camFocus
+      weld.C0 = CFrame.new(0, 0.5, 0)
+      weld.Parent = camFocus
+
+      currentCamera7.CameraSubject = camFocus
+
+      v12.camPart = camFocus
+      v12.camWeld = weld
+    end
+
+    v12.flyLoop = runService.RenderStepped:Connect(function(delta)
+      if not flag8 or not humanoidRootPart9 or not currentCamera7 or flag9 or flag14 then
+        return
+      end
+
+      local v82 = f23()
+      local filterDescendantsInstances2 = { character16, mobileFlyGroundPart }
+
+      for _, value12 in ipairs(players:GetPlayers()) do
+        if value12.Character then
+          table.insert(filterDescendantsInstances2, value12.Character)
+        end
+      end
+
+      local raycastParams3 = RaycastParams.new()
+      raycastParams3.FilterDescendantsInstances = filterDescendantsInstances2
+      raycastParams3.FilterType = Enum.RaycastFilterType.Exclude
+
+      local v83 = bodyVelocity.velocity.Y < -5
+
+      if v83 then
+        if v74 == nil then
+          local raycast3 = workspace:Raycast(
+            humanoidRootPart9.Position, Vector3.new(0, -500, 0), raycastParams3
+          )
+
+          v74 = raycast3 and humanoidRootPart9.Position.Y - raycast3.Position.Y or 999
+        end
+      else
+        v74 = nil
+      end
+
+      local highest2 = math.max(3, bodyVelocity.velocity.Magnitude * delta * 0.75 + 1)
+
+      local raycast4 = workspace:Raycast(
+        humanoidRootPart9.Position, Vector3.new(0, -highest2, 0), raycastParams3
+      )
+
+      if raycast4 and raycast4.Instance and flag12 and v83 then
+        if raycast4.Instance.CanCollide and raycast4.Instance.Transparency <= 0.75
+          and (v9 >= 2 or false) then
+          if bodyVelocity.velocity.Magnitude > 30 and (v74 or 0) >= 5 then
+            f22(raycast4.Position, raycast4.Instance)
+            return
+          end
+        end
+      end
+
+      if v82.Magnitude > 0 then
+        bodyVelocity.velocity = v82 * (33.8 * v8 * v11[v10])
+
+        if flag6 then
+          bodyGyro.CFrame = bodyGyro.CFrame:Lerp(CFrame.lookAt(humanoidRootPart9.Position, humanoidRootPart9.Position
+            + currentCamera7.CFrame.LookVector), 0.15)
+        elseif flag3 then
+          bodyGyro.CFrame = bodyGyro.CFrame:Lerp(CFrame.lookAt(
+            humanoidRootPart9.Position, humanoidRootPart9.Position + v82
+          ), 0.15)
+        else
+          local vector4 = Vector3.new(v82.X, 0, v82.Z)
+
+          if vector4.Magnitude > 0.05 then
+            bodyGyro.CFrame = bodyGyro.CFrame:Lerp(CFrame.lookAt(humanoidRootPart9.Position, humanoidRootPart9.Position
+              + vector4.Unit), 0.15)
+          end
+        end
+
+        f19(true)
+
+        if (v9 == 3 or false) and true then
+          if currentCamera7.FieldOfView < 89.9 then
+            tweenService:Create(currentCamera7, TweenInfo.new(0.35), { FieldOfView = 90 }):Play()
+          end
+        elseif currentCamera7.FieldOfView > 70.1 then
+          tweenService:Create(currentCamera7, TweenInfo.new(0.7), { FieldOfView = 70 }):Play()
+        end
+      else
+        bodyVelocity.velocity = Vector3.zero
+
+        if flag6 then
+          bodyGyro.CFrame = bodyGyro.CFrame:Lerp(CFrame.lookAt(humanoidRootPart9.Position, humanoidRootPart9.Position
+            + currentCamera7.CFrame.LookVector), 0.1)
+        elseif flag3 then
+          bodyGyro.CFrame = bodyGyro.CFrame:Lerp(CFrame.lookAt(humanoidRootPart9.Position, humanoidRootPart9.Position
+            + currentCamera7.CFrame.LookVector), 0.1)
+        end
+
+        f19(false)
+
+        if currentCamera7.FieldOfView ~= 70 then
+          tweenService:Create(currentCamera7, TweenInfo.new(0.7), { FieldOfView = 70 }):Play()
+        end
+      end
+
+      pcall(function()
+        if mobileFlyGroundPart and humanoidRootPart9 then
+          mobileFlyGroundPart.CFrame = humanoidRootPart9.CFrame
+            * CFrame.new(0, -(humanoidRootPart9.Size.Y / 2) - 5, 0)
+        end
+      end)
+    end)
+
+    f19(false)
+    makeSound()
+  end
+
+  local function f24()
+    if bodyGyro then
+      bodyGyro:Destroy()
+    end
+
+    if bodyVelocity then
+      bodyVelocity:Destroy()
+    end
+
+    if v12.camPart then
+      v12.camPart:Destroy()
+    end
+
+    f6()
+    v57 = nil
+    v8 = 1
+    v9 = 1
+    v74 = nil
+    flag14 = false
+
+    if mobileFlyGroundPart then
+      mobileFlyGroundPart:Destroy()
+      mobileFlyGroundPart = nil
+    end
+
+    local character17 = localPlayer.Character
+
+    local humanoid12 = character17
+    humanoid12 = character17 and character17:FindFirstChildOfClass("Humanoid")
+
+    local currentCamera8 = workspaceService.CurrentCamera
+
+    if currentCamera8 and humanoid12 then
+      currentCamera8.CameraSubject = humanoid12
+      currentCamera8.CameraType = Enum.CameraType.Custom
+
+      humanoid12.AutoRotate = true
+      humanoid12.PlatformStand = false
+      humanoid12.CameraOffset = Vector3.new(0, 0, 0)
+
+      tweenService:Create(currentCamera8, TweenInfo.new(
+        0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out
+      ), { FieldOfView = 70 }):Play()
+    end
+
+    if v12.flyLoop then
+      v12.flyLoop:Disconnect()
+      v12.flyLoop = nil
+    end
+
+    f18(false)
+  end
+
+  textButton3.MouseButton1Click:Connect(function()
+    flag4 = not flag4
+    textButton3.Text = flag4 and "show buttons" or "hide buttons"
+    f20()
+  end)
+
+  f2(imageButton, function()
+    flag8 = not flag8
+    textLabel.Text = "Homelander: " .. (flag8 and "ON" or "OFF")
+
+    if not flag8 then
+      flag9 = false
+    end
+
+    if flag8 then
+      if not flag4 then
+        actionButtons.Visible = true
+        utilityButtons.Visible = true
+        imageButton10.Visible = true
+        imageButton11.Visible = true
+      end
+
+      settingButton.Visible = true
+    else
+      actionButtons.Visible = false
+      utilityButtons.Visible = false
+      imageButton10.Visible = false
+      imageButton11.Visible = false
+      settingButton.Visible = false
+    end
+
+    if flag8 then
+      v7 = v6
+      f21(true)
+      makeAnimation2()
+    else
+      if flag23 then
+        flag23 = false
+
+        if loadAnimation2 then
+          loadAnimation2:Stop(0.2)
+          loadAnimation2 = nil
+        end
+
+        uiStroke7.Color = Color3.fromRGB(60, 60, 60)
+      end
+
+      if flag24 then
+        flag24 = false
+
+        if v58 then
+          task.cancel(v58)
+          v58 = nil
+        end
+
+        if loadAnimation3 then
+          loadAnimation3:Stop(0.2)
+          loadAnimation3 = nil
+        end
+
+        uiStroke8.Color = Color3.fromRGB(60, 60, 60)
+      end
+
+      if flag15 then
+        flag15 = false
+        uiStroke9.Color = Color3.fromRGB(60, 60, 60)
+      end
+
+      f24()
+      f21(v7)
+      frame.Visible = false
+    end
+  end, false)
+
+  localPlayer.CharacterAdded:Connect(function(character18)
+    rebuildNoclipCache()
+
+    if flag8 then
+      f24()
+      task.wait(0.2)
+
+      if flag8 then
+        f21(true)
+        makeAnimation2()
+      end
+    end
+
+    local heartbeat2, renderStepped2, zero2
+
+    if game.PlaceId == 189707 then
+      heartbeat2 = runService.Heartbeat
+      renderStepped2 = runService.RenderStepped
+      zero2 = Vector3.zero
+
+      local function f25(character19)
+        local humanoidRootPart10 = character19:WaitForChild("HumanoidRootPart")
+        local connect8
+
+        if humanoidRootPart10 then
+          connect8 = nil
+
+          connect8 = heartbeat2:Connect(function()
+            if not humanoidRootPart10.Parent then
+              connect8:Disconnect()
+            end
+
+            local assemblyLinearVelocity2 = humanoidRootPart10.AssemblyLinearVelocity
+            humanoidRootPart10.AssemblyLinearVelocity = zero2
+            renderStepped2:Wait()
+            humanoidRootPart10.AssemblyLinearVelocity = assemblyLinearVelocity2
+          end)
+        end
+      end
+
+      f25(character18)
+    end
+  end)
+end
+
+do
+  local v84 = { ["1"] = Instance.new("ScreenGui", coreGui) }
+  v84["1"].Enabled = false
+  v84["2"] = Instance.new("Frame", v84["1"])
+  v84["2"].BorderSizePixel = 0
+  v84["2"].BackgroundColor3 = Color3.fromRGB(254, 199, 255)
+  v84["2"].Size = UDim2.new(0, 316, 0, 128)
+  v84["2"].Position = UDim2.new(0.5, -150, 0.5, -50)
+  v84["5"] = Instance.new("ImageLabel", v84["2"])
+  v84["5"].BorderSizePixel = 0
+  v84["5"].BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+  v84["5"].Image = "rbxassetid://97587406223179"
+  v84["5"].Size = UDim2.new(0, 316, 0, 142)
+  v84["5"].Position = UDim2.new(0, 0, -0.10938, 0)
+
+  local instance5 = Instance.new("TextBox", v84["5"])
+  instance5.PlaceholderText = "shortened name/display"
+  instance5.Size = UDim2.new(0.9, -20, 0.3, -10)
+  instance5.Position = UDim2.new(0.05, 0, 0.3, 0)
+  instance5.Text = ""
+  instance5.BackgroundColor3 = Color3.fromRGB(113, 27, 255)
+  instance5.TextColor3 = Color3.new(1, 1, 1)
+
+  local instance6 = Instance.new("TextButton", v84["5"])
+  instance6.Size = UDim2.new(0.4, 0, 0.25, 0)
+  instance6.Position = UDim2.new(0.3, 0, 0.65, 0)
+  instance6.Text = "banish >:3"
+  instance6.BackgroundColor3 = Color3.fromRGB(255, 232, 204)
+
+  local function f26(text3)
+    local lower = text3:lower()
+
+    for _, value13 in pairs(players:GetPlayers()) do
+      if value13 ~= localPlayer then
+        if value13.Name:lower():match("^" .. lower)
+          or value13.DisplayName:lower():match("^" .. lower) then
+          return value13
+        end
+      end
+    end
+  end
+
+  instance6.MouseButton1Click:Connect(function()
+    local v85 = f26(instance5.Text)
+
+    if v85 then
+      local character20 = localPlayer.Character
+      local humanoidRootPart11 = character20 and character20:FindFirstChild("HumanoidRootPart")
+
+      local humanoidRootPart12 = v85.Character
+        and v85.Character:FindFirstChild("HumanoidRootPart")
+
+      if humanoidRootPart11 and humanoidRootPart12 then
+        local cframe6 = humanoidRootPart11.CFrame
+        workspace.FallenPartsDestroyHeight = -99999
+
+        local instance7 = Instance.new("BodyVelocity", humanoidRootPart11)
+        instance7.Velocity = Vector3.new(450000000, 4500000000, 450000000)
+        instance7.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+
+        local v86 = tick()
+
+        while tick() - v86 < 1.5 do
+          humanoidRootPart11.CFrame = humanoidRootPart12.CFrame
+          runService.Heartbeat:Wait()
+        end
+
+        instance7:Destroy()
+        humanoidRootPart11.CFrame = cframe6
+        workspace.FallenPartsDestroyHeight = getgenv().FPDH
+      end
+    end
+  end)
+end
