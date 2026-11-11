@@ -1,0 +1,790 @@
+local textChatService = game:GetService("TextChatService")
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local players = game:GetService("Players")
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+local tweenService = game:GetService("TweenService")
+textChatService.TextChannels.RBXGeneral:SendAsync("Lolita made by C00l_Ch4os/Modded by Tory")
+task.wait(2)
+replicatedStorage:WaitForChild("01_server"):FireServer(unpack({ "cmd", "-r6" }))
+wait(2)
+
+replicatedStorage:WaitForChild("01_server"):FireServer(unpack({
+  "cmd", "-gh 5316479641 5316539421 5699795428 5316549755 5268602207 5268555719 82742704984803",
+}))
+
+wait(1.5)
+
+local v1 = {
+  YeImTory = {
+    Text = "Lolita glitcher modifier",
+    TextColor = Color3.fromRGB(255, 215, 0),
+    HighlightColor = Color3.fromRGB(255, 215, 0),
+  },
+  C00l_Ch4os = {
+    Text = "Lolita glitcher owner",
+    TextColor = Color3.fromRGB(255, 215, 0),
+    HighlightColor = Color3.fromRGB(255, 215, 0),
+  },
+  C00l_Ch4osALT = {
+    Text = "Lolita glitcher owner(Alt account)",
+    TextColor = Color3.fromRGB(255, 215, 0),
+    HighlightColor = Color3.fromRGB(255, 215, 0),
+  },
+}
+
+local function makeTextLabel(p1, character)
+  local v2 = v1[p1.Name]
+
+  if not v2 then
+    return
+  end
+
+  if character:FindFirstChild(":3_Tag") or character:FindFirstChild(":3_Highlight") then
+    return
+  end
+
+  local waitForChild = character:WaitForChild("HumanoidRootPart", 5)
+
+  if not waitForChild then
+    return
+  end
+
+  local billboardGui = Instance.new("BillboardGui")
+  billboardGui.Name = ":3_Tag"
+  billboardGui.AlwaysOnTop = true
+  billboardGui.Size = UDim2.new(5, 0, 1.2, 0)
+  billboardGui.StudsOffset = Vector3.new(0, 3.8, 0)
+  billboardGui.Adornee = waitForChild
+
+  local textLabel = Instance.new("TextLabel")
+  textLabel.Size = UDim2.new(1, 0, 1, 0)
+  textLabel.BackgroundTransparency = 1
+  textLabel.Text = v2.Text
+  textLabel.TextColor3 = v2.TextColor
+  textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+  textLabel.TextStrokeTransparency = 0
+  textLabel.TextScaled = true
+  textLabel.Font = Enum.Font.SourceSansBold
+  textLabel.Parent = billboardGui
+
+  billboardGui.Parent = character
+
+  local highlight = Instance.new("Highlight")
+  highlight.Name = ":3_Highlight"
+  highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+  highlight.OutlineColor = v2.HighlightColor
+  highlight.OutlineTransparency = 0
+  highlight.FillColor = v2.HighlightColor
+  highlight.FillTransparency = 0.85
+  highlight.Adornee = character
+  highlight.Parent = character
+end
+
+local function f1(p2)
+  if v1[p2.Name] then
+    p2.CharacterAdded:Connect(function(character2) makeTextLabel(p2, character2) end)
+
+    if p2.Character then
+      makeTextLabel(p2, p2.Character)
+    end
+  end
+end
+
+for _, value in ipairs(players:GetPlayers()) do
+  f1(value)
+end
+
+players.PlayerAdded:Connect(f1)
+local localPlayer = players.LocalPlayer
+
+if _G.ChatConnection then
+  _G.ChatConnection:Disconnect()
+  _G.ChatConnection = nil
+end
+
+_G.HasExecutedChatScript = _G.HasExecutedChatScript or false
+
+_G.ChatConnection = localPlayer.Chatted:Connect(function(message)
+  if not _G.HasExecutedChatScript and string.lower(message) == "/chat" then
+    _G.HasExecutedChatScript = true
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Jskfhggjxu/My-Script/refs/heads/main/Chat%20script.lua"))()
+
+    if _G.ChatConnection then
+      _G.ChatConnection:Disconnect()
+      _G.ChatConnection = nil
+    end
+  end
+end)
+
+local localPlayer2 = players.LocalPlayer
+local currentCamera = workspace.CurrentCamera
+
+local function f2(vector, vector2)
+  return CFrame.new(vector) * CFrame.fromEulerAnglesXYZ(
+    math.rad(vector2.X), math.rad(vector2.Y), math.rad(vector2.Z)
+  )
+end
+
+local v3 = wait
+
+local function makeTextButton()
+  loadstring(game:HttpGet("https://raw.githubusercontent.com/Jskfhggjxu/My-Script/refs/heads/main/Cool-Reanimate.lua"))()
+  task.wait(1)
+  local character3 = localPlayer2.Character
+  local humanoid = character3:WaitForChild("Humanoid")
+  local torso = character3:WaitForChild("Torso")
+  local humanoidRootPart = character3:WaitForChild("HumanoidRootPart")
+  local head = character3:WaitForChild("Head")
+
+  humanoid.WalkSpeed = 18
+  humanoid.JumpPower = 55
+  humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+
+  local animate = character3:FindFirstChild("Animate")
+
+  if animate then
+    animate.Disabled = true
+  end
+
+  for _, value2 in pairs(humanoid:GetPlayingAnimationTracks()) do
+    value2:Stop()
+  end
+
+  local map = {
+    Sword1 = nil,
+    Sword2 = nil,
+    Sword3 = nil,
+    Sword4 = nil,
+    Sword5 = nil,
+    Sword6 = nil,
+    Halo = nil,
+  }
+
+  local map2 = {
+    ["5316471565"] = "Sword1",
+    ["5278777022"] = "Sword2",
+    ["5316510551"] = "Sword3",
+    ["5692006383"] = "Sword4",
+    ["5268538095"] = "Sword5",
+    ["5254572443"] = "Sword6",
+    ["115262824887782"] = "Halo",
+  }
+
+  local v4 = "Mayhem"
+
+  local v5 = {
+    Mayhem = {
+      SoundId = "rbxassetid://120355946201554",
+      Color = Color3.new(1, 0, 0),
+      Text = "MAYHEM",
+      Speed = 16,
+      DecalColor = Color3.new(1, 0, 0),
+      Gradient = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.new(1, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.new(0, 0, 0)),
+      }),
+    },
+    Lost = {
+      SoundId = "rbxassetid://138115939307043",
+      Color = Color3.new(1, 1, 1),
+      Text = "LOST",
+      Speed = 22,
+      DecalColor = Color3.new(1, 1, 1),
+      Gradient = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+        ColorSequenceKeypoint.new(1, Color3.new(0, 0, 0)),
+      }),
+    },
+    Light = {
+      SoundId = "rbxassetid://7029031068",
+      Color = Color3.fromRGB(255, 244, 114),
+      Text = "Light",
+      Speed = 100,
+      DecalColor = Color3.fromRGB(255, 244, 114),
+      Gradient = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 244, 114)),
+        ColorSequenceKeypoint.new(1, Color3.new(0, 0, 0)),
+      }),
+    },
+  }
+
+  local circleOverlay = Instance.new("ScreenGui", localPlayer2.PlayerGui)
+  circleOverlay.Name = "CircleOverlay"
+  circleOverlay.IgnoreGuiInset = true
+  circleOverlay.DisplayOrder = 999999
+  circleOverlay.ScreenInsets = Enum.ScreenInsets.None
+
+  local instance = Instance.new("Frame", circleOverlay)
+  instance.Size = UDim2.new(1, 500, 1, 500)
+  instance.Position = UDim2.new(0.5, 0, 0.5, 0)
+  instance.AnchorPoint = Vector2.new(0.5, 0.5)
+  instance.BackgroundColor3 = Color3.new(0, 0, 0)
+  instance.BorderSizePixel = 0
+
+  tweenService:Create(instance, TweenInfo.new(1), { BackgroundTransparency = 1 }):Play()
+
+  local sound = Instance.new("Sound")
+  sound.SoundId = v5[v4].SoundId
+  sound.Looped = true
+  sound.Volume = 2
+  sound.Parent = humanoidRootPart
+  sound:Play()
+
+  local instance2 = Instance.new("ImageLabel", circleOverlay)
+  instance2.BackgroundTransparency = 1
+  instance2.Image = "rbxassetid://79526458553971"
+  instance2.Size = UDim2.new(0, 250, 0, 250)
+  instance2.Position = UDim2.new(1, 0, 1, 0)
+  instance2.AnchorPoint = Vector2.new(0.5, 0.5)
+  instance2.ImageColor3 = v5[v4].DecalColor
+
+  local instance3 = Instance.new("ImageLabel", circleOverlay)
+  instance3.BackgroundTransparency = 1
+  instance3.Image = "rbxassetid://79526458553971"
+  instance3.Size = UDim2.new(0, 150, 0, 150)
+  instance3.Position = UDim2.new(0.5, 0, 0, 0)
+  instance3.AnchorPoint = Vector2.new(0.5, 0.5)
+  instance3.ImageColor3 = v5[v4].DecalColor
+
+  local instance4 = Instance.new("ImageLabel", circleOverlay)
+  instance4.BackgroundTransparency = 1
+  instance4.Image = "rbxassetid://78288185895922"
+  instance4.Size = UDim2.new(0.3, 0, 0.4, 0)
+  instance4.Position = UDim2.new(0, 0, 0.8, 0)
+  instance4.AnchorPoint = Vector2.new(0.5, 0.5)
+  instance4.ImageColor3 = v5[v4].DecalColor
+  instance4.Rotation = 180
+
+  local instance5 = Instance.new("ImageLabel", circleOverlay)
+  instance5.BackgroundTransparency = 1
+  instance5.Image = "rbxassetid://78288185895922"
+  instance5.Size = UDim2.new(0.3, 0, 0.4, 0)
+  instance5.Position = UDim2.new(0.9, 0, 0, 0)
+  instance5.AnchorPoint = Vector2.new(0.5, 0.5)
+  instance5.ImageColor3 = v5[v4].DecalColor
+
+  local instance6 = Instance.new("TextLabel", circleOverlay)
+  instance6.AnchorPoint = Vector2.new(0.5, 0.5)
+  instance6.BackgroundTransparency = 1
+  instance6.Text = v5[v4].Text
+  instance6.Font = Enum.Font.Antique
+  instance6.TextSize = 50
+  instance6.Rotation = -5
+
+  local instance7 = Instance.new("UIGradient", instance6)
+  instance7.Color = v5[v4].Gradient
+
+  local instance8 = Instance.new("ImageLabel", circleOverlay)
+  instance8.BackgroundTransparency = 1
+  instance8.Image = "rbxassetid://6805220123"
+  instance8.Size = UDim2.new(1, 0, 1, 0)
+  instance8.Position = UDim2.new(0.5, 0, 0.5, 0)
+  instance8.AnchorPoint = Vector2.new(0.5, 0.5)
+  instance8.ImageColor3 = Color3.new(0, 0, 0)
+  instance8.ScaleType = Enum.ScaleType.Stretch
+
+  local instance9 = Instance.new("Frame", circleOverlay)
+  instance9.Size = UDim2.new(0, 130, 0, 28)
+  instance9.Position = UDim2.new(0.1, 0, 0.9, 0)
+  instance9.AnchorPoint = Vector2.new(0.5, 0.5)
+  instance9.BackgroundColor3 = Color3.new(0, 0, 0)
+  instance9.BackgroundTransparency = 0.5
+  instance9.BorderSizePixel = 0
+
+  Instance.new("UICorner", instance9).CornerRadius = UDim.new(0, 4)
+
+  local instance10 = Instance.new("TextLabel", instance9)
+  instance10.Size = UDim2.new(1, 0, 1, 0)
+  instance10.BackgroundTransparency = 1
+  instance10.Text = "Mode: Mayhem"
+  instance10.TextColor3 = v5[v4].Color
+  instance10.Font = Enum.Font.Antique
+  instance10.TextSize = 20
+
+  local instance11 = Instance.new("TextButton", circleOverlay)
+  instance11.Size = UDim2.new(0, 35, 0, 35)
+  instance11.Position = UDim2.new(0.9, 0, 0.1, 0)
+  instance11.BackgroundColor3 = Color3.new(0, 0, 0)
+  instance11.BackgroundTransparency = 0.3
+  instance11.BorderSizePixel = 2
+  instance11.BorderColor3 = Color3.new(0, 0, 0)
+  instance11.Rotation = 45
+  instance11.Text = ""
+
+  local instance12 = Instance.new("TextLabel", instance11)
+  instance12.Size = UDim2.new(1, 0, 1, 0)
+  instance12.BackgroundTransparency = 1
+  instance12.Rotation = -45
+  instance12.Text = "Q"
+  instance12.TextColor3 = Color3.new(1, 0, 0)
+  instance12.TextSize = 30
+  instance12.Font = Enum.Font.Antique
+
+  local instance13 = Instance.new("TextButton", circleOverlay)
+  instance13.Size = UDim2.new(0, 35, 0, 35)
+  instance13.Position = UDim2.new(0.9, 0, 0.3, 0)
+  instance13.BackgroundColor3 = Color3.new(0, 0, 0)
+  instance13.BackgroundTransparency = 0.3
+  instance13.BorderSizePixel = 2
+  instance13.BorderColor3 = Color3.new(0, 0, 0)
+  instance13.Rotation = 45
+  instance13.Text = ""
+
+  local instance14 = Instance.new("TextLabel", instance13)
+  instance14.Size = UDim2.new(1, 0, 1, 0)
+  instance14.BackgroundTransparency = 1
+  instance14.Rotation = -45
+  instance14.Text = "E"
+  instance14.TextColor3 = Color3.new(1, 1, 1)
+  instance14.TextSize = 30
+  instance14.Font = Enum.Font.Antique
+
+  local instance15 = Instance.new("TextButton", circleOverlay)
+  instance15.Size = UDim2.new(0, 35, 0, 35)
+  instance15.Position = UDim2.new(0.9, 0, 0.5, 0)
+  instance15.BackgroundColor3 = Color3.new(0, 0, 0)
+  instance15.BackgroundTransparency = 0.3
+  instance15.BorderSizePixel = 2
+  instance15.BorderColor3 = Color3.new(0, 0, 0)
+  instance15.Rotation = 45
+  instance15.Text = ""
+
+  local instance16 = Instance.new("TextLabel", instance15)
+  instance16.Size = UDim2.new(1, 0, 1, 0)
+  instance16.BackgroundTransparency = 1
+  instance16.Rotation = -45
+  instance16.Text = "R"
+  instance16.TextColor3 = Color3.fromRGB(255, 244, 114)
+  instance16.TextSize = 30
+  instance16.Font = Enum.Font.Antique
+
+  local mayhemGui = Instance.new("BillboardGui", head)
+  mayhemGui.Name = "MayhemGui"
+  mayhemGui.Size = UDim2.new(0, 200, 0, 50)
+  mayhemGui.Adornee = head
+  mayhemGui.StudsOffset = Vector3.new(0, 3, 0)
+  mayhemGui.AlwaysOnTop = true
+
+  local instance17 = Instance.new("TextLabel", mayhemGui)
+  instance17.Size = UDim2.new(1, 0, 1, 0)
+  instance17.BackgroundTransparency = 1
+  instance17.Text = v5[v4].Text
+  instance17.Font = Enum.Font.Antique
+  instance17.TextSize = 45
+  instance17.TextColor3 = Color3.new(1, 1, 1)
+  instance17.TextStrokeTransparency = 0
+  instance17.TextStrokeColor3 = Color3.new(0, 0, 0)
+
+  local instance18 = Instance.new("UIGradient", instance17)
+  instance18.Color = v5[v4].Gradient
+  instance18.Rotation = 90
+
+  for _, value3 in pairs(character3:GetChildren()) do
+    if value3:IsA("Accessory") then
+      local handle = value3:FindFirstChild("Handle")
+
+      if handle then
+        local textureID = ""
+
+        if handle:IsA("MeshPart") then
+          textureID = handle.TextureID
+        else
+          local specialMesh = handle:FindFirstChildOfClass("SpecialMesh")
+
+          if specialMesh then
+            textureID = specialMesh.TextureId
+          end
+        end
+
+        for key, value4 in pairs(map2) do
+          if textureID:find(key) then
+            map[value4] = handle
+
+            handle:BreakJoints()
+            handle.CanCollide = false
+            handle.Massless = true
+
+            local instance19 = Instance.new("Attachment", handle)
+            instance19.Position = Vector3.new(0, 2, 0)
+
+            local instance20 = Instance.new("Attachment", handle)
+            instance20.Position = Vector3.new(0, -2, 0)
+
+            local instance21 = Instance.new("Trail", handle)
+            instance21.Attachment0 = instance19
+            instance21.Attachment1 = instance20
+            instance21.Lifetime = 0.8
+
+            instance21.WidthScale = NumberSequence.new({
+              NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0),
+            })
+
+            instance21.Color = ColorSequence.new({
+              ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+              ColorSequenceKeypoint.new(1, Color3.new(0, 0, 0)),
+            })
+
+            instance21.Transparency = NumberSequence.new({
+              NumberSequenceKeypoint.new(0, 0.4), NumberSequenceKeypoint.new(1, 1),
+            })
+          end
+        end
+      end
+    end
+  end
+
+  local map3 = {
+    root = humanoidRootPart:WaitForChild("RootJoint"),
+    neck = torso:WaitForChild("Neck"),
+    rs = torso:WaitForChild("Right Shoulder"),
+    ls = torso:WaitForChild("Left Shoulder"),
+    rh = torso:WaitForChild("Right Hip"),
+    lh = torso:WaitForChild("Left Hip"),
+  }
+
+  local v6 = {}
+
+  for key2, value5 in pairs(map3) do
+    v6[key2] = value5.Transform
+  end
+
+  local v7 = {}
+
+  for key3, _ in pairs(map) do
+    v7[key3] = CFrame.new()
+  end
+
+  local function f3(key4)
+    v4 = key4
+    local v8 = v5[key4]
+
+    sound.SoundId = v8.SoundId
+    sound:Play()
+
+    humanoid.WalkSpeed = v8.Speed
+
+    instance10.Text = "Mode: " .. key4
+    instance10.TextColor3 = v8.Color
+
+    instance17.Text = v8.Text
+    instance18.Color = v8.Gradient
+    instance6.Text = v8.Text
+    instance7.Color = v8.Gradient
+    instance4.ImageColor3 = v8.DecalColor
+    instance5.ImageColor3 = v8.DecalColor
+    instance2.ImageColor3 = v8.DecalColor
+    instance3.ImageColor3 = v8.DecalColor
+  end
+
+  local flag = true
+  local total = 0
+
+  userInputService.InputBegan:Connect(function(input, p3)
+    if p3 then
+      return
+    end
+
+    if input.KeyCode == Enum.KeyCode.E then
+      f3("Lost")
+    elseif input.KeyCode == Enum.KeyCode.Q then
+      f3("Mayhem")
+    elseif input.KeyCode == Enum.KeyCode.R then
+      f3("Light")
+    end
+  end)
+
+  instance11.MouseButton1Click:Connect(function() f3("Mayhem") end)
+  instance13.MouseButton1Click:Connect(function() f3("Lost") end)
+  instance15.MouseButton1Click:Connect(function() f3("Light") end)
+  local stepped = runService.Stepped
+
+  local connect, connect2
+
+  connect = stepped:Connect(function()
+    if not flag or not character3:IsDescendantOf(workspace) then
+      humanoid.CameraOffset = Vector3.new(0, 0, 0)
+      currentCamera.FieldOfView = 70
+      circleOverlay:Destroy()
+      connect:Disconnect()
+      connect2:Disconnect()
+      return
+    end
+
+    local v9 = "idle"
+    local magnitude = torso.Velocity.Magnitude
+    local getState = humanoid:GetState()
+    humanoidRootPart.CFrame:VectorToObjectSpace(humanoid.MoveDirection)
+    local new = Vector3.new
+    local roll = math.random(-15, 15)
+    local roll2 = math.random(-15, 15)
+    local roll3 = math.random(-15, 15)
+    local v10 = new(roll / 100, roll2 / 100, roll3 / 100)
+    local v11 = math.sin(tick() * 4)
+    humanoid.CameraOffset = humanoid.CameraOffset:Lerp(v10, 0.1)
+
+    currentCamera.FieldOfView = currentCamera.FieldOfView
+      + (70 + v11 * 3.5 - currentCamera.FieldOfView) * 0.1
+
+    if v4 == "Lost" then
+      total = total + 6
+    elseif v4 == "Light" then
+      total = total + 32
+    else
+      total = total + 10
+    end
+
+    instance2.Rotation = total % 360
+    instance3.Rotation = -total % 360
+
+    instance9.Rotation = math.sin(tick() * 2) * 5
+
+    instance9.Position = UDim2.new(
+      0.1, math.sin(tick() * 4) * 10, 0.9, math.cos(tick() * 4) * 5
+    )
+
+    instance17.Rotation = math.sin(tick() * 4) * 5
+    instance17.Position = UDim2.new(0, math.sin(tick() * 10) * 2, 0, math.cos(tick() * 10) * 2)
+
+    instance6.Rotation = math.sin(tick() * 2) * 6
+
+    instance6.Position = UDim2.new(
+      0.8, math.sin(tick() * 3) * 15, 0.85, math.cos(tick() * 3) * 10
+    )
+
+    if getState == Enum.HumanoidStateType.Freefall or getState == Enum.HumanoidStateType.Jumping then
+      v9 = "jump"
+    elseif magnitude > 0.1 then
+      v9 = "walk"
+    end
+
+    local v12 = {}
+    local v13 = {}
+    local v14 = (1 - math.cos(tick() * 1.5)) / 2
+    local v15 = (1 - math.cos(tick() * 2.5)) / 2
+    local v16 = tick() * 250 % 360
+    local v17 = tick() * 325 % 360
+    local v18 = math.sin(tick() * 1.5) * 5
+    local v19 = math.sin(tick() * 1.5) * 0.12
+    local v20 = math.sin(tick() * 1.5) * 1
+    local v21 = v14 * 15
+    local v22 = math.sin(tick() * 4) * 35
+    local v23 = math.sin(tick() * 4) * 0.2
+    local v24 = math.sin(tick() * 4) * 0.3
+    local v25 = v14 * 35
+    local v26 = v14 * 45
+    local v27 = v14 * 3.5
+    local v28 = v14 * 55
+    math.sin(tick() * 1.5)
+    local v29 = v15 * 25
+    local v30 = v15 * 2
+    local v31 = math.sin(tick() * 1.5) * 10
+
+    if v4 == "Mayhem" then
+      if v9 == "idle" then
+        v12.root = f2(Vector3.new(0, 0, v19), Vector3.new(-5 - v18, 0, -10))
+        v12.neck = f2(Vector3.new(0, 0, 0), Vector3.new(30 + v21, 0, 20))
+
+        v12.rs = f2(
+          Vector3.new(0, 0, 0),
+          Vector3.new(-10 - v20, -20 + math.sin(tick() * 1.5) * 3, -15 + v18)
+        )
+
+        v12.ls = f2(
+          Vector3.new(0, 0, 0),
+          Vector3.new(-30 + math.sin(tick() * 1.5) * 4, 10 + v20, -150 + v18)
+        )
+
+        v12.rh = f2(Vector3.new(0, -v19, 0), Vector3.new(-5 + v20, -10, -15 - v18))
+        v12.lh = f2(Vector3.new(0, -v19, 0), Vector3.new(-7 + v20, 20, 2 + v18))
+      elseif v9 == "walk" then
+        v12.root = f2(Vector3.new(0, 0, -v19), Vector3.new(10, 0, 0))
+        v12.neck = f2(Vector3.new(0, 0, 0), Vector3.new(30 + v21, 0, 20))
+
+        v12.rs = f2(
+          Vector3.new(0, 0, 0),
+          Vector3.new(math.sin(tick() * 4) * -10, 20 + math.sin(tick() * 4) * 20, v22)
+        )
+
+        v12.ls = f2(Vector3.new(0, 0, 0), Vector3.new(
+          -30 + math.sin(tick() * 1.5) * 4, 10 + math.sin(tick() * 1.5) * 1, -150 + v18
+        ))
+
+        v12.rh = f2(Vector3.new(-v23, -v24, 0), Vector3.new(0, 0, -v22))
+        v12.lh = f2(Vector3.new(-v23, v24, 0), Vector3.new(0, 0, -v22))
+      elseif v9 == "jump" then
+        v12.root = f2(Vector3.new(0, 0, 0), Vector3.new(-15, 0, 0))
+        v12.neck = f2(Vector3.new(0, 0, 0), Vector3.new(-20, 0, 0))
+        v12.rs = f2(Vector3.new(0, 0, 0), Vector3.new(-50, -20, -10))
+        v12.ls = f2(Vector3.new(0, 0, 0), Vector3.new(-50, 20, 10))
+        v12.rh = f2(Vector3.new(0.5, 0.5, 0), Vector3.new(-10, -10, -30))
+        v12.lh = f2(Vector3.new(0, 0, 0), Vector3.new(-5, 10, 40))
+      end
+
+      v13.Halo = f2(Vector3.new(0, 1, 2), Vector3.new(0, 0, v16))
+      v13.Sword1 = f2(Vector3.new(3 + v27, 2.5 + v27, 2.5), Vector3.new(100, -30 + v25, 110))
+      v13.Sword2 = f2(Vector3.new(7 + v27, 3.5 + v27, 4.5), Vector3.new(100, -20 + v26, 120))
+      v13.Sword3 = f2(Vector3.new(11 + v27, 4.5 + v27, 6.5), Vector3.new(100, -10 + v28, 130))
+      v13.Sword4 = f2(Vector3.new(-3 - v27, 2.5 + v27, 2.2), Vector3.new(90, -50 - v25, 100))
+      v13.Sword5 = f2(Vector3.new(-7 - v27, 3.5 + v27, 4.2), Vector3.new(80, -60 - v26, 100))
+      v13.Sword6 = f2(Vector3.new(-11 - v27, 4.5 + v27, 6.2), Vector3.new(70, -70 - v28, 100))
+    elseif v4 == "Lost" then
+      if v9 == "idle" then
+        v12.root = f2(
+          Vector3.new(0, 0, v19), Vector3.new(-10 + math.sin(tick() * 1.5) * 5, 0, -10)
+        )
+
+        v12.neck = f2(Vector3.new(0, 0, 0), Vector3.new(
+          10 + math.sin(tick() * 1.5) * 10, 0, 20 + math.sin(tick() * 1.5) * 10
+        ))
+
+        v12.rs = f2(Vector3.new(0.2, 0, -0.2), Vector3.new(30, 60, 50))
+        v12.ls = f2(Vector3.new(-0.2, 0, 0), Vector3.new(20, -70, -70))
+
+        v12.rh = f2(
+          Vector3.new(0, -v19, 0), Vector3.new(-10, -20, -10 + math.sin(tick() * 1.5) * 5)
+        )
+
+        v12.lh = f2(
+          Vector3.new(0, -v19, 0), Vector3.new(-15, 20, 20 + math.sin(tick() * 1.5) * -5)
+        )
+      elseif v9 == "walk" then
+        v12.root = f2(Vector3.new(0, 0, -v19), Vector3.new(10, 0, 0))
+        v12.neck = f2(Vector3.new(0, 0, 0), Vector3.new(10 + math.sin(tick() * 1.5) * 10, 0, 0))
+
+        v12.rs = f2(
+          Vector3.new(0, 0, 0),
+          Vector3.new(math.sin(tick() * 4) * -10, 20 + math.sin(tick() * 4) * 20, v22)
+        )
+
+        v12.ls = f2(
+          Vector3.new(0, 0, 0),
+          Vector3.new(math.sin(tick() * 4) * -10, 20 + math.sin(tick() * 4) * 20, v22)
+        )
+
+        v12.rh = f2(Vector3.new(-v23, -v24, 0), Vector3.new(0, 0, -v22))
+        v12.lh = f2(Vector3.new(-v23, v24, 0), Vector3.new(0, 0, -v22))
+      elseif v9 == "jump" then
+        v12.root = f2(Vector3.new(0, 0, 0), Vector3.new(-15, 0, 0))
+        v12.neck = f2(Vector3.new(0, 0, 0), Vector3.new(-20, 0, 0))
+        v12.rs = f2(Vector3.new(0, 0, 0), Vector3.new(-50, -20, -10))
+        v12.ls = f2(Vector3.new(0, 0, 0), Vector3.new(-50, 20, 10))
+        v12.rh = f2(Vector3.new(0.5, 0.5, 0), Vector3.new(-10, -10, -30))
+        v12.lh = f2(Vector3.new(0, 0, 0), Vector3.new(-5, 10, 40))
+      end
+
+      v13.Halo = f2(Vector3.new(0, 2, 3), Vector3.new(0, 0, v16))
+      v13.Sword1 = f2(Vector3.new(4 + v30, 9 + v30, 1.5), Vector3.new(100, 90 - v29, 100))
+      v13.Sword2 = f2(Vector3.new(5 + v30, 4 + v30, 1.5), Vector3.new(100, 45, 100))
+      v13.Sword3 = f2(Vector3.new(4 + v30, -1 + v30, 1.5), Vector3.new(100, v29, 100))
+      v13.Sword4 = f2(Vector3.new(-4 - v30, 9 + v30, 1.5), Vector3.new(100, -175 + v29, 100))
+      v13.Sword5 = f2(Vector3.new(-5 - v30, 4 + v30, 1.5), Vector3.new(100, -120, 100))
+      v13.Sword6 = f2(Vector3.new(-4 - v30, -1 + v30, 1.5), Vector3.new(100, -75 - v29, 100))
+    elseif v4 == "Light" then
+      if v9 == "idle" then
+        v12.root = f2(
+          Vector3.new(0, 0, 3 - v20), Vector3.new(math.sin(tick() * 1.5) * 10, 0, 0)
+        )
+
+        v12.neck = f2(Vector3.new(0, 0, 0), Vector3.new(v31, 0, 20))
+
+        v12.rs = f2(
+          Vector3.new(0, 0, 0), Vector3.new(math.sin(tick() * 1.5) * 10, -10, -30 + v31)
+        )
+
+        v12.ls = f2(
+          Vector3.new(0, 0, 0), Vector3.new(-10 + math.sin(tick() * 1.5) * -5, 10, 30 + v31)
+        )
+
+        v12.rh = f2(Vector3.new(0.5, 0.5, 0), Vector3.new(-5, -5, -20 - v18))
+        v12.lh = f2(Vector3.new(0, 0, 0), Vector3.new(0, 10, 40 + v31))
+      elseif v9 == "walk" then
+        v12.root = f2(Vector3.new(0, 0, 2), Vector3.new(70, 0, 0))
+        v12.neck = f2(Vector3.new(0, 0, 0), Vector3.new(-20, 0, 0))
+        v12.rs = f2(Vector3.new(0, 0, 0), Vector3.new(-10, 20, -30 + v31))
+        v12.ls = f2(Vector3.new(0, 0, 0), Vector3.new(-10, -20, 30 - v31))
+        v12.rh = f2(Vector3.new(0.4, 0.2, 0), Vector3.new(-10, -10, -30 + v31))
+        v12.lh = f2(Vector3.new(-0.5, 0, 0), Vector3.new(0, 0, 50 - v31))
+      elseif v9 == "jump" then
+        v12.root = f2(Vector3.new(0, 0, 0), Vector3.new(-15, 0, 0))
+        v12.neck = f2(Vector3.new(0, 0, 0), Vector3.new(-20, 0, 0))
+        v12.rs = f2(Vector3.new(0, 0, 0), Vector3.new(-50, -20, -10))
+        v12.ls = f2(Vector3.new(0, 0, 0), Vector3.new(-50, 20, 10))
+        v12.rh = f2(Vector3.new(0.5, 0.5, 0), Vector3.new(-10, -10, -30))
+        v12.lh = f2(Vector3.new(0, 0, 0), Vector3.new(-5, 10, 40))
+      end
+
+      CFrame.Angles(0, 0, math.rad(v16))
+      v13.Halo = f2(Vector3.new(0, 2, 3), Vector3.new(0, 0, v17))
+
+      local function f4(vector3, p4, cframe)
+        return v13.Halo * CFrame.Angles(0, 0, math.rad(p4))
+          * CFrame.new(vector3.X, vector3.Y, vector3.Z) * cframe
+      end
+
+      v13.Sword1 = f4(
+        Vector3.new(6, -6, 1.5), 140, CFrame.Angles(math.rad(100), math.rad(0), math.rad(100))
+      )
+
+      v13.Sword2 = f4(
+        Vector3.new(6, -8, 1.5), -40, CFrame.Angles(math.rad(100), math.rad(0), math.rad(100))
+      )
+
+      v13.Sword3 = f4(
+        Vector3.new(6, -6, 1.5), 40, CFrame.Angles(math.rad(100), math.rad(0), math.rad(100))
+      )
+
+      v13.Sword4 = f4(
+        Vector3.new(6, -8, 1.5), -120, CFrame.Angles(math.rad(100), math.rad(0), math.rad(100))
+      )
+
+      v13.Sword5 = f4(
+        Vector3.new(24, -24, 0), 40, CFrame.Angles(math.rad(100), math.rad(0), math.rad(100))
+      )
+
+      v13.Sword6 = f4(
+        Vector3.new(-24, 24, 0), -120, CFrame.Angles(math.rad(100), math.rad(0), math.rad(100))
+      )
+    end
+
+    for key5, value6 in pairs(map3) do
+      if v12[key5] then
+        v6[key5] = v6[key5]:Lerp(v12[key5], 0.2)
+        value6.Transform = v6[key5]
+      end
+    end
+
+    for key6, _ in pairs(map) do
+      if v13[key6] then
+        v7[key6] = v7[key6]:Lerp(v13[key6], 0.2)
+      end
+    end
+  end)
+
+  connect2 = runService.Heartbeat:Connect(function()
+    if not flag or not character3:IsDescendantOf(workspace) then
+      return
+    end
+
+    for key7, value7 in pairs(map) do
+      if value7 and value7.Parent then
+        value7.CFrame = torso.CFrame * v7[key7]
+        value7.Velocity = Vector3.new(0, 35, 0)
+        value7.AssemblyLinearVelocity = Vector3.new(0, 35, 0)
+      end
+    end
+  end)
+
+  humanoid.Died:Connect(function()
+    flag = false
+    humanoid.CameraOffset = Vector3.new(0, 0, 0)
+    currentCamera.FieldOfView = 70
+    circleOverlay:Destroy()
+    connect:Disconnect()
+    connect2:Disconnect()
+  end)
+end
+
+v3(1)
+replicatedStorage:WaitForChild("01_server"):FireServer(unpack({ "cmd", "-net" }))
+makeTextButton()
