@@ -1,3 +1,4 @@
+--https://raw.githubusercontent.com/Jskfhggjxu/My-Script/refs/heads/main/fe-Lolita-glitcher-Load.lua
 local textChatService = game:GetService("TextChatService")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 local players = game:GetService("Players")
