@@ -30,6 +30,7 @@ Frame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 Frame.BorderSizePixel = 0
 Frame.Position = UDim2.new(0.5, -138, 0.5, -170)
 Frame.Size = UDim2.new(0, 276, 0, 339)
+Frame.ClipsDescendants = true
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 12)
@@ -253,6 +254,7 @@ MinimizeBtn.MouseButton1Click:Connect(function()
 	minimized = not minimized
 	TargetSelect.Visible = not minimized
 	ActionFrame.Visible = not minimized
+	TitleFix.Visible = not minimized
 	Frame.Size = minimized and UDim2.new(0, 276, 0, 35) or UDim2.new(0, 276, 0, 339)
 end)
 
