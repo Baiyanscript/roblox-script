@@ -1,0 +1,298 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local LP = Players.LocalPlayer
+local playerGui = LP:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MM2FarmGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 240, 0, 190)
+mainFrame.Position = UDim2.new(0.5, -120, 0.5, -95)
+mainFrame.BackgroundColor3 = Color3.fromRGB(255, 179, 0)
+mainFrame.BackgroundTransparency = 0
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 14)
+uiCorner.Parent = mainFrame
+
+-- Top Bar
+local topBar = Instance.new("Frame")
+topBar.Size = UDim2.new(1, 0, 0, 38)
+topBar.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+topBar.BorderSizePixel = 0
+topBar.Parent = mainFrame
+
+local topCorner = Instance.new("UICorner")
+topCorner.CornerRadius = UDim.new(0, 14)
+topCorner.Parent = topBar
+
+-- Umbrella Icon
+local umbrella = Instance.new("ImageLabel")
+umbrella.Size = UDim2.new(0, 28, 0, 28)
+umbrella.Position = UDim2.new(0, 10, 0.5, -14)
+umbrella.BackgroundTransparency = 1
+umbrella.Image = "rbxassetid:6031097223"
+umbrella.Parent = topBar
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(0.5, 0, 1, 0)
+title.Position = UDim2.new(0, 48, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "MM2 Farm"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.Parent = topBar
+
+-- Close Button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 28, 0, 28)
+closeBtn.Position = UDim2.new(1, -35, 0.5, -14)
+closeBtn.BackgroundColor3 = Color3.fromRGB(244, 67, 54)
+closeBtn.Text = "×"
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.TextScaled = true
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.Parent = topBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.Parent = closeBtn
+
+-- Minimize (Collapse) Button [NEW]
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 28, 0, 28)
+minimizeBtn.Position = UDim2.new(1, -68, 0.5, -14)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 193, 7)
+minimizeBtn.Text = "-"
+minimizeBtn.TextColor3 = Color3.new(1,1,1)
+minimizeBtn.TextScaled = true
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.Parent = topBar
+
+local minimizeCorner = Instance.new("UICorner")
+minimizeCorner.CornerRadius = UDim.new(0, 8)
+minimizeCorner.Parent = minimizeBtn
+
+-- Status
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(0.9, 0, 0, 26)
+statusLabel.Position = UDim2.new(0.05, 0, 0.28, 0)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Status: Ready!"
+statusLabel.TextColor3 = Color3.new(1, 1, 1)
+statusLabel.TextScaled = true
+statusLabel.Font = Enum.Font.GothamSemibold
+statusLabel.Parent = mainFrame
+
+-- Speed
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Size = UDim2.new(0.9, 0, 0, 26)
+speedLabel.Position = UDim2.new(0.05, 0, 0.48, 0)
+speedLabel.BackgroundTransparency = 1
+speedLabel.Text = "Speed: 50"
+speedLabel.TextColor3 = Color3.fromRGB(56, 168, 60)
+speedLabel.TextScaled = true
+speedLabel.Font = Enum.Font.GothamSemibold
+speedLabel.Parent = mainFrame
+
+-- START / STOP Button
+local startButton = Instance.new("TextButton")
+startButton.Size = UDim2.new(0.9, 0, 0, 42)
+startButton.Position = UDim2.new(0.05, 0, 0.65, 0)
+startButton.BackgroundColor3 = Color3.fromRGB(56, 168, 60)
+startButton.Text = "START"
+startButton.TextColor3 = Color3.new(1, 1, 1)
+startButton.TextScaled = true
+startButton.Font = Enum.Font.GothamBold
+startButton.Parent = mainFrame
+
+local startCorner = Instance.new("UICorner")
+startCorner.CornerRadius = UDim.new(0, 12)
+startCorner.Parent = startButton
+
+-- Credit Text
+local creditLabel = Instance.new("TextLabel")
+creditLabel.Size = UDim2.new(1, 0, 0, 13)
+creditLabel.Position = UDim2.new(0, 0, 1, -20)
+creditLabel.BackgroundTransparency = 1
+creditLabel.Text = "Made by Mochii Scripts"
+creditLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+creditLabel.TextScaled = true
+creditLabel.Font = Enum.Font.GothamSemibold
+creditLabel.TextTransparency = 0.4
+creditLabel.Parent = mainFrame
+
+-- Draggable (拖曳功能)
+local dragging
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        local dragStart = input.Position
+        local startPos = mainFrame.Position
+
+        local connection
+        connection = UserInputService.InputChanged:Connect(function(input2)
+            if dragging and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
+                local delta = input2.Position - dragStart
+                mainFrame.Position = UDim2.new(
+                    startPos.X.Scale,
+                    startPos.X.Offset + delta.X,
+                    startPos.Y.Scale,
+                    startPos.Y.Offset + delta.Y
+                )
+            end
+        end)
+
+        input.Changed:Connect(function(inputState)
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+                if connection then connection:Disconnect() end
+            end
+        end)
+    end
+end)
+
+-- ==================== COLLAPSE / MINIMIZE LOGIC [NEW] ====================
+local isMinimized = false
+minimizeBtn.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    
+    -- 隱藏或顯示主選單裡除了 TopBar 以外的所有子元件
+    for _, child in ipairs(mainFrame:GetChildren()) do
+        if child ~= topBar and child ~= uiCorner then
+            child.Visible = not isMinimized
+        end
+    end
+    
+    if isMinimized then
+        mainFrame.Size = UDim2.new(0, 240, 0, 38)
+        minimizeBtn.Text = "+"
+    else
+        mainFrame.Size = UDim2.new(0, 240, 0, 190)
+        minimizeBtn.Text = "-"
+    end
+end)
+
+-- ==================== FARMING SCRIPT ====================
+local isFarming = false
+local farmingConnection = nil
+
+local function getCharacterParts()
+    local char = LP.Character
+    if not char then return nil, nil end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChild("Humanoid")
+    if hrp and hum and hum.Health > 0 then
+        return hrp, hum
+    end
+    return nil, nil
+end
+
+local function GetMap()
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if obj:GetAttribute("MapID") and obj:FindFirstChild("CoinContainer") then
+            return obj
+        end
+    end
+    return nil
+end
+
+local function getNearest(hrp)
+    local map = GetMap()
+    if not map or not map:FindFirstChild("CoinContainer") then return nil end
+    
+    local closest, dist = nil, math.huge
+    for _, coin in ipairs(map.CoinContainer:GetChildren()) do
+        local v = coin:FindFirstChild("CoinVisual")
+        if v and not v:GetAttribute("Collected") then
+            local d = (hrp.Position - coin.Position).Magnitude
+            if d < dist then
+                closest = coin
+                dist = d
+            end
+        end
+    end
+    return closest
+end
+
+local function tp(hrp, humanoid, target)
+    pcall(function()
+        humanoid:ChangeState(11)
+        local d = (hrp.Position - target.Position).Magnitude
+        local t = TweenService:Create(hrp, TweenInfo.new(d / 25, Enum.EasingStyle.Linear), {CFrame = target.CFrame})
+        t:Play()
+        t.Completed:Wait()
+    end)
+end
+
+local function startFarming()
+    if farmingConnection then return end
+
+    farmingConnection = task.spawn(function()
+        while isFarming do
+            local hrp, humanoid = getCharacterParts()
+            if hrp and humanoid then
+                local target = getNearest(hrp)
+                if target and LP:GetAttribute("Alive") then
+                    tp(hrp, humanoid, target)
+                    local v = target:FindFirstChild("CoinVisual")
+                    while v and not v:GetAttribute("Collected") and v.Parent and isFarming do
+                        if not LP:GetAttribute("Alive") then break end
+                        local n = getNearest(hrp)
+                        if n and n ~= target then break end
+                        task.wait()
+                    end
+                else
+                    task.wait(0.5)
+                end
+            else
+                task.wait(1)
+            end
+            task.wait()
+        end
+    end)
+end
+
+local function stopFarming()
+    isFarming = false
+    if farmingConnection then
+        farmingConnection = nil
+    end
+end
+
+local function toggleFarming()
+    isFarming = not isFarming
+
+    if isFarming then
+        startButton.Text = "STOP"
+        startButton.BackgroundColor3 = Color3.fromRGB(244, 67, 54)
+        statusLabel.Text = "Status: Farming..."
+        startFarming()
+        print("MM2 Farm Started!")
+    else
+        startButton.Text = "START"
+        startButton.BackgroundColor3 = Color3.fromRGB(56, 168, 60)
+        statusLabel.Text = "Status: Stopped"
+        stopFarming()
+        print("MM2 Farm Stopped!")
+    end
+end
+
+-- Button Connections
+closeBtn.MouseButton1Click:Connect(function()
+    stopFarming()
+    screenGui:Destroy()
+end)
+
+startButton.MouseButton1Click:Connect(toggleFarming)
