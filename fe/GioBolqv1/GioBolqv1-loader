@@ -1,0 +1,188 @@
+local tweenService = game:GetService("TweenService")
+local coreGui = game:GetService("CoreGui")
+
+local conquestSelector = Instance.new("ScreenGui")
+conquestSelector.Name = "ConquestSelector"
+conquestSelector.Parent = coreGui
+conquestSelector.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 323, 0, 180)
+mainFrame.Position = UDim2.new(0.5, -161, 0.5, -90)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = false
+mainFrame.Parent = conquestSelector
+mainFrame.ClipsDescendants = true
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 12)
+uiCorner.Parent = mainFrame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(45, 45, 45)
+uiStroke.Thickness = 2
+uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+uiStroke.Parent = mainFrame
+
+local backgroundImage = Instance.new("ImageLabel")
+backgroundImage.Name = "BackgroundImage"
+backgroundImage.Size = UDim2.new(1, 0, 1, 0)
+backgroundImage.BackgroundTransparency = 1
+backgroundImage.Image = "rbxthumb://type=Asset&id=93371379319955&w=420&h=420"
+backgroundImage.ImageTransparency = 0.6
+backgroundImage.ScaleType = Enum.ScaleType.Stretch
+backgroundImage.Parent = mainFrame
+
+local uiCorner2 = Instance.new("UICorner")
+uiCorner2.CornerRadius = UDim.new(0, 12)
+uiCorner2.Parent = backgroundImage
+
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseButton"
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.BackgroundTransparency = 1
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.Font = Enum.Font.Merriweather
+closeButton.TextSize = 22
+closeButton.ZIndex = 4
+closeButton.Parent = mainFrame
+
+local uiStroke2 = Instance.new("UIStroke")
+uiStroke2.Color = Color3.fromRGB(0, 0, 0)
+uiStroke2.Thickness = 1.5
+uiStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+uiStroke2.Parent = closeButton
+
+closeButton.MouseButton1Click:Connect(function() conquestSelector:Destroy() end)
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 0, 45)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "by GioBolqv1 on Roblox"
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel.Font = Enum.Font.Merriweather
+textLabel.TextSize = 18
+textLabel.ZIndex = 2
+textLabel.Parent = mainFrame
+
+local uiStroke3 = Instance.new("UIStroke")
+uiStroke3.Color = Color3.fromRGB(0, 0, 0)
+uiStroke3.Thickness = 1.5
+uiStroke3.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+
+local function f1(fn)
+  local tweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+
+  local v1 = {}
+  v1.Size = UDim2.new(0, 0, 0, 0)
+  v1.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+  local tweenInfo2 = TweenInfo.new(0.2, Enum.EasingStyle.Linear)
+
+  tweenService:Create(textLabel, tweenInfo2, { TextTransparency = 1 }):Play()
+  tweenService:Create(closeButton, tweenInfo2, { TextTransparency = 1 }):Play()
+  tweenService:Create(uiStroke, tweenInfo2, { Transparency = 1 }):Play()
+
+  local create = tweenService:Create(mainFrame, tweenInfo, v1)
+  create:Play()
+
+  create.Completed:Connect(function()
+    conquestSelector:Destroy()
+    fn()
+  end)
+end
+
+uiStroke3.Parent = textLabel
+
+local function makeTextButton(name, udim, text)
+  local textButton = Instance.new("TextButton")
+  textButton.Name = name
+  textButton.Size = UDim2.new(0, 138, 0, 34)
+  textButton.Position = udim
+  textButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+  textButton.BackgroundTransparency = 0.3
+  textButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textButton.Font = Enum.Font.Merriweather
+  textButton.TextSize = 14
+  textButton.Text = text
+  textButton.BorderSizePixel = 0
+  textButton.ZIndex = 3
+  textButton.Parent = mainFrame
+
+  local uiCorner3 = Instance.new("UICorner")
+  uiCorner3.CornerRadius = UDim.new(0, 8)
+  uiCorner3.Parent = textButton
+
+  local uiStroke4 = Instance.new("UIStroke")
+  uiStroke4.Color = Color3.fromRGB(0, 0, 0)
+  uiStroke4.Thickness = 1.5
+  uiStroke4.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+  uiStroke4.Parent = textButton
+
+  return textButton
+end
+
+local function f2(p1)
+  p1.MouseEnter:Connect(function()
+    tweenService:Create(p1, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {
+      BackgroundTransparency = 0.1,
+    }):Play()
+  end)
+
+  p1.MouseLeave:Connect(function()
+    tweenService:Create(p1, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {
+      BackgroundTransparency = 0.3,
+    }):Play()
+  end)
+end
+
+local textButton2 = makeTextButton("Conquest", UDim2.new(0, 15, 0, 50), "Conquest")
+
+textButton2.MouseButton1Click:Connect(function()
+  f1(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Baiyanscript/roblox-script/refs/heads/main/fe/GioBolqv1/Conquest"))()
+  end)
+end)
+
+local textButton3 = makeTextButton("Omniman", UDim2.new(1, -153, 0, 50), "Omni-man")
+
+textButton3.MouseButton1Click:Connect(function()
+  f1(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Baiyanscript/roblox-script/refs/heads/main/fe/GioBolqv1/Omin-man"))()
+  end)
+end)
+
+local textButton4 = makeTextButton("Thragg", UDim2.new(0.5, -69, 0, 92), "Thragg")
+
+textButton4.MouseButton1Click:Connect(function()
+  f1(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Baiyanscript/roblox-script/refs/heads/main/fe/GioBolqv1/Thragg"))()
+  end)
+end)
+
+local textButton5 = makeTextButton("BattleBeast", UDim2.new(0, 15, 0, 134), "Battle Beast")
+
+textButton5.MouseButton1Click:Connect(function()
+  f1(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Baiyanscript/roblox-script/refs/heads/main/fe/GioBolqv1/Battle-Beast"))()
+  end)
+end)
+
+local textButton6 = makeTextButton("MarkVariants", UDim2.new(1, -153, 0, 134), "Mark/Variants")
+
+textButton6.MouseButton1Click:Connect(function()
+  f1(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Baiyanscript/roblox-script/refs/heads/main/fe/GioBolqv1/Mark-Grayson"))()
+  end)
+end)
+
+f2(textButton2)
+f2(textButton3)
+f2(textButton4)
+f2(textButton5)
+f2(textButton6)

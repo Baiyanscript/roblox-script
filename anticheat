@@ -1,0 +1,382 @@
+-- https://pastebin.com/raw/HjDdee11
+-- Deobfuscated by dig discord.gg/astralhub
+-- ai slop warning
+
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+
+local localPlayer = Players.LocalPlayer
+
+pcall(function()
+    StarterGui:SetCore("SendNotification", {
+        Title = "Dig my ass",
+        Text = "yes daddy",
+        Duration = 5,
+    })
+end)
+
+ProximityPromptService.PromptShown:Connect(function(prompt)
+    prompt.HoldDuration = 0
+end)
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "TPWalkSliderUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local toggleUiButton = Instance.new("TextButton")
+toggleUiButton.Size = UDim2.new(0.12, 0, 0.08, 0)
+toggleUiButton.Position = UDim2.new(0.02, 0, 0.2, 0)
+toggleUiButton.Text = "TOGGLE"
+toggleUiButton.TextScaled = true
+toggleUiButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+toggleUiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleUiButton.Active = true
+toggleUiButton.Parent = screenGui
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0.3, 0)
+toggleCorner.Parent = toggleUiButton
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0.4, 0, 0.58, 0)
+mainFrame.Position = UDim2.new(0.15, 0, 0.2, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0.08, 0)
+mainCorner.Parent = mainFrame
+
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0.12, 0, 0.09, 0)
+closeButton.Position = UDim2.new(0.86, 0, 0.02, 0)
+closeButton.Text = "X"
+closeButton.TextScaled = true
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Parent = mainFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0.3, 0)
+closeCorner.Parent = closeButton
+
+toggleUiButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+end)
+
+local bypassButton = Instance.new("TextButton")
+bypassButton.Size = UDim2.new(0.88, 0, 0.13, 0)
+bypassButton.Position = UDim2.new(0.06, 0, 0.12, 0)
+bypassButton.Text = "Bypass Anti cheat"
+bypassButton.TextScaled = true
+bypassButton.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+bypassButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+bypassButton.Parent = mainFrame
+
+local bypassCorner = Instance.new("UICorner")
+bypassCorner.CornerRadius = UDim.new(0.2, 0)
+bypassCorner.Parent = bypassButton
+
+local moveButton = Instance.new("TextButton")
+moveButton.Size = UDim2.new(0.62, 0, 0.13, 0)
+moveButton.Position = UDim2.new(0.06, 0, 0.27, 0)
+moveButton.Text = "Move to Stand"
+moveButton.TextScaled = true
+moveButton.BackgroundColor3 = Color3.fromRGB(45, 125, 230)
+moveButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+moveButton.Parent = mainFrame
+
+local moveCorner = Instance.new("UICorner")
+moveCorner.CornerRadius = UDim.new(0.2, 0)
+moveCorner.Parent = moveButton
+
+local stopButton = Instance.new("TextButton")
+stopButton.Size = UDim2.new(0.24, 0, 0.13, 0)
+stopButton.Position = UDim2.new(0.7, 0, 0.27, 0)
+stopButton.Text = "STOP"
+stopButton.TextScaled = true
+stopButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+stopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+stopButton.Visible = false
+stopButton.Parent = mainFrame
+
+local stopCorner = Instance.new("UICorner")
+stopCorner.CornerRadius = UDim.new(0.2, 0)
+stopCorner.Parent = stopButton
+
+local respawnButton = Instance.new("TextButton")
+respawnButton.Size = UDim2.new(0.88, 0, 0.13, 0)
+respawnButton.Position = UDim2.new(0.06, 0, 0.42, 0)
+respawnButton.Text = "Respawn Character"
+respawnButton.TextScaled = true
+respawnButton.BackgroundColor3 = Color3.fromRGB(230, 140, 30)
+respawnButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+respawnButton.Parent = mainFrame
+
+local respawnCorner = Instance.new("UICorner")
+respawnCorner.CornerRadius = UDim.new(0.2, 0)
+respawnCorner.Parent = respawnButton
+
+local tpWalkButton = Instance.new("TextButton")
+tpWalkButton.Size = UDim2.new(0.88, 0, 0.13, 0)
+tpWalkButton.Position = UDim2.new(0.06, 0, 0.57, 0)
+tpWalkButton.Text = "TP Walk: OFF"
+tpWalkButton.TextScaled = true
+tpWalkButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+tpWalkButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpWalkButton.Parent = mainFrame
+
+local tpWalkCorner = Instance.new("UICorner")
+tpWalkCorner.CornerRadius = UDim.new(0.2, 0)
+tpWalkCorner.Parent = tpWalkButton
+
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Size = UDim2.new(0.88, 0, 0.08, 0)
+speedLabel.Position = UDim2.new(0.06, 0, 0.72, 0)
+speedLabel.Text = "TP Speed: 50 Studs/s"
+speedLabel.TextScaled = true
+speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedLabel.BackgroundTransparency = 1
+speedLabel.Parent = mainFrame
+
+local speedBar = Instance.new("Frame")
+speedBar.Size = UDim2.new(0.88, 0, 0.07, 0)
+speedBar.Position = UDim2.new(0.06, 0, 0.83, 0)
+speedBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+speedBar.BorderSizePixel = 0
+speedBar.Parent = mainFrame
+
+local speedBarCorner = Instance.new("UICorner")
+speedBarCorner.CornerRadius = UDim.new(0.5, 0)
+speedBarCorner.Parent = speedBar
+
+local speedHandle = Instance.new("TextButton")
+speedHandle.Size = UDim2.new(0.12, 0, 2, 0)
+speedHandle.Position = UDim2.new(0.16, 0, -0.5, 0)
+speedHandle.AnchorPoint = Vector2.new(0.5, 0)
+speedHandle.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+speedHandle.Text = ""
+speedHandle.Parent = speedBar
+
+local speedHandleCorner = Instance.new("UICorner")
+speedHandleCorner.CornerRadius = UDim.new(0.5, 0)
+speedHandleCorner.Parent = speedHandle
+
+local function makeDraggable(guiObject)
+    local dragging = false
+    local dragInput
+    local dragStart
+    local startPosition
+
+    local function updatePosition(input)
+        local delta = input.Position - dragStart
+        guiObject.Position = UDim2.new(
+            startPosition.X.Scale,
+            startPosition.X.Offset + delta.X,
+            startPosition.Y.Scale,
+            startPosition.Y.Offset + delta.Y
+        )
+    end
+
+    guiObject.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch
+        then
+            dragging = true
+            dragStart = input.Position
+            startPosition = guiObject.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    guiObject.InputChanged:Connect(function(input)
+        -- The payload checks MouseButton1 here rather than MouseMovement.
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch
+        then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            updatePosition(input)
+        end
+    end)
+end
+
+makeDraggable(mainFrame)
+makeDraggable(toggleUiButton)
+
+bypassButton.MouseButton1Click:Connect(function()
+    local character = localPlayer.Character
+    if not character then
+        return
+    end
+
+    local oldHumanoid = character:FindFirstChildOfClass("Humanoid")
+    if oldHumanoid then
+        oldHumanoid:Destroy()
+    end
+
+    local replacementHumanoid = Instance.new("Humanoid")
+    replacementHumanoid.Parent = character
+end)
+
+local activeTween
+
+moveButton.MouseButton1Click:Connect(function()
+    if activeTween then
+        activeTween:Cancel()
+    end
+
+    local character = localPlayer.Character
+    if not character then
+        return
+    end
+
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        return
+    end
+
+    local targetCFrame = CFrame.new(
+        544.577637,
+        92.0762939,
+        -364.869049,
+        -1, 0, 0,
+        0, 1, 0,
+        0, 0, -1
+    )
+
+    local tweenInfo = TweenInfo.new(
+        7,
+        Enum.EasingStyle.Linear,
+        Enum.EasingDirection.Out,
+        0,
+        false,
+        0
+    )
+
+    activeTween = TweenService:Create(rootPart, tweenInfo, {
+        CFrame = targetCFrame,
+    })
+
+    stopButton.Visible = true
+
+    activeTween.Completed:Connect(function()
+        stopButton.Visible = false
+        activeTween = nil
+    end)
+
+    activeTween:Play()
+end)
+
+stopButton.MouseButton1Click:Connect(function()
+    if activeTween then
+        activeTween:Cancel()
+        activeTween = nil
+    end
+
+    stopButton.Visible = false
+end)
+
+respawnButton.MouseButton1Click:Connect(function()
+    local character = localPlayer.Character
+    if not character then
+        return
+    end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.Health = 0
+    end
+end)
+
+local tpWalkEnabled = false
+local tpSpeed = 50
+
+tpWalkButton.MouseButton1Click:Connect(function()
+    tpWalkEnabled = not tpWalkEnabled
+
+    if tpWalkEnabled then
+        tpWalkButton.Text = "TP Walk: ON"
+        tpWalkButton.BackgroundColor3 = Color3.fromRGB(46, 139, 87)
+    else
+        tpWalkButton.Text = "TP Walk: OFF"
+        tpWalkButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    end
+end)
+
+local function updateSpeed(input)
+    local relativePosition = math.clamp(
+        (input.Position.X - speedBar.AbsolutePosition.X) / speedBar.AbsoluteSize.X,
+        0,
+        1
+    )
+
+    tpSpeed = math.floor(1 + relativePosition * 299)
+    speedHandle.Position = UDim2.new(relativePosition, 0, -0.5, 0)
+    speedLabel.Text = "TP Speed: " .. tpSpeed .. " Studs/s"
+end
+
+local draggingSpeed = false
+
+speedHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch
+    then
+        draggingSpeed = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch
+    then
+        draggingSpeed = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if draggingSpeed
+        and (input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch)
+    then
+        updateSpeed(input)
+    end
+end)
+
+RunService.Heartbeat:Connect(function(deltaTime)
+    if not tpWalkEnabled then
+        return
+    end
+
+    local character = localPlayer.Character
+    if not character then
+        return
+    end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+
+    if humanoid and rootPart and humanoid.MoveDirection.Magnitude > 0 then
+        rootPart.CFrame = rootPart.CFrame + humanoid.MoveDirection * tpSpeed * deltaTime
+    end
+end)

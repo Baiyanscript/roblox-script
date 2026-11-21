@@ -1,0 +1,721 @@
+--https://pastefy.app/9z80UjyV/raw
+local runService = game:GetService("RunService")
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local workspaceService = game:GetService("Workspace")
+local userInputService = game:GetService("UserInputService")
+local lighting = game:GetService("Lighting")
+local players = game:GetService("Players")
+local localPlayer = players.LocalPlayer
+local flag = false
+local flag2 = false
+local map = {}
+local flag3 = false
+
+local piterHUB = Instance.new("ScreenGui")
+piterHUB.Name = "Piter HUB"
+piterHUB.ResetOnSpawn = false
+piterHUB.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 65, 0, 65)
+frame.Position = UDim2.new(0.5, -32.5, 0.5, -32.5)
+frame.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
+frame.BackgroundTransparency = 0.4
+frame.BorderSizePixel = 0
+frame.Active = false
+frame.Draggable = false
+frame.Visible = true
+frame.Parent = piterHUB
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(1, 0)
+uiCorner.Parent = frame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(46, 139, 87)
+uiStroke.Thickness = 6
+uiStroke.Transparency = 4
+uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+uiStroke.Parent = mainFrame
+
+local textButton = Instance.new("TextButton")
+textButton.Size = UDim2.new(0, 60, 0, 60)
+textButton.Position = UDim2.new(0.5, -30, 0.5, -30)
+textButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+textButton.BackgroundTransparency = 0.1
+textButton.Text = "VoidX"
+textButton.Font = Enum.Font.Arcade
+textButton.TextSize = 20
+textButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton.Active = true
+textButton.Draggable = true
+textButton.Parent = piterHUB
+
+local uiCorner2 = Instance.new("UICorner")
+uiCorner2.CornerRadius = UDim.new(1, 0)
+uiCorner2.Parent = textButton
+
+local function f1()
+  frame.Position = textButton.Position - UDim2.new(0, 2.5, 0, 2.5)
+end
+
+local connect
+
+local function f2()
+  if connect then
+    return
+  end
+
+  connect = runService.Heartbeat:Connect(function()
+    local v1 = tick()
+    local v2 = (math.sin(v1 * 3) + 1) / 2
+
+    frame.BackgroundColor3 = Color3.fromRGB(128 + 127 * v2, 0 + 255 * v2, 128 + 127 * v2)
+    frame.BackgroundTransparency = 0.4 + 0.3 * v2
+
+    f1()
+  end)
+end
+
+f2()
+
+local function f3(textButton2)
+  local inputBegan = textButton2.InputBegan
+  local v3, position, position2
+
+  inputBegan:Connect(function(p1)
+    if p1.UserInputType == Enum.UserInputType.MouseButton1
+      or p1.UserInputType == Enum.UserInputType.Touch then
+      v3 = true
+      position = p1.Position
+      position2 = textButton2.Position
+
+      p1.Changed:Connect(function()
+        if p1.UserInputState == Enum.UserInputState.End then
+          v3 = false
+        end
+      end)
+    end
+  end)
+
+  local inputChanged = textButton2.InputChanged
+  local v4
+
+  inputChanged:Connect(function(p2)
+    if p2.UserInputType == Enum.UserInputType.MouseMovement
+      or p2.UserInputType == Enum.UserInputType.Touch then
+      v4 = p2
+    end
+  end)
+
+  userInputService.InputChanged:Connect(function(input)
+    if input == v4 and v3 then
+      local v5 = input.Position - position
+
+      textButton2.Position = UDim2.new(
+        position2.X.Scale, position2.X.Offset + v5.X, position2.Y.Scale,
+        position2.Y.Offset + v5.Y
+      )
+    end
+  end)
+end
+
+f3(textButton)
+
+local frame2 = Instance.new("Frame")
+frame2.Size = UDim2.new(0, 160, 0, 190)
+frame2.Position = UDim2.new(0, 5, 0, 5)
+frame2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame2.BackgroundTransparency = 0.3
+frame2.BorderSizePixel = 0
+frame2.Active = true
+frame2.Draggable = true
+frame2.Visible = false
+frame2.Parent = piterHUB
+
+local uiStroke2 = Instance.new("UIStroke")
+uiStroke2.Color = Color3.fromRGB(0, 190, 0)
+uiStroke2.Thickness = 2
+uiStroke2.Parent = frame2
+
+local uiCorner3 = Instance.new("UICorner")
+uiCorner3.CornerRadius = UDim.new(0, 12)
+uiCorner3.Parent = frame2
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 0, 25)
+textLabel.Position = UDim2.new(0, 0, 0, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "Piter Hub"
+textLabel.Font = Enum.Font.Arcade
+textLabel.TextSize = 16
+textLabel.TextColor3 = Color3.fromRGB(0, 190, 0)
+textLabel.TextStrokeTransparency = 0
+textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+textLabel.Parent = frame2
+
+local textLabel2 = Instance.new("TextLabel")
+textLabel2.Size = UDim2.new(1, 0, 0, 32)
+textLabel2.Position = UDim2.new(0, 0, 0, 20)
+textLabel2.BackgroundTransparency = 1
+
+textLabel2.Text = [[
+TIKTOK:
+@piterhub7]]
+
+textLabel2.Font = Enum.Font.Arcade
+textLabel2.TextSize = 14
+textLabel2.TextColor3 = Color3.fromRGB(0, 190, 0)
+textLabel2.TextStrokeTransparency = 0
+textLabel2.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+textLabel2.ZIndex = 5
+textLabel2.TextYAlignment = Enum.TextYAlignment.Center
+textLabel2.Parent = frame2
+
+local frame3 = Instance.new("Frame")
+frame3.Size = UDim2.new(1, -10, 0, 25)
+frame3.Position = UDim2.new(0, 5, 0, 55)
+frame3.BackgroundTransparency = 1
+frame3.Parent = frame2
+
+local function makeTextButton(text, p3)
+  local textButton3 = Instance.new("TextButton")
+  textButton3.Size = UDim2.new(0, 70, 0, 22)
+  textButton3.Position = UDim2.new(0, p3, 0, 0)
+  textButton3.Text = text
+  textButton3.Font = Enum.Font.Arcade
+  textButton3.TextSize = 12
+  textButton3.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textButton3.TextStrokeTransparency = 0.5
+  textButton3.TextStrokeColor3 = Color3.fromRGB(46, 139, 87)
+  textButton3.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+  textButton3.BackgroundTransparency = 0
+  textButton3.AutoButtonColor = false
+
+  local uiCorner4 = Instance.new("UICorner")
+  uiCorner4.CornerRadius = UDim.new(0, 6)
+  uiCorner4.Parent = textButton3
+
+  textButton3.Parent = frame3
+  return textButton3
+end
+
+local textButton4 = makeTextButton("Esp Best", 0)
+local textButton5 = makeTextButton("Esp Base", 75)
+
+local textButton6 = Instance.new("TextButton")
+textButton6.Size = UDim2.new(0, 140, 0, 28)
+textButton6.Position = UDim2.new(0, 10, 0, 82)
+textButton6.Text = "TP TO SAVED"
+textButton6.Font = Enum.Font.Arcade
+textButton6.TextSize = 16
+textButton6.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton6.TextStrokeTransparency = 0.5
+textButton6.TextStrokeColor3 = Color3.fromRGB(46, 139, 87)
+textButton6.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+textButton6.BackgroundTransparency = 0
+textButton6.AutoButtonColor = false
+
+local uiCorner5 = Instance.new("UICorner")
+uiCorner5.CornerRadius = UDim.new(0, 8)
+uiCorner5.Parent = textButton6
+
+textButton6.Parent = frame2
+
+local textButton7 = Instance.new("TextButton")
+textButton7.Size = UDim2.new(0, 140, 0, 28)
+textButton7.Position = UDim2.new(0, 10, 0, 117)
+textButton7.Text = "SAVE POSITION"
+textButton7.Font = Enum.Font.Arcade
+textButton7.TextSize = 16
+textButton7.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton7.TextStrokeTransparency = 0.5
+textButton7.TextStrokeColor3 = Color3.fromRGB(46, 139, 87)
+textButton7.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+textButton7.BackgroundTransparency = 0
+textButton7.AutoButtonColor = false
+
+local uiCorner6 = Instance.new("UICorner")
+uiCorner6.CornerRadius = UDim.new(0, 8)
+uiCorner6.Parent = textButton7
+
+local uiStroke3 = Instance.new("UIStroke")
+uiStroke3.Color = Color3.fromRGB(0, 85, 255)
+uiStroke3.Thickness = 4
+uiStroke3.Transparency = 1
+uiStroke3.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+uiStroke3.Parent = textButton7
+
+textButton7.Parent = frame2
+
+local textButton8 = Instance.new("TextButton")
+textButton8.Size = UDim2.new(0, 120, 0, 22)
+textButton8.Position = UDim2.new(0, 20, 0, 152)
+textButton8.Text = "Discord"
+textButton8.Font = Enum.Font.Arcade
+textButton8.TextSize = 14
+textButton8.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton8.TextStrokeTransparency = 0.7
+textButton8.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+textButton8.BackgroundColor3 = Color3.fromRGB(0, 190, 0)
+textButton8.BackgroundTransparency = 0.4
+textButton8.AutoButtonColor = false
+
+local uiCorner7 = Instance.new("UICorner")
+uiCorner7.CornerRadius = UDim.new(0, 6)
+uiCorner7.Parent = textButton8
+
+textButton8.Parent = frame2
+
+local espBEST = Instance.new("Folder")
+espBEST.Name = "ESP BEST"
+espBEST.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local espLines = Instance.new("Folder")
+espLines.Name = "ESP_Lines"
+espLines.Parent = workspaceService
+
+local instance
+
+local function makeTextLabel(name, info, _, part)
+  if instance then
+    instance:Destroy()
+  end
+
+  local billboardGui = Instance.new("BillboardGui")
+  billboardGui.Size = UDim2.new(0, 150, 0, 50)
+  billboardGui.AlwaysOnTop = true
+  billboardGui.Adornee = part
+  billboardGui.Parent = espBEST
+  billboardGui.StudsOffset = Vector3.new(0, 3, 0)
+
+  local textLabel3 = Instance.new("TextLabel")
+  textLabel3.Size = UDim2.new(1, 0, 1, 0)
+  textLabel3.BackgroundTransparency = 1
+  textLabel3.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textLabel3.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+  textLabel3.TextStrokeTransparency = 0
+  textLabel3.TextScaled = false
+  textLabel3.TextSize = 10
+  textLabel3.RichText = true
+
+  textLabel3.Text = string.format([[
+<font color="rgb(251,255,0)">%s</font>
+<font color="rgb(13,255,0)">%s</font>]], name, info or "")
+
+  textLabel3.Parent = billboardGui
+
+  instance = billboardGui
+end
+
+local function f4(text2)
+  local v6, text3 = text2:match("^%s*(.-)%s*$"):match("%$([%d%.]+)%s*([kKmMbB]?)%s*/?s?")
+  local v7 = tonumber(v6) or 0
+
+  if text3 then
+    local lower = text3:lower()
+
+    if lower == "k" then
+      v7 = v7 * 1000
+    elseif lower == "m" then
+      v7 = v7 * 1000000
+    elseif lower == "b" then
+      v7 = v7 * 1000000000
+    end
+  end
+
+  return v7
+end
+
+local instance2, attachment, attachment2
+
+local function makeAttachment(part2)
+  local character = localPlayer.Character
+
+  if not character or not character:FindFirstChild("HumanoidRootPart") or not part2 then
+    return
+  end
+
+  if instance2 then
+    instance2:Destroy()
+
+    if attachment then
+      attachment:Destroy()
+    end
+
+    if attachment2 then
+      attachment2:Destroy()
+    end
+  end
+
+  attachment = Instance.new("Attachment")
+  attachment.Parent = character.HumanoidRootPart
+
+  attachment2 = Instance.new("Attachment")
+  attachment2.Parent = part2
+
+  local beam = Instance.new("Beam")
+  beam.Attachment0 = attachment
+  beam.Attachment1 = attachment2
+  beam.Width0 = 0.35
+  beam.Width1 = 0.35
+  beam.FaceCamera = true
+  beam.LightInfluence = 0
+  beam.Parent = espLines
+  instance2 = beam
+
+  task.spawn(function()
+    while beam.Parent do
+      local color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+      beam.Color = ColorSequence.new(color)
+      task.wait(0.05)
+    end
+  end)
+end
+
+local function makeTextLabel2()
+  for _, value in pairs(map) do
+    if value then
+      value:Destroy()
+    end
+  end
+
+  map = {}
+
+  if not flag2 then
+    return
+  end
+
+  for _, value2 in pairs(workspaceService.Plots:GetChildren()) do
+    local plotSign = value2:FindFirstChild("PlotSign")
+
+    if plotSign and plotSign:FindFirstChild("SurfaceGui") then
+      local frame4 = plotSign.SurfaceGui:FindFirstChild("Frame")
+
+      local textLabel4 = frame4
+      textLabel4 = frame4 and plotSign.SurfaceGui.Frame:FindFirstChild("TextLabel")
+
+      if textLabel4 then
+        textLabel4.Text:match("^(.-)'s Base")
+      end
+    end
+
+    local findFirstChild = value2:FindFirstChild("Purchases", true) and value2.Purchases:FindFirstChild("PlotBlock", true) and value2.Purchases.PlotBlock.Main:FindFirstChild("BillboardGui", true) and value2.Purchases.PlotBlock.Main.BillboardGui:FindFirstChild(
+      "RemainingTime", true
+    )
+
+    local text4 = "No Lock"
+
+    if findFirstChild and findFirstChild:IsA("TextLabel") then
+      text4 = findFirstChild.Text == "0s" and "UNLOCKED" or "Lock: " .. findFirstChild.Text
+    end
+
+    local billboardGui2 = Instance.new("BillboardGui")
+    billboardGui2.Name = "BaseESPLockTime_" .. value2.Name
+    billboardGui2.Size = UDim2.new(0, 250, 0, 60)
+    billboardGui2.StudsOffset = Vector3.new(0, 8, 0)
+    billboardGui2.AlwaysOnTop = true
+    billboardGui2.Adornee = value2:FindFirstChild("PlotBlock") or value2
+
+    local frame5 = Instance.new("Frame")
+    frame5.Size = UDim2.new(1, 0, 1, 0)
+    frame5.BackgroundTransparency = 1
+    frame5.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame5.BorderSizePixel = 0
+    frame5.Parent = billboardGui2
+
+    Instance.new("UICorner", frame5).CornerRadius = UDim.new(0, 6)
+
+    local textLabel5 = Instance.new("TextLabel")
+    textLabel5.Size = UDim2.new(1, 0, 0.5, 0)
+    textLabel5.Position = UDim2.new(0, 0, 0.5, 0)
+    textLabel5.BackgroundTransparency = 1
+    textLabel5.Text = text4
+    textLabel5.TextScaled = true
+
+    if text4 == "UNLOCKED" then
+      textLabel5.TextColor3 = Color3.fromRGB(0, 255, 0)
+    elseif text4:find("Lock:") then
+      textLabel5.TextColor3 = Color3.fromRGB(255, 255, 0)
+    else
+      textLabel5.TextColor3 = Color3.fromRGB(255, 165, 0)
+    end
+
+    textLabel5.TextStrokeColor3 = Color3.new(0, 0, 0)
+    textLabel5.TextStrokeTransparency = 0
+    textLabel5.Font = Enum.Font.SourceSansBold
+    textLabel5.Parent = frame5
+
+    billboardGui2.Parent = value2
+    map[value2.Name] = billboardGui2
+  end
+end
+
+local function f5()
+  local plots = workspaceService:FindFirstChild("Plots")
+
+  if not plots then
+    return
+  end
+
+  local v8 = -1
+  local v9
+
+  for _, value3 in ipairs(plots:GetChildren()) do
+    local animalPodiums = value3:FindFirstChild("AnimalPodiums")
+
+    if animalPodiums then
+      for _, value4 in ipairs(animalPodiums:GetChildren()) do
+        local base = value4:FindFirstChild("Base")
+
+        local v10 = base
+        v10 = base and value4.Base:FindFirstChild("Spawn")
+
+        if v10 then
+          local attachment3 = v10:FindFirstChild("Attachment")
+
+          local animalOverhead = attachment3
+          animalOverhead = attachment3 and attachment3:FindFirstChild("AnimalOverhead")
+
+          if animalOverhead then
+            local displayName = animalOverhead:FindFirstChild("DisplayName")
+            local generation = animalOverhead:FindFirstChild("Generation")
+            local mutation = animalOverhead:FindFirstChild("Mutation")
+
+            if generation then
+              local text5 = displayName and displayName.Text or "Unknown"
+              local text6 = generation.Text
+              local text7 = mutation and mutation.Text or ""
+              local v11 = f4(text6)
+              local v12 = tonumber(text6:match("%d+")) or 0
+              local v13 = v11 > 0 and v11 or v12
+
+              if v13 > v8 then
+                v8 = v13
+
+                v9 = {
+                  name = text5,
+                  info = text6,
+                  mutation = text7,
+                  part = v10,
+                  value = v13,
+                }
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  return v9
+end
+
+local v14
+
+local function f6()
+  if not flag3 then
+    return
+  end
+
+  local v15 = f5()
+
+  if v15 then
+    local flag4 = false
+
+    if not instance then
+      flag4 = true
+    elseif v14 then
+      if v15.value > v14.value or v15.mutation ~= v14.mutation then
+        flag4 = true
+      end
+    end
+
+    if flag4 then
+      v14 = v15
+      makeTextLabel(v15.name, v15.info, v15.mutation, v15.part)
+      makeAttachment(v15.part)
+    end
+  else
+    if instance then
+      instance:Destroy()
+      instance = nil
+      v14 = nil
+    end
+
+    if instance2 then
+      instance2:Destroy()
+      instance2 = nil
+    end
+  end
+end
+
+local mouseButton1Click = textButton7.MouseButton1Click
+local position3
+
+mouseButton1Click:Connect(function()
+  if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+    position3 = localPlayer.Character.HumanoidRootPart.Position
+    flag = true
+    local text8 = textButton7.Text
+
+    textButton7.Text = "Position Saved!"
+    textButton7.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+
+    math.floor(position3.X * 100)
+    math.floor(position3.Y * 100)
+    math.floor(position3.Z * 100)
+
+    textButton6.Text = "TP TO SAVED"
+    task.wait(2)
+
+    textButton7.Text = text8
+    textButton7.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+  else
+    local text9 = textButton7.Text
+
+    textButton7.Text = "No Character!"
+    textButton7.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+    task.wait(2)
+
+    textButton7.Text = text9
+    textButton7.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+  end
+end)
+
+textButton6.MouseButton1Click:Connect(function()
+  if flag and position3 then
+    local character2 = localPlayer.Character
+
+    if character2 and character2:FindFirstChild("HumanoidRootPart") then
+      character2.HumanoidRootPart.CFrame = CFrame.new(position3)
+      local text10 = textButton6.Text
+
+      textButton6.Text = "Teleported!"
+      textButton6.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+
+      task.wait(1)
+
+      textButton6.Text = text10
+      textButton6.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    else
+      local text11 = textButton6.Text
+
+      textButton6.Text = "No Character!"
+      textButton6.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+      task.wait(2)
+
+      textButton6.Text = text11
+      textButton6.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end
+  else
+    textButton6.Text = "No Position!"
+    textButton6.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+
+    task.wait(2)
+
+    textButton6.Text = "TP TO SAVED"
+    textButton6.BackgroundColor3 = Color3.fromRGB(182, 78, 78)
+  end
+end)
+
+textButton4.MouseButton1Click:Connect(function()
+  flag3 = not flag3
+
+  if flag3 then
+    textButton4.Text = "BEST ON"
+    textButton4.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+
+    coroutine.wrap(function()
+      while flag3 do
+        f6()
+        task.wait(0.3)
+      end
+    end)()
+
+    print("ESP BEST ATIVADO!")
+  else
+    textButton4.Text = "ESP BEST"
+    textButton4.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+
+    if instance then
+      instance:Destroy()
+      instance = nil
+    end
+
+    if instance2 then
+      instance2:Destroy()
+      instance2 = nil
+    end
+
+    if attachment then
+      attachment:Destroy()
+      attachment = nil
+    end
+
+    if attachment2 then
+      attachment2:Destroy()
+      attachment2 = nil
+    end
+
+    v14 = nil
+    print("ESP Best DESATIVADO!")
+  end
+end)
+
+textButton5.MouseButton1Click:Connect(function()
+  flag2 = not flag2
+
+  if flag2 then
+    textButton5.Text = "BASE ON"
+    textButton5.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+
+    makeTextLabel2()
+
+    coroutine.wrap(function()
+      while flag2 do
+        makeTextLabel2()
+        task.wait(1)
+      end
+    end)()
+
+    print("ESP Base com Lock Time ATIVADO!")
+  else
+    textButton5.Text = "ESP BASE"
+    textButton5.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+
+    for _, value5 in pairs(map) do
+      if value5 then
+        value5:Destroy()
+      end
+    end
+
+    map = {}
+    print("ESP Base com Lock Time DESATIVADO!")
+  end
+end)
+
+textButton8.MouseButton1Click:Connect(function()
+  if setclipboard then
+    setclipboard("https://discord.gg/cRmbRpdN9k")
+  end
+
+  local text12 = textButton8.Text
+  textButton8.Text = "Link copiado"
+  task.wait(3)
+  textButton8.Text = text12
+end)
+
+local visible = false
+
+textButton.MouseButton1Click:Connect(function()
+  visible = not visible
+  frame2.Visible = visible
+end)
+
+print("Piter Hub Carregado com Sucesso! Sistema Save/Teleport 100% funcional!")
+print("ESP Best e ESP Base com Lock Time integrados!")
+print("Liphyr gostoso")
+print("Discord Liphyrxrc Para Contato")

@@ -1,0 +1,1806 @@
+local players = game:GetService("Players")
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local proximityPromptService = game:GetService("ProximityPromptService")
+local starterGui = game:GetService("StarterGui")
+local coreGui = game:GetService("CoreGui")
+local workspaceService = game:GetService("Workspace")
+local debris = game:GetService("Debris")
+local tweenService = game:GetService("TweenService")
+local textChatService = game:GetService("TextChatService")
+local chat = game:GetService("Chat")
+local contentProvider = game:GetService("ContentProvider")
+local lighting = game:GetService("Lighting")
+local localPlayer = players.LocalPlayer
+
+if game.PlaceId == 2788229376 then
+  loadstring(game:HttpGet("https://pastebin.com/raw/JFrBJBZw"))()
+end
+
+getgenv().FPDH = workspace.FallenPartsDestroyHeight
+loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Module.Lua"))()
+
+local client = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Client.Lua"))()
+
+client:Notify({ Title = "made by GioBolqv1", Description = "follow me on Roblox plz" }, {
+  OutlineColor = Color3.fromRGB(80, 80, 80),
+  Time = 6,
+  Type = "default",
+})
+
+task.delay(6, function()
+  client:Notify({ Title = "fuck them couples", Description = "" }, {
+    OutlineColor = Color3.fromRGB(80, 80, 80),
+    Time = 1,
+    Type = "default",
+  })
+end)
+
+task.spawn(function()
+  local v1 = {
+    "rbxassetid://112288532897604", "rbxassetid://123431095757862",
+    "rbxassetid://101871663749983", "rbxassetid://102082189563686",
+    "rbxassetid://87133008649949", "rbxassetid://80654091948859",
+    "rbxassetid://118959209918644", "rbxassetid://89111716130280",
+    "rbxthumb://type=Asset&id=10472955572&w=150&h=150",
+    "rbxthumb://type=Asset&id=83852569571676&w=150&h=150",
+    "rbxthumb://type=Asset&id=104077005427988&w=150&h=150",
+    "rbxthumb://type=Asset&id=126139598282367&w=150&h=150", "rbxassetid://97587406223179",
+  }
+
+  pcall(function() contentProvider:PreloadAsync(v1) end)
+end)
+
+local customClientUI = Instance.new("ScreenGui")
+customClientUI.Name = "CustomClientUI"
+customClientUI.ResetOnSpawn = false
+customClientUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+customClientUI.Parent = coreGui
+
+local flag = false
+local list = {}
+local flag2 = false
+local highest = 300
+local highest2 = 2.5
+local flag3 = true
+
+local function f1(p1, p2, p3)
+  local inputBegan = p1.InputBegan
+  local v2, position, position2
+
+  inputBegan:Connect(function(p4)
+    local mouseButton1 = p4.UserInputType == Enum.UserInputType.Touch or p4.MouseButton1
+    local connect, connect2
+
+    if mouseButton1 then
+      if p3 and flag then
+        connect2 = nil
+
+        connect2 = p4.Changed:Connect(function()
+          if p4.UserInputState == Enum.UserInputState.End then
+            connect2:Disconnect()
+
+            if p2 then
+              p2()
+            end
+          end
+        end)
+
+        return
+      end
+
+      v2 = true
+      position = p4.Position
+      position2 = p1.Position
+
+      connect = nil
+
+      connect = p4.Changed:Connect(function()
+        if p4.UserInputState == Enum.UserInputState.End then
+          if not v2 then
+            return
+          end
+
+          v2 = false
+          connect:Disconnect()
+
+          if (p4.Position - position).Magnitude < 6 then
+            if p2 then
+              p2()
+            end
+          end
+        end
+      end)
+    end
+  end)
+
+  local inputChanged = p1.InputChanged
+  local v3
+
+  inputChanged:Connect(function(p5)
+    if p5.UserInputType == Enum.UserInputType.Touch or p5.MouseMovement then
+      v3 = p5
+    end
+  end)
+
+  userInputService.InputChanged:Connect(function(input)
+    if input == v3 and v2 then
+      local v4 = input.Position - position
+
+      p1.Position = UDim2.new(
+        position2.X.Scale, position2.X.Offset + v4.X, position2.Y.Scale,
+        position2.Y.Offset + v4.Y
+      )
+    end
+  end)
+end
+
+local imageButton = Instance.new("ImageButton")
+imageButton.Size = UDim2.new(0, 100, 0, 45)
+imageButton.Position = UDim2.new(0.95, -120, 0.45, 0)
+imageButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+imageButton.Image = "rbxthumb://type=Asset&id=10472955572&w=150&h=150"
+imageButton.ScaleType = Enum.ScaleType.Stretch
+imageButton.Active = true
+imageButton.BorderSizePixel = 0
+imageButton.Parent = customClientUI
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 1, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "A-Train: OFF"
+textLabel.TextColor3 = Color3.new(1, 1, 1)
+textLabel.Font = Enum.Font.Fantasy
+textLabel.TextSize = 12.7
+textLabel.ZIndex = 2
+textLabel.Parent = imageButton
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Thickness = 1.5
+uiStroke.Color = Color3.fromRGB(0, 0, 0)
+uiStroke.Parent = textLabel
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0.2, 0)
+uiCorner.Parent = imageButton
+
+local uiStroke2 = Instance.new("UIStroke")
+uiStroke2.Thickness = 2
+uiStroke2.Color = Color3.fromRGB(50, 50, 50)
+uiStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+uiStroke2.Parent = imageButton
+
+local settingButton = Instance.new("ImageButton")
+settingButton.Name = "SettingButton"
+settingButton.Size = UDim2.new(0, 45, 0, 45)
+settingButton.Position = UDim2.new(0.05, 0, 0.45, 0)
+settingButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+settingButton.Image = "rbxthumb://type=Asset&id=104077005427988&w=150&h=150"
+settingButton.ScaleType = Enum.ScaleType.Stretch
+settingButton.Active = true
+settingButton.BorderSizePixel = 0
+settingButton.Visible = false
+settingButton.Parent = customClientUI
+
+local uiCorner2 = Instance.new("UICorner")
+uiCorner2.CornerRadius = UDim.new(0.3, 0)
+uiCorner2.Parent = settingButton
+
+local uiStroke3 = Instance.new("UIStroke")
+uiStroke3.Thickness = 2
+uiStroke3.Color = Color3.fromRGB(50, 50, 50)
+uiStroke3.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+uiStroke3.Parent = settingButton
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 230, 0, 260)
+frame.Position = UDim2.new(1, 10, 0, 0)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BorderSizePixel = 0
+frame.Visible = false
+frame.Parent = settingButton
+
+local uiCorner3 = Instance.new("UICorner")
+uiCorner3.CornerRadius = UDim.new(0.1, 0)
+uiCorner3.Parent = frame
+
+local uiStroke4 = Instance.new("UIStroke")
+uiStroke4.Thickness = 2
+uiStroke4.Color = Color3.fromRGB(60, 60, 60)
+uiStroke4.Parent = frame
+
+local textButton = Instance.new("TextButton")
+textButton.Size = UDim2.new(0, 100, 0, 28)
+textButton.Position = UDim2.new(0.05, 0, 0, 6)
+textButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+textButton.TextColor3 = Color3.new(1, 1, 1)
+textButton.Font = Enum.Font.Fantasy
+textButton.TextSize = 11
+textButton.Text = "lock buttons"
+textButton.Parent = frame
+
+local uiCorner4 = Instance.new("UICorner")
+uiCorner4.CornerRadius = UDim.new(0.2, 0)
+uiCorner4.Parent = textButton
+
+local textButton2 = Instance.new("TextButton")
+textButton2.Size = UDim2.new(0, 100, 0, 28)
+textButton2.Position = UDim2.new(0.53, 0, 0, 6)
+textButton2.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+textButton2.TextColor3 = Color3.new(1, 1, 1)
+textButton2.Font = Enum.Font.Fantasy
+textButton2.TextSize = 11
+textButton2.Text = "hide buttons"
+textButton2.Parent = frame
+
+local uiCorner5 = Instance.new("UICorner")
+uiCorner5.CornerRadius = UDim.new(0.2, 0)
+uiCorner5.Parent = textButton2
+
+local textButton3 = Instance.new("TextButton")
+textButton3.Size = UDim2.new(0, 100, 0, 28)
+textButton3.Position = UDim2.new(0.05, 0, 0, 40)
+textButton3.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+textButton3.TextColor3 = Color3.new(1, 1, 1)
+textButton3.Font = Enum.Font.Fantasy
+textButton3.TextSize = 11
+textButton3.Text = "noclip: off"
+textButton3.Parent = frame
+
+local uiCorner6 = Instance.new("UICorner")
+uiCorner6.CornerRadius = UDim.new(0.2, 0)
+uiCorner6.Parent = textButton3
+
+local textButton4 = Instance.new("TextButton")
+textButton4.Size = UDim2.new(0, 100, 0, 28)
+textButton4.Position = UDim2.new(0.53, 0, 0, 40)
+textButton4.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+textButton4.TextColor3 = Color3.new(1, 1, 1)
+textButton4.Font = Enum.Font.Fantasy
+textButton4.TextSize = 10
+textButton4.Text = "cframe: on"
+textButton4.Parent = frame
+
+local uiCorner7 = Instance.new("UICorner")
+uiCorner7.CornerRadius = UDim.new(0.2, 0)
+uiCorner7.Parent = textButton4
+
+textButton4.MouseButton1Click:Connect(function()
+  flag3 = not flag3
+  textButton4.Text = "cframe: " .. (flag3 and "on" or "off")
+end)
+
+local textLabel2 = Instance.new("TextLabel")
+textLabel2.Size = UDim2.new(0, 207, 0, 18)
+textLabel2.Position = UDim2.new(0.05, 0, 0, 74)
+textLabel2.BackgroundTransparency = 1
+textLabel2.TextColor3 = Color3.new(1, 1, 1)
+textLabel2.Font = Enum.Font.Fantasy
+textLabel2.TextSize = 11
+textLabel2.Text = "run speed: " .. highest
+textLabel2.TextXAlignment = Enum.TextXAlignment.Left
+textLabel2.Parent = frame
+
+local textButton5 = Instance.new("TextButton")
+textButton5.Size = UDim2.new(0, 28, 0, 24)
+textButton5.Position = UDim2.new(0.05, 0, 0, 94)
+textButton5.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+textButton5.TextColor3 = Color3.new(1, 1, 1)
+textButton5.Font = Enum.Font.Fantasy
+textButton5.TextSize = 16
+textButton5.Text = "▼"
+textButton5.Parent = frame
+
+local uiCorner8 = Instance.new("UICorner")
+uiCorner8.CornerRadius = UDim.new(0.2, 0)
+uiCorner8.Parent = textButton5
+
+local textButton6 = Instance.new("TextButton")
+textButton6.Size = UDim2.new(0, 28, 0, 24)
+textButton6.Position = UDim2.new(0.05, 34, 0, 94)
+textButton6.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+textButton6.TextColor3 = Color3.new(1, 1, 1)
+textButton6.Font = Enum.Font.Fantasy
+textButton6.TextSize = 16
+textButton6.Text = "▲"
+textButton6.Parent = frame
+
+local uiCorner9 = Instance.new("UICorner")
+uiCorner9.CornerRadius = UDim.new(0.2, 0)
+uiCorner9.Parent = textButton6
+
+local textLabel3 = Instance.new("TextLabel")
+textLabel3.Size = UDim2.new(0, 207, 0, 18)
+textLabel3.Position = UDim2.new(0.05, 0, 0, 124)
+textLabel3.BackgroundTransparency = 1
+textLabel3.TextColor3 = Color3.new(1, 1, 1)
+textLabel3.Font = Enum.Font.Fantasy
+textLabel3.TextSize = 11
+textLabel3.Text = "anim speed: " .. string.format("%.1f", highest2) .. "x"
+textLabel3.TextXAlignment = Enum.TextXAlignment.Left
+textLabel3.Parent = frame
+
+local textButton7 = Instance.new("TextButton")
+textButton7.Size = UDim2.new(0, 28, 0, 24)
+textButton7.Position = UDim2.new(0.05, 0, 0, 144)
+textButton7.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+textButton7.TextColor3 = Color3.new(1, 1, 1)
+textButton7.Font = Enum.Font.Fantasy
+textButton7.TextSize = 16
+textButton7.Text = "▼"
+textButton7.Parent = frame
+
+local uiCorner10 = Instance.new("UICorner")
+uiCorner10.CornerRadius = UDim.new(0.2, 0)
+uiCorner10.Parent = textButton7
+
+local textButton8 = Instance.new("TextButton")
+textButton8.Size = UDim2.new(0, 28, 0, 24)
+textButton8.Position = UDim2.new(0.05, 34, 0, 144)
+textButton8.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+textButton8.TextColor3 = Color3.new(1, 1, 1)
+textButton8.Font = Enum.Font.Fantasy
+textButton8.TextSize = 16
+textButton8.Text = "▲"
+textButton8.Parent = frame
+
+local uiCorner11 = Instance.new("UICorner")
+uiCorner11.CornerRadius = UDim.new(0.2, 0)
+uiCorner11.Parent = textButton8
+
+local frame2 = Instance.new("Frame")
+frame2.Size = UDim2.new(0.9, 0, 0, 60)
+frame2.Position = UDim2.new(0.05, 0, 0, 174)
+frame2.BackgroundTransparency = 1
+frame2.Parent = frame
+
+local function makeTextButton(text, udim)
+  local textButton9 = Instance.new("TextButton")
+  textButton9.Size = UDim2.new(0, 25, 0, 25)
+  textButton9.Position = udim
+  textButton9.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+  textButton9.TextColor3 = Color3.new(1, 1, 1)
+  textButton9.Font = Enum.Font.Fantasy
+  textButton9.TextSize = 16
+  textButton9.Text = text
+  textButton9.Parent = frame2
+
+  local uiCorner12 = Instance.new("UICorner")
+  uiCorner12.CornerRadius = UDim.new(0.2, 0)
+  uiCorner12.Parent = textButton9
+
+  return textButton9
+end
+
+local textButton10 = makeTextButton("↑", UDim2.new(0.5, -12, 0, 0))
+local textButton11 = makeTextButton("↓", UDim2.new(0.5, -12, 0, 32))
+local textButton12 = makeTextButton("←", UDim2.new(0.5, -42, 0, 16))
+local textButton13 = makeTextButton("→", UDim2.new(0.5, 18, 0, 16))
+
+local function f2(p6, p7)
+  for _, value in ipairs(list) do
+    value.Position = UDim2.new(
+      value.Position.X.Scale, value.Position.X.Offset + p6, value.Position.Y.Scale,
+      value.Position.Y.Offset + p7
+    )
+  end
+end
+
+textButton10.MouseButton1Click:Connect(function() f2(0, -5) end)
+textButton11.MouseButton1Click:Connect(function() f2(0, 5) end)
+textButton12.MouseButton1Click:Connect(function() f2(-5, 0) end)
+textButton13.MouseButton1Click:Connect(function() f2(5, 0) end)
+
+textButton.MouseButton1Click:Connect(function()
+  flag = not flag
+  textButton.Text = flag and "unlock buttons" or "lock buttons"
+end)
+
+f1(settingButton, function() frame.Visible = not frame.Visible end, false)
+local flag4 = false
+local flag5 = false
+local flag6 = false
+local flag7 = false
+local flag8 = false
+local flag9 = false
+local flag10 = false
+
+local function f3()
+  local currentCamera = workspaceService.CurrentCamera
+
+  if not currentCamera then
+    return
+  end
+
+  if flag5 and flag7 and flag8 then
+    tweenService:Create(currentCamera, TweenInfo.new(
+      0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out
+    ), { FieldOfView = 85 }):Play()
+  else
+    tweenService:Create(currentCamera, TweenInfo.new(
+      0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out
+    ), { FieldOfView = 70 }):Play()
+  end
+end
+
+local flag11 = false
+local flag12 = false
+local v5 = math
+local rad = v5.rad
+local v6 = rad(55)
+local v7 = rad(5)
+local v8 = rad(35)
+local v9 = rad(10)
+local v10 = rad(45)
+local v11 = 0
+local v12 = 0
+local v13 = 0
+local v14 = 0
+local v15 = 0
+local vector = Vector3.new(0, 0, 0)
+
+local function f4(p8, p9, p10)
+  return p8 + v5.atan2(v5.sin(p9 - p8), v5.cos(p9 - p8)) * p10
+end
+
+local flag13 = false
+
+local raycastParams = RaycastParams.new()
+raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+
+local connect3, tiltAttachment, alignOrientation, connect4
+
+local function f5()
+  if not flag12 then
+    return
+  end
+
+  flag12 = false
+
+  if connect3 then
+    connect3:Disconnect()
+    connect3 = nil
+  end
+
+  if connect4 then
+    connect4:Disconnect()
+    connect4 = nil
+  end
+
+  if tiltAttachment then
+    tiltAttachment:Destroy()
+    tiltAttachment = nil
+  end
+
+  if alignOrientation then
+    alignOrientation:Destroy()
+    alignOrientation = nil
+  end
+
+  local character = localPlayer.Character
+
+  local humanoid = character
+  humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+  if humanoid then
+    humanoid.AutoRotate = true
+  end
+end
+
+local function makeAttachment()
+  if flag12 then
+    return
+  end
+
+  local character2 = localPlayer.Character
+
+  if not character2 then
+    return
+  end
+
+  local humanoid2 = character2:FindFirstChildOfClass("Humanoid")
+  local v16 = not humanoid2
+  local humanoidRootPart = character2:FindFirstChild("HumanoidRootPart")
+
+  if v16 or not humanoidRootPart then
+    return
+  end
+
+  raycastParams.FilterDescendantsInstances = { character2 }
+
+  if tiltAttachment then
+    tiltAttachment:Destroy()
+    tiltAttachment = nil
+  end
+
+  if alignOrientation then
+    alignOrientation:Destroy()
+    alignOrientation = nil
+  end
+
+  tiltAttachment = Instance.new("Attachment")
+  tiltAttachment.Name = "TiltAttachment"
+  tiltAttachment.Parent = humanoidRootPart
+
+  alignOrientation = Instance.new("AlignOrientation")
+  alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment
+  alignOrientation.Attachment0 = tiltAttachment
+  alignOrientation.MaxTorque = math.huge
+  alignOrientation.Responsiveness = 50
+  alignOrientation.Parent = humanoidRootPart
+
+  humanoid2.AutoRotate = false
+  v11 = 0
+  v12 = 0
+  v13 = 0
+  v14 = 0
+  v15 = rad(humanoidRootPart.Orientation.Y)
+  vector = humanoidRootPart.Position
+  flag13 = false
+
+  if connect4 then
+    connect4:Disconnect()
+    connect4 = nil
+  end
+
+  connect4 = userInputService.InputBegan:Connect(function(input2, p11)
+    if p11 then
+      return
+    end
+
+    if input2.KeyCode == Enum.KeyCode.LeftShift or input2.KeyCode == Enum.KeyCode.RightShift then
+      flag13 = not flag13
+    end
+  end)
+
+  flag12 = true
+
+  if connect3 then
+    connect3:Disconnect()
+    connect3 = nil
+  end
+
+  connect3 = runService.Heartbeat:Connect(function(delta)
+    if not flag12 then
+      return
+    end
+
+    local character3 = localPlayer.Character
+    local humanoid3 = character3 and character3:FindFirstChildOfClass("Humanoid")
+    local humanoidRootPart2 = character3 and character3:FindFirstChild("HumanoidRootPart")
+
+    if not humanoid3 or not humanoidRootPart2 then
+      return
+    end
+
+    if humanoid3.Health <= 0 then
+      return
+    end
+
+    local v17 = (humanoidRootPart2.Position - vector) / v5.max(delta, 0.016666666666667)
+    vector = humanoidRootPart2.Position
+    local v18 = 0
+
+    local raycast = workspaceService:Raycast(
+      humanoidRootPart2.Position, Vector3.new(0, -10, 0), raycastParams
+    )
+
+    if raycast and raycast.Instance and raycast.Instance.CanCollide then
+      v18 = -humanoidRootPart2.CFrame.LookVector:Dot(raycast.Normal) * v10 * 1.5
+    end
+
+    if humanoid3.Sit then
+      v18 = v18 * 2
+    end
+
+    local v19 = 0
+    local v20 = 0
+    v14 = v14 + (v18 - v14) * delta * 10
+    local moveDirection = humanoid3.MoveDirection
+    local magnitude = Vector2.new(v17.X, v17.Z).Magnitude
+    local sit = humanoid3.Sit and v7 or v6
+
+    if magnitude > 0.1 then
+      local dot = moveDirection:Dot(humanoidRootPart2.CFrame.LookVector)
+      local v21 = flag7 and 0.5 or 0.05
+
+      if dot < 0 then
+        v21 = v21 * 0.5
+      end
+
+      v19 = -dot * sit * v21
+      local dot2 = moveDirection:Dot(humanoidRootPart2.CFrame.RightVector)
+
+      if dot2 > 0 then
+        v20 = -dot2 * sit * 0.5
+      else
+        v20 = -dot2 * sit * 0.5
+      end
+    end
+
+    local v22 = v5.clamp(v17.Y / 50, -1, 1)
+    local v23
+
+    if v17.Y > 0 then
+      v23 = v22 * v8 * 1
+    else
+      v23 = v22 * v9 * 1
+    end
+
+    if humanoid3.Sit then
+      v23 = v23 * 2
+    end
+
+    v11 = v11 + (v19 - v11) * delta * 10
+    v12 = v12 + (v23 - v12) * delta * 10
+    v13 = v13 + (v20 - v13) * delta * 10
+    local v24 = v15
+
+    if flag13 then
+      local currentCamera2 = workspaceService.CurrentCamera
+
+      if currentCamera2 then
+        v24 = v5.atan2(-currentCamera2.CFrame.LookVector.X, -currentCamera2.CFrame.LookVector.Z)
+      end
+    elseif moveDirection.Magnitude > 0.1 then
+      v24 = v5.atan2(-moveDirection.X, -moveDirection.Z)
+    end
+
+    v15 = f4(v15, v24, delta * (flag13 and 40 or 10))
+
+    if alignOrientation and alignOrientation.Parent then
+      alignOrientation.CFrame = CFrame.Angles(0, v15, 0) * CFrame.Angles(v12 + v14, 0, 0)
+        * CFrame.Angles(v11, 0, v13)
+    end
+  end)
+end
+
+local v25 = {
+  { id = "rbxassetid://112288532897604", name = "Idle 1" },
+  { id = "rbxassetid://123431095757862", name = "Idle 2" },
+}
+
+local v26 = {
+  { id = "rbxassetid://87133008649949", name = "Walk 1", speed = 1 },
+  { id = "rbxassetid://80654091948859", name = "Walk 2", speed = 1 },
+  { id = "rbxassetid://118959209918644", name = "Walk 3", speed = 0.65 },
+}
+
+local v27 = {
+  { id = "rbxassetid://102082189563686", name = "Run 1", speed = 1 },
+  { id = "rbxassetid://101871663749983", name = "Run 2", speed = 1 },
+}
+
+local v28 = 1
+local v29 = 1
+local v30 = 1
+local flag14 = false
+local v31, v32, loadAnimation
+
+local function f6()
+  if v32 then
+    v32:Disconnect()
+    v32 = nil
+  end
+
+  if v31 then
+    pcall(function() v31:Stop(0.25) end)
+    v31 = nil
+  end
+
+  if loadAnimation then
+    pcall(function() loadAnimation:Stop(0.25) end)
+    loadAnimation = nil
+  end
+end
+
+local loadAnimation2
+
+local function f7()
+  if loadAnimation2 then
+    pcall(function() loadAnimation2:Stop(0.25) end)
+    loadAnimation2 = nil
+  end
+end
+
+local f8
+
+local function makeAnimation()
+  local v33 = f8()
+
+  if not v33 then
+    return
+  end
+
+  f7()
+  local animation = Instance.new("Animation")
+  local speed
+
+  if flag7 then
+    animation.AnimationId = v27[v30].id
+    speed = v27[v30].speed * highest2
+  else
+    animation.AnimationId = v26[v29].id
+    speed = v26[v29].speed
+  end
+
+  loadAnimation2 = v33:LoadAnimation(animation)
+  loadAnimation2.Priority = Enum.AnimationPriority.Action
+  loadAnimation2.Looped = true
+  loadAnimation2:Play(0.25)
+  loadAnimation2:AdjustSpeed(speed)
+end
+
+function f8()
+  local character4 = localPlayer.Character
+  local humanoid4 = character4 and character4:FindFirstChildOfClass("Humanoid")
+  return humanoid4 and humanoid4:FindFirstChildOfClass("Animator")
+end
+
+local function f9()
+  f6()
+  f7()
+end
+
+local function makeAnimation2()
+  local v34 = f8()
+
+  if not v34 then
+    return
+  end
+
+  f6()
+  local v35 = v25[v28]
+
+  local animation2 = Instance.new("Animation")
+  animation2.AnimationId = v35.id
+
+  loadAnimation = v34:LoadAnimation(animation2)
+  loadAnimation.Priority = Enum.AnimationPriority.Action
+  loadAnimation.Looped = true
+  loadAnimation:Play(0.25)
+end
+
+local f10, connect5
+
+local function f11(character5)
+  if connect5 then
+    connect5:Disconnect()
+    connect5 = nil
+  end
+
+  local humanoid5 = character5 and character5:FindFirstChildOfClass("Humanoid")
+
+  if not humanoid5 then
+    return
+  end
+
+  connect5 = humanoid5.Running:Connect(function(p12)
+    if not flag14 then
+      return
+    end
+
+    if flag9 then
+      return
+    end
+
+    if p12 > 0.1 then
+      if not flag8 then
+        flag8 = true
+        f6()
+        makeAnimation()
+
+        if f10 then
+          f10()
+        end
+
+        f3()
+      end
+    elseif flag8 then
+      flag8 = false
+      f7()
+      makeAnimation2()
+
+      if f10 then
+        f10()
+      end
+
+      f3()
+    end
+  end)
+end
+
+if game.PlaceId ~= 189707 then
+  print("Error not found natural disasters survival game!")
+end
+
+local function f12(character6)
+  if game.PlaceId ~= 189707 then
+    return
+  end
+
+  if not character6 then
+    return
+  end
+
+  local heartbeat = runService.Heartbeat
+  local renderStepped = runService.RenderStepped
+  local zero = Vector3.zero
+  local humanoidRootPart3 = character6:WaitForChild("HumanoidRootPart")
+  local connect6
+
+  if humanoidRootPart3 then
+    connect6 = nil
+
+    connect6 = heartbeat:Connect(function()
+      if not humanoidRootPart3.Parent then
+        connect6:Disconnect()
+      end
+
+      local assemblyLinearVelocity = humanoidRootPart3.AssemblyLinearVelocity
+      humanoidRootPart3.AssemblyLinearVelocity = zero
+      renderStepped:Wait()
+      humanoidRootPart3.AssemblyLinearVelocity = assemblyLinearVelocity
+    end)
+  end
+end
+
+if localPlayer.Character then
+  f12(localPlayer.Character)
+end
+
+localPlayer.CharacterAdded:Connect(function(character7) f12(character7) end)
+local vector2 = Vector3.new(0, 50, 0)
+
+runService.Heartbeat:Connect(function()
+  local character8 = localPlayer.Character
+  local humanoidRootPart4 = character8 and character8:FindFirstChild("HumanoidRootPart")
+  local humanoid6 = character8 and character8:FindFirstChildOfClass("Humanoid")
+
+  if humanoidRootPart4 and humanoid6 then
+    if humanoid6.FloorMaterial ~= Enum.Material.Air and humanoidRootPart4.Position.Y > -75 then
+      vector2 = humanoidRootPart4.Position + Vector3.new(0, 2, 0)
+    end
+
+    if humanoidRootPart4.Position.Y < -75 then
+      humanoidRootPart4.AssemblyLinearVelocity = Vector3.zero
+      humanoidRootPart4.AssemblyAngularVelocity = Vector3.zero
+      humanoidRootPart4.CFrame = CFrame.new(vector2)
+    end
+  end
+end)
+
+local heartbeat2 = runService.Heartbeat
+local connect7
+
+local function f13()
+  if connect7 then
+    connect7:Disconnect()
+    connect7 = nil
+  end
+end
+
+heartbeat2:Connect(function(p13)
+  if not flag5 then
+    return
+  end
+
+  local character9 = localPlayer.Character
+  local humanoid7 = character9 and character9:FindFirstChildOfClass("Humanoid")
+  local humanoidRootPart5 = character9 and character9:FindFirstChild("HumanoidRootPart")
+  local v36
+
+  if humanoid7 and humanoidRootPart5 then
+    if flag9 then
+      v36 = 0
+    elseif flag7 then
+      v36 = highest
+    else
+      v36 = 10
+    end
+
+    if flag3 then
+      humanoid7.WalkSpeed = v36 > 0 and 2 or 0
+
+      if v36 > 0 and humanoid7.MoveDirection.Magnitude > 0 then
+        humanoidRootPart5.CFrame = humanoidRootPart5.CFrame
+          + humanoid7.MoveDirection * v36 * p13
+      end
+    else
+      humanoid7.WalkSpeed = v36
+    end
+  end
+end)
+
+local function f14()
+  if connect7 then
+    connect7:Disconnect()
+    connect7 = nil
+  end
+
+  connect7 = runService.Heartbeat:Connect(function()
+    if not flag6 then
+      return
+    end
+
+    local character10 = localPlayer.Character
+    local humanoidRootPart6 = character10 and character10:FindFirstChild("HumanoidRootPart")
+
+    if not humanoidRootPart6 then
+      return
+    end
+
+    if humanoidRootPart6.Position.Y < -75 then
+      return
+    end
+
+    task.spawn(function()
+      local assemblyLinearVelocity2 = humanoidRootPart6.AssemblyLinearVelocity
+      local assemblyAngularVelocity = humanoidRootPart6.AssemblyAngularVelocity
+      local bodyVelocity = humanoidRootPart6:FindFirstChildOfClass("BodyVelocity")
+      local bodyGyro = humanoidRootPart6:FindFirstChildOfClass("BodyGyro")
+      local maxForce
+
+      if bodyVelocity then
+        maxForce = bodyVelocity.MaxForce
+        bodyVelocity.MaxForce = Vector3.zero
+      end
+
+      local maxTorque
+
+      if bodyGyro then
+        maxTorque = bodyGyro.MaxTorque
+        bodyGyro.MaxTorque = Vector3.zero
+      end
+
+      humanoidRootPart6.AssemblyLinearVelocity = Vector3.new(45000000, 450000000, 45000000)
+      humanoidRootPart6.AssemblyAngularVelocity = Vector3.new(99999, 99999, 99999)
+
+      runService.RenderStepped:Wait()
+
+      if humanoidRootPart6 then
+        humanoidRootPart6.AssemblyLinearVelocity = assemblyLinearVelocity2
+        humanoidRootPart6.AssemblyAngularVelocity = assemblyAngularVelocity
+
+        if bodyVelocity and maxForce then
+          bodyVelocity.MaxForce = maxForce
+        end
+
+        if bodyGyro and maxTorque then
+          bodyGyro.MaxTorque = maxTorque
+        end
+      end
+    end)
+  end)
+end
+
+local function f15(p14)
+  local flag15 = false
+
+  if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+    local rbxGeneral = textChatService:FindFirstChild("TextChannels")
+      and textChatService.TextChannels:FindFirstChild("RBXGeneral")
+
+    if rbxGeneral then
+      rbxGeneral:SendAsync(p14)
+      flag15 = true
+    end
+  end
+
+  if not flag15 then
+    local findFirstChild = replicatedStorage:FindFirstChild("SayMessageRequest", true)
+
+    if findFirstChild and findFirstChild:IsA("RemoteEvent") then
+      findFirstChild:FireServer(p14, "All")
+    end
+
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("Head") then
+      chat:Chat(localPlayer.Character.Head, p14, Enum.ChatColor.White)
+    end
+  end
+end
+
+local actionButtons = Instance.new("Frame")
+actionButtons.Name = "ActionButtons"
+actionButtons.Size = UDim2.new(0, 400, 0, 400)
+actionButtons.Position = UDim2.new(1, -420, 0, 50)
+actionButtons.BackgroundTransparency = 1
+actionButtons.Visible = false
+actionButtons.Parent = customClientUI
+
+local utilityButtons = Instance.new("Frame")
+utilityButtons.Name = "UtilityButtons"
+utilityButtons.Size = UDim2.new(0, 310, 0, 100)
+utilityButtons.Position = UDim2.new(1, -310, 0, 20)
+utilityButtons.BackgroundTransparency = 1
+utilityButtons.Visible = false
+utilityButtons.Parent = customClientUI
+
+local function makeImageButton(name, udim2, p15, text2, parent)
+  local imageButton2 = Instance.new("ImageButton")
+  imageButton2.Name = name
+  imageButton2.Size = UDim2.new(0, 45, 0, 45)
+  imageButton2.Position = udim2
+  imageButton2.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+  imageButton2.BorderSizePixel = 0
+  imageButton2.Active = true
+  imageButton2.AutoButtonColor = true
+  imageButton2.Parent = parent or actionButtons
+
+  table.insert(list, imageButton2)
+
+  local uiCorner13 = Instance.new("UICorner")
+  uiCorner13.CornerRadius = UDim.new(0.3, 0)
+  uiCorner13.Parent = imageButton2
+
+  local uiStroke5 = Instance.new("UIStroke")
+  uiStroke5.Thickness = 2
+  uiStroke5.Color = Color3.fromRGB(60, 60, 60)
+  uiStroke5.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+  uiStroke5.Parent = imageButton2
+
+  if p15 then
+    imageButton2.Image = "rbxthumb://type=Asset&id=" .. p15 .. "&w=150&h=150"
+  end
+
+  local textLabel4 = Instance.new("TextLabel")
+  textLabel4.Size = UDim2.new(1, 0, 1, 0)
+  textLabel4.BackgroundTransparency = 1
+  textLabel4.TextColor3 = Color3.new(1, 1, 1)
+  textLabel4.Font = Enum.Font.Fantasy
+  textLabel4.TextSize = 8
+  textLabel4.TextWrapped = true
+  textLabel4.Text = text2 or ""
+  textLabel4.Parent = imageButton2
+
+  return imageButton2, uiStroke5
+end
+
+local imageButton3, uiStroke6 = makeImageButton(
+  "ChargeBtn", UDim2.new(0.95, -170, 0.45, 50), nil, "charge: off", customClientUI
+)
+
+imageButton3.Visible = false
+
+local loadAnimation3, connect8
+
+f1(imageButton3, function()
+  flag9 = not flag9
+  uiStroke6.Color = flag9 and Color3.fromRGB(0, 80, 0) or Color3.fromRGB(60, 60, 60)
+  imageButton3.TextLabel.Text = "charge: " .. (flag9 and "on" or "off")
+
+  if flag9 then
+    f9()
+    local v37 = f8()
+
+    if v37 then
+      if loadAnimation3 then
+        pcall(function() loadAnimation3:Stop(0) end)
+      end
+
+      local animation3 = Instance.new("Animation")
+      animation3.AnimationId = "rbxassetid://89111716130280"
+
+      loadAnimation3 = v37:LoadAnimation(animation3)
+      loadAnimation3.Priority = Enum.AnimationPriority.Action4
+      loadAnimation3.Looped = true
+      loadAnimation3:Play(0.2)
+      loadAnimation3:AdjustSpeed(2)
+
+      flag10 = false
+
+      if connect8 then
+        connect8:Disconnect()
+      end
+
+      connect8 = runService.Heartbeat:Connect(function()
+        local character11 = localPlayer.Character
+        local humanoid8 = character11 and character11:FindFirstChildOfClass("Humanoid")
+
+        if humanoid8 and not flag3 then
+          humanoid8.WalkSpeed = 0
+        end
+
+        if not loadAnimation3 then
+          return
+        end
+
+        if not flag10 then
+          if loadAnimation3.TimePosition >= 0.95 then
+            flag10 = true
+            loadAnimation3:AdjustSpeed(-0.5)
+          end
+        elseif loadAnimation3.TimePosition <= 0.5 then
+          flag10 = false
+          loadAnimation3:AdjustSpeed(0.5)
+        end
+      end)
+    end
+  else
+    if connect8 then
+      connect8:Disconnect()
+      connect8 = nil
+    end
+
+    if loadAnimation3 then
+      pcall(function() loadAnimation3:Stop(0.25) end)
+      loadAnimation3 = nil
+    end
+
+    local character12 = localPlayer.Character
+
+    local humanoid9 = character12
+    humanoid9 = character12 and character12:FindFirstChildOfClass("Humanoid")
+
+    if humanoid9 then
+      humanoid9.WalkSpeed = flag7 and highest or 10
+
+      if flag14 then
+        if humanoid9.MoveDirection.Magnitude > 0.1 then
+          flag8 = true
+          makeAnimation()
+          f3()
+        else
+          flag8 = false
+          makeAnimation2()
+          f3()
+        end
+      end
+    end
+  end
+end, true)
+
+function f10()
+  if not flag5 or not flag7 then
+    return
+  end
+
+  if flag11 then
+    return
+  end
+
+  flag11 = true
+  local character13 = localPlayer.Character
+  local humanoidRootPart7 = character13 and character13:FindFirstChild("HumanoidRootPart")
+
+  if not humanoidRootPart7 then
+    flag11 = false
+    return
+  end
+
+  local sound = Instance.new("Sound")
+  sound.SoundId = "rbxassetid://85098651551916"
+  sound.Volume = 2
+  sound.Looped = false
+  sound.PlaybackSpeed = 1
+  sound.Parent = humanoidRootPart7
+  sound.TimePosition = 0.8
+  sound:Play()
+
+  local connect9
+
+  connect9 = runService.Heartbeat:Connect(function()
+    if not sound or not sound.Parent then
+      flag11 = false
+
+      if connect9 then
+        connect9:Disconnect()
+      end
+
+      return
+    end
+
+    if sound.TimePosition >= 1.7 then
+      flag11 = false
+
+      if connect9 then
+        connect9:Disconnect()
+      end
+
+      sound:Stop()
+      sound:Destroy()
+    end
+  end)
+
+  sound.Ended:Connect(function() flag11 = false end)
+end
+
+local imageButton4, uiStroke7 = makeImageButton(
+  "RunBtn", UDim2.new(0.95, -120, 0.45, 50), "83852569571676", "", customClientUI
+)
+
+imageButton4.Visible = false
+
+f1(imageButton4, function()
+  flag7 = not flag7
+  uiStroke7.Color = flag7 and Color3.fromRGB(0, 80, 0) or Color3.fromRGB(60, 60, 60)
+  local character14 = localPlayer.Character
+  local humanoid10 = character14 and character14:FindFirstChildOfClass("Humanoid")
+
+  if humanoid10 and not flag9 then
+    humanoid10.WalkSpeed = flag7 and highest or 10
+  end
+
+  f3()
+
+  if flag14 and flag8 then
+    makeAnimation()
+
+    if f10 then
+      f10()
+    end
+  end
+end, true)
+
+textButton5.MouseButton1Click:Connect(function()
+  highest = math.max(100, highest - 20)
+  textLabel2.Text = "run speed: " .. highest
+
+  if flag7 and flag5 then
+    local character15 = localPlayer.Character
+
+    local humanoid11 = character15
+    humanoid11 = character15 and character15:FindFirstChildOfClass("Humanoid")
+
+    if humanoid11 and not flag9 then
+      humanoid11.WalkSpeed = highest
+    end
+  end
+end)
+
+textButton6.MouseButton1Click:Connect(function()
+  highest = math.min(10000, highest + 20)
+  textLabel2.Text = "run speed: " .. highest
+
+  if flag7 and flag5 then
+    local character16 = localPlayer.Character
+
+    local humanoid12 = character16
+    humanoid12 = character16 and character16:FindFirstChildOfClass("Humanoid")
+
+    if humanoid12 and not flag9 then
+      humanoid12.WalkSpeed = highest
+    end
+  end
+end)
+
+textButton7.MouseButton1Click:Connect(function()
+  highest2 = math.max(1, math.floor((highest2 - 0.1) * 10 + 0.5) / 10)
+  textLabel3.Text = "anim speed: " .. string.format("%.1f", highest2) .. "x"
+
+  if flag14 and flag8 and flag7 then
+    makeAnimation()
+  end
+end)
+
+textButton8.MouseButton1Click:Connect(function()
+  highest2 = math.min(3.5, math.floor((highest2 + 0.1) * 10 + 0.5) / 10)
+  textLabel3.Text = "anim speed: " .. string.format("%.1f", highest2) .. "x"
+
+  if flag14 and flag8 and flag7 then
+    makeAnimation()
+  end
+end)
+
+local imageButton5 = makeImageButton(
+  "RandVoiceBtn", UDim2.new(0, 305, 0, 70), "126139598282367", "Random Voicelines"
+)
+
+local v38 = {
+  "I can't stop, I can't stop", "I'm the A-Train I'm the fastest ####ing man alive!",
+  "here comes the A-TRAIN!", "you know I need 30000 calories a day",
+  "A1 all natural A-Train BABY!", "ye ye yea I'm good I'm good I'm FAST baby",
+}
+
+local list2 = {}
+
+f1(imageButton5, function()
+  local v39, v40
+
+  repeat
+    v39 = v38[math.random(1, #v38)]
+    v40 = v39 ~= list2[1] and v39 ~= list2[2]
+  until v40
+
+  table.insert(list2, 1, v39)
+
+  if #list2 > 2 then
+    table.remove(list2, 3)
+  end
+
+  f15(v39)
+end, true)
+
+local imageButton6 = makeImageButton(
+  "IdleAnimBtn", UDim2.new(0, 155, 0, 0), nil, "Idle 1", utilityButtons
+)
+
+f1(imageButton6, function()
+  v28 = v28 % #v25 + 1
+  imageButton6.TextLabel.Text = v25[v28].name
+
+  if flag14 and not flag8 then
+    makeAnimation2()
+  end
+end, true)
+
+local imageButton7 = makeImageButton(
+  "WalkAnimBtn", UDim2.new(0, 205, 0, 0), nil, "Walk 1", utilityButtons
+)
+
+f1(imageButton7, function()
+  v29 = v29 % #v26 + 1
+  imageButton7.TextLabel.Text = v26[v29].name
+
+  if flag14 and flag8 and not flag7 then
+    makeAnimation()
+  end
+end, true)
+
+local imageButton8 = makeImageButton(
+  "RunAnimBtn", UDim2.new(0, 255, 0, 0), nil, "Run 1", utilityButtons
+)
+
+f1(imageButton8, function()
+  v30 = v30 % #v27 + 1
+  imageButton8.TextLabel.Text = v27[v30].name
+
+  if flag14 and flag8 and flag7 then
+    makeAnimation()
+  end
+end, true)
+
+local imageButton9 = makeImageButton(
+  "FlingBtn", UDim2.new(0.95, -170, 0.45, 0), nil, "Fling: OFF", customClientUI
+)
+
+imageButton9.Visible = false
+
+f1(imageButton9, function()
+  flag6 = not flag6
+  imageButton9.TextLabel.Text = "Fling: " .. (flag6 and "ON" or "OFF")
+
+  if flag6 then
+    f14()
+  else
+    f13()
+  end
+end, true)
+
+local mouseButton1Click = textButton3.MouseButton1Click
+
+local function f16()
+  if flag2 then
+    actionButtons.Visible = false
+    utilityButtons.Visible = false
+    imageButton9.Visible = false
+    imageButton4.Visible = false
+    imageButton3.Visible = false
+  elseif flag5 then
+    actionButtons.Visible = true
+    utilityButtons.Visible = true
+    imageButton9.Visible = true
+    imageButton4.Visible = true
+    imageButton3.Visible = true
+  end
+end
+
+local f17
+
+mouseButton1Click:Connect(function()
+  flag4 = not flag4
+  textButton3.Text = "noclip: " .. (flag4 and "on" or "off")
+  f17(flag4)
+end)
+
+local list3 = {}
+
+local function f18()
+  list3 = {}
+
+  if localPlayer.Character then
+    for _, value2 in ipairs(localPlayer.Character:GetDescendants()) do
+      if value2:IsA("BasePart") then
+        table.insert(list3, value2)
+      end
+    end
+  end
+end
+
+local connect10
+
+function f17(p16)
+  if connect10 then
+    connect10:Disconnect()
+    connect10 = nil
+  end
+
+  local humanoidRootPart8
+
+  if p16 then
+    f18()
+
+    connect10 = runService.RenderStepped:Connect(function()
+      for _, value3 in ipairs(list3) do
+        value3.CanCollide = false
+      end
+    end)
+  elseif localPlayer.Character then
+    humanoidRootPart8 = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+    if humanoidRootPart8 then
+      pcall(function() humanoidRootPart8.CanCollide = true end)
+    end
+  end
+end
+
+textButton2.MouseButton1Click:Connect(function()
+  flag2 = not flag2
+  textButton2.Text = flag2 and "show buttons" or "hide buttons"
+  f16()
+end)
+
+f1(imageButton, function()
+  flag5 = not flag5
+  textLabel.Text = "A-Train: " .. (flag5 and "ON" or "OFF")
+
+  if flag5 then
+    if not flag2 then
+      actionButtons.Visible = true
+      utilityButtons.Visible = true
+      imageButton9.Visible = true
+      imageButton4.Visible = true
+      imageButton3.Visible = true
+    end
+
+    settingButton.Visible = true
+    flag14 = true
+    flag8 = false
+    local character17 = localPlayer.Character
+
+    if character17 then
+      f11(character17)
+      local humanoid13 = character17:FindFirstChildOfClass("Humanoid")
+
+      if not flag9 then
+        if humanoid13 and humanoid13.MoveDirection.Magnitude > 0.1 then
+          flag8 = true
+          makeAnimation()
+
+          if f10 then
+            f10()
+          end
+        else
+          makeAnimation2()
+
+          if f10 then
+            f10()
+          end
+        end
+      end
+
+      if humanoid13 and not flag9 then
+        humanoid13.WalkSpeed = flag7 and highest or 10
+      end
+
+      f3()
+
+      if flag6 then
+        f14()
+      end
+
+      if flag9 then
+        f9()
+        local v41 = f8()
+
+        if v41 then
+          if loadAnimation3 then
+            pcall(function() loadAnimation3:Stop(0) end)
+          end
+
+          local animation4 = Instance.new("Animation")
+          animation4.AnimationId = "rbxassetid://89111716130280"
+
+          loadAnimation3 = v41:LoadAnimation(animation4)
+          loadAnimation3.Priority = Enum.AnimationPriority.Action4
+          loadAnimation3.Looped = true
+          loadAnimation3:Play(0.2)
+          loadAnimation3:AdjustSpeed(2)
+
+          flag10 = false
+
+          if connect8 then
+            connect8:Disconnect()
+          end
+
+          connect8 = runService.Heartbeat:Connect(function()
+            local character18 = localPlayer.Character
+            local humanoid14 = character18 and character18:FindFirstChildOfClass("Humanoid")
+
+            if humanoid14 and not flag3 then
+              humanoid14.WalkSpeed = 0
+            end
+
+            if not loadAnimation3 then
+              return
+            end
+
+            if not flag10 then
+              if loadAnimation3.TimePosition >= 0.95 then
+                flag10 = true
+                loadAnimation3:AdjustSpeed(-0.5)
+              end
+            elseif loadAnimation3.TimePosition <= 0.5 then
+              flag10 = false
+              loadAnimation3:AdjustSpeed(0.5)
+            end
+          end)
+        end
+      end
+    end
+
+    makeAttachment()
+  else
+    actionButtons.Visible = false
+    utilityButtons.Visible = false
+    imageButton9.Visible = false
+    imageButton4.Visible = false
+    imageButton3.Visible = false
+    settingButton.Visible = false
+    frame.Visible = false
+    f3()
+    f13()
+    flag14 = false
+    flag8 = false
+    f9()
+
+    if connect5 then
+      connect5:Disconnect()
+      connect5 = nil
+    end
+
+    local character19 = localPlayer.Character
+
+    local humanoid15 = character19
+    humanoid15 = character19 and character19:FindFirstChildOfClass("Humanoid")
+
+    if humanoid15 then
+      humanoid15.WalkSpeed = 16
+    end
+
+    if connect8 then
+      connect8:Disconnect()
+      connect8 = nil
+    end
+
+    if loadAnimation3 then
+      pcall(function() loadAnimation3:Stop(0.25) end)
+      loadAnimation3 = nil
+    end
+
+    f5()
+  end
+end, false)
+
+local function makeAnimation3(character20)
+  f18()
+  f12(character20)
+
+  if flag4 then
+    f17(true)
+  end
+
+  f9()
+
+  if connect5 then
+    connect5:Disconnect()
+    connect5 = nil
+  end
+
+  local currentCamera3 = workspaceService.CurrentCamera
+
+  if currentCamera3 and character20 then
+    local humanoid16 = character20:FindFirstChildOfClass("Humanoid")
+
+    if humanoid16 then
+      currentCamera3.CameraSubject = humanoid16
+      currentCamera3.CameraType = Enum.CameraType.Custom
+    end
+  end
+
+  if flag5 then
+    local waitForChild = character20:WaitForChild("Humanoid", 5)
+    character20:WaitForChild("HumanoidRootPart", 5)
+    local waitForChild2 = waitForChild and waitForChild:WaitForChild("Animator", 5)
+    task.wait(0.1)
+    flag14 = true
+    flag8 = false
+    f11(character20)
+
+    if not flag9 then
+      if waitForChild and waitForChild.MoveDirection.Magnitude > 0.1 then
+        flag8 = true
+        makeAnimation()
+
+        if f10 then
+          f10()
+        end
+      else
+        makeAnimation2()
+
+        if f10 then
+          f10()
+        end
+      end
+    end
+
+    if waitForChild and not flag9 then
+      waitForChild.WalkSpeed = flag7 and highest or 10
+    end
+
+    f3()
+
+    if flag9 and waitForChild2 then
+      f9()
+
+      local animation5 = Instance.new("Animation")
+      animation5.AnimationId = "rbxassetid://89111716130280"
+
+      loadAnimation3 = waitForChild2:LoadAnimation(animation5)
+      loadAnimation3.Priority = Enum.AnimationPriority.Action4
+      loadAnimation3.Looped = true
+      loadAnimation3:Play(0.2)
+      loadAnimation3:AdjustSpeed(2)
+
+      flag10 = false
+
+      if connect8 then
+        connect8:Disconnect()
+      end
+
+      connect8 = runService.Heartbeat:Connect(function()
+        local character21 = localPlayer.Character
+        local humanoid17 = character21 and character21:FindFirstChildOfClass("Humanoid")
+
+        if humanoid17 and not flag3 then
+          humanoid17.WalkSpeed = 0
+        end
+
+        if not loadAnimation3 then
+          return
+        end
+
+        if not flag10 then
+          if loadAnimation3.TimePosition >= 0.95 then
+            flag10 = true
+            loadAnimation3:AdjustSpeed(-0.5)
+          end
+        elseif loadAnimation3.TimePosition <= 0.5 then
+          flag10 = false
+          loadAnimation3:AdjustSpeed(0.5)
+        end
+      end)
+    end
+
+    if flag6 then
+      f14()
+    end
+
+    f5()
+    makeAttachment()
+  end
+end
+
+localPlayer.CharacterAdded:Connect(function(character22)
+  if flag5 then
+    flag5 = false
+    textLabel.Text = "A-Train: OFF"
+    f13()
+    flag14 = false
+    flag8 = false
+    f9()
+
+    if connect5 then
+      connect5:Disconnect()
+      connect5 = nil
+    end
+
+    if connect8 then
+      connect8:Disconnect()
+      connect8 = nil
+    end
+
+    if loadAnimation3 then
+      pcall(function() loadAnimation3:Stop(0.25) end)
+      loadAnimation3 = nil
+    end
+
+    f5()
+
+    task.delay(1.5, function()
+      if not localPlayer.Character then
+        return
+      end
+
+      flag5 = true
+      textLabel.Text = "A-Train: ON"
+      makeAnimation3(localPlayer.Character)
+    end)
+  else
+    makeAnimation3(character22)
+  end
+end)
+
+local v42 = { ["1"] = Instance.new("ScreenGui", coreGui) }
+v42["1"].Enabled = false
+v42["2"] = Instance.new("Frame", v42["1"])
+v42["2"].BorderSizePixel = 0
+v42["2"].BackgroundColor3 = Color3.fromRGB(254, 199, 255)
+v42["2"].Size = UDim2.new(0, 316, 0, 128)
+v42["2"].Position = UDim2.new(0.5, -150, 0.5, -50)
+v42["5"] = Instance.new("ImageLabel", v42["2"])
+v42["5"].BorderSizePixel = 0
+v42["5"].BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+v42["5"].Image = "rbxassetid://97587406223179"
+v42["5"].Size = UDim2.new(0, 316, 0, 142)
+v42["5"].Position = UDim2.new(0, 0, -0.10938, 0)
+
+local instance = Instance.new("TextBox", v42["5"])
+instance.PlaceholderText = "shortened name/display"
+instance.Size = UDim2.new(0.9, -20, 0.3, -10)
+instance.Position = UDim2.new(0.05, 0, 0.3, 0)
+instance.Text = ""
+instance.BackgroundColor3 = Color3.fromRGB(113, 27, 255)
+instance.TextColor3 = Color3.new(1, 1, 1)
+
+local instance2 = Instance.new("TextButton", v42["5"])
+instance2.Size = UDim2.new(0.4, 0, 0.25, 0)
+instance2.Position = UDim2.new(0.3, 0, 0.65, 0)
+instance2.Text = "banish >:3"
+instance2.BackgroundColor3 = Color3.fromRGB(255, 232, 204)
+
+local function f19(text3)
+  local lower = text3:lower()
+
+  for _, value4 in pairs(players:GetPlayers()) do
+    if value4 ~= localPlayer then
+      if value4.Name:lower():match("^" .. lower)
+        or value4.DisplayName:lower():match("^" .. lower) then
+        return value4
+      end
+    end
+  end
+end
+
+instance2.MouseButton1Click:Connect(function()
+  local v43 = f19(instance.Text)
+
+  if v43 then
+    local character23 = localPlayer.Character
+    local humanoidRootPart9 = character23 and character23:FindFirstChild("HumanoidRootPart")
+
+    local humanoidRootPart10 = v43.Character
+      and v43.Character:FindFirstChild("HumanoidRootPart")
+
+    if humanoidRootPart9 and humanoidRootPart10 then
+      local cframe = humanoidRootPart9.CFrame
+      workspace.FallenPartsDestroyHeight = -99999
+
+      local instance3 = Instance.new("BodyVelocity", humanoidRootPart9)
+      instance3.Velocity = Vector3.new(450000000, 4500000000, 450000000)
+      instance3.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+
+      local v44 = tick()
+
+      while tick() - v44 < 1.5 do
+        humanoidRootPart9.CFrame = humanoidRootPart10.CFrame
+        runService.Heartbeat:Wait()
+      end
+
+      instance3:Destroy()
+      humanoidRootPart9.CFrame = cframe
+      workspace.FallenPartsDestroyHeight = getgenv().FPDH
+    end
+  end
+end)

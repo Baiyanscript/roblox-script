@@ -1,0 +1,353 @@
+local v1 = getconnections
+local v2 = task
+local v3 = game
+local players = v3:GetService("Players")
+local runService = v3:GetService("RunService")
+local coreGui = v3:GetService("CoreGui")
+local userInputService = v3:GetService("UserInputService")
+local v4 = v3:GetService("Workspace")
+local tweenService = v3:GetService("TweenService")
+
+local function f1()
+  pcall(function()
+    local playerScripts = players.LocalPlayer:FindFirstChild("PlayerScripts")
+    local starterPlayerScripts = v3:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
+
+    if playerScripts then
+      if playerScripts:FindFirstChild("QuitsAntiCheatChecker") then
+        playerScripts.QuitsAntiCheatChecker:Destroy()
+      end
+
+      if playerScripts:FindFirstChild("QuitsAntiCheatLocal") then
+        playerScripts.QuitsAntiCheatLocal:Destroy()
+      end
+    end
+
+    if starterPlayerScripts then
+      if starterPlayerScripts:FindFirstChild("QuitsAntiCheatChecker") then
+        starterPlayerScripts.QuitsAntiCheatChecker:Destroy()
+      end
+
+      if starterPlayerScripts:FindFirstChild("QuitsAntiCheatLocal") then
+        starterPlayerScripts.QuitsAntiCheatLocal:Destroy()
+      end
+    end
+  end)
+end
+
+f1()
+
+v2.spawn(function()
+  while v2.wait(1) do
+    pcall(function()
+      if v1 then
+        for _, value in pairs(v1(v3:GetService("ScriptContext").Error)) do
+          value:Disconnect()
+        end
+      end
+    end)
+  end
+end)
+
+pcall(function() require(v3:GetService("ReplicatedFirst"):WaitForChild("Framework", 2)) end)
+local humanoidRootPart
+local localPlayer, v5, humanoid
+
+local function f2()
+  localPlayer = players.LocalPlayer
+  local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+  v5 = character
+  humanoid = character:WaitForChild("Humanoid")
+  humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+end
+
+local list = {}
+
+local function makeTextLabel(text, text2, p1)
+  local v6 = p1 or 2
+  local playerGui = players.LocalPlayer:WaitForChild("PlayerGui")
+
+  local customNotificationGui = Instance.new("ScreenGui", playerGui)
+  customNotificationGui.Name = "CustomNotificationGui"
+  customNotificationGui.ResetOnSpawn = false
+
+  local instance = Instance.new("Frame", customNotificationGui)
+  instance.Size = UDim2.new(0, 250, 0, 50)
+  instance.Position = UDim2.new(1.1, 0, 0.8, 0)
+  instance.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+  instance.BackgroundTransparency = 0.2
+  instance.BorderSizePixel = 0
+  instance.AnchorPoint = Vector2.new(1, 0)
+  instance.ClipsDescendants = true
+
+  Instance.new("UICorner", instance).CornerRadius = UDim.new(0, 8)
+
+  local instance2 = Instance.new("TextLabel", instance)
+  instance2.Size = UDim2.new(1, -20, 0, 25)
+  instance2.Position = UDim2.new(0, 10, 0, 5)
+  instance2.Text = text
+  instance2.TextColor3 = Color3.new(1, 1, 1)
+  instance2.Font = Enum.Font.SourceSansBold
+  instance2.TextSize = 18
+  instance2.TextXAlignment = Enum.TextXAlignment.Left
+  instance2.BackgroundTransparency = 1
+
+  local instance3 = Instance.new("TextLabel", instance)
+  instance3.Size = UDim2.new(1, -20, 0, 25)
+  instance3.Position = UDim2.new(0, 10, 0, 30)
+  instance3.Text = text2
+  instance3.TextColor3 = Color3.fromRGB(200, 200, 200)
+  instance3.Font = Enum.Font.SourceSans
+  instance3.TextSize = 16
+  instance3.TextWrapped = true
+  instance3.TextXAlignment = Enum.TextXAlignment.Left
+  instance3.TextYAlignment = Enum.TextYAlignment.Top
+  instance3.BackgroundTransparency = 1
+
+  table.insert(list, instance)
+
+  for _, value2 in ipairs(list) do
+    if value2 ~= instance then
+      local scale = value2.Position.Y.Scale
+
+      tweenService:Create(value2, TweenInfo.new(0.3), {
+        Position = UDim2.new(0.98, 0, scale - 0.12, 0),
+      }):Play()
+    end
+  end
+
+  tweenService:Create(
+    instance, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    { Position = UDim2.new(0.98, 0, 0.8, 0) }
+  ):Play()
+
+  v2.wait(v6)
+
+  local create = tweenService:Create(instance, TweenInfo.new(
+    0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In
+  ), {
+    Position = UDim2.new(1.1, 0, instance.Position.Y.Scale, 0),
+  })
+
+  create:Play()
+  create.Completed:Wait()
+
+  for index, value3 in ipairs(list) do
+    if value3 == instance then
+      table.remove(list, index)
+      break
+    end
+  end
+
+  customNotificationGui:Destroy()
+end
+
+local wallhopToggleUI = Instance.new("ScreenGui")
+wallhopToggleUI.Name = "WallhopToggleUI"
+wallhopToggleUI.ResetOnSpawn = false
+wallhopToggleUI.IgnoreGuiInset = true
+
+pcall(function() wallhopToggleUI.Parent = coreGui end)
+
+if not wallhopToggleUI.Parent then
+  wallhopToggleUI.Parent = players.LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local wallhopButton = Instance.new("TextButton")
+wallhopButton.Name = "WallhopButton"
+wallhopButton.Size = UDim2.new(0, 110, 0, 44)
+wallhopButton.Position = UDim2.new(0.852, 0, 0.695, 0)
+wallhopButton.AnchorPoint = Vector2.new(0.5, 0.5)
+wallhopButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+wallhopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+wallhopButton.Font = Enum.Font.Roboto
+wallhopButton.TextSize = 14
+wallhopButton.Text = "Wallhop: OFF"
+wallhopButton.BorderSizePixel = 0
+wallhopButton.AutoButtonColor = false
+wallhopButton.BackgroundTransparency = 0
+wallhopButton.Parent = wallhopToggleUI
+
+Instance.new("UICorner", wallhopButton).CornerRadius = UDim.new(0, 10)
+local flag = false
+local flag2 = true
+
+local function f3()
+  wallhopButton.Text = "Wallhop: " .. (flag and "ON" or "OFF")
+  wallhopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+end
+
+local connect
+
+local function f4()
+  if connect then
+    connect:Disconnect()
+    connect = nil
+  end
+end
+
+local function f5()
+  if not flag or not humanoidRootPart or not v5 then
+    return nil
+  end
+
+  if humanoid:GetState() == Enum.HumanoidStateType.Climbing then
+    return nil
+  end
+
+  local v7 = humanoidRootPart.CFrame.LookVector * 2.5
+
+  local raycastParams = RaycastParams.new()
+  raycastParams.FilterDescendantsInstances = { v5 }
+  raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+
+  local raycast = v4:Raycast(
+    humanoidRootPart.Position + Vector3.new(0, -2.5, 0), v7, raycastParams
+  )
+
+  local raycast2 = v4:Raycast(
+    humanoidRootPart.Position + Vector3.new(0, -0.5, 0), v7, raycastParams
+  )
+
+  if raycast and raycast2 and raycast.Instance ~= raycast2.Instance then
+    if raycast.Instance.CanCollide == true and raycast2.Instance.CanCollide == true then
+      if raycast.Normal.Y < 0.1 then
+        return { Part1 = raycast.Instance, Part2 = raycast2.Instance }
+      end
+    end
+  end
+
+  return nil
+end
+
+local function makeAttachment()
+  if not humanoid or not humanoidRootPart then
+    return
+  end
+
+  connect = runService.Stepped:Connect(function()
+    if not flag or not flag2 then
+      return
+    end
+
+    local v8 = f5()
+    local cframe, instance4, instance5
+
+    if v8 then
+      flag2 = false
+      cframe = humanoidRootPart.CFrame
+      humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+
+      if v8.Part1.Size.X > 1.5 or v8.Part1.Size.Z > 1.5 then
+        instance4 = Instance.new("Attachment", humanoidRootPart)
+
+        instance5 = Instance.new("LinearVelocity", humanoidRootPart)
+        instance5.MaxForce = 35000
+        instance5.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector
+
+        instance5.VectorVelocity = Vector3.new(0, 52, 0)
+          + humanoidRootPart.CFrame.LookVector * 12
+
+        instance5.Attachment0 = instance4
+
+        v2.delay(0.08, function()
+          instance5:Destroy()
+          instance4:Destroy()
+        end)
+      else
+        humanoidRootPart.Velocity = Vector3.new(
+          humanoidRootPart.Velocity.X, 35, humanoidRootPart.Velocity.Z
+        ) + humanoidRootPart.CFrame.LookVector * 3
+      end
+
+      v2.spawn(function()
+        humanoidRootPart.CFrame = cframe * CFrame.Angles(0, math.rad(-45), 0)
+        v2.wait(0.05)
+        humanoidRootPart.CFrame = cframe
+      end)
+
+      v2.delay(0.32, function() flag2 = true end)
+    end
+  end)
+end
+
+local function f6()
+  flag = not flag
+  f3()
+
+  if flag then
+    if not v5 then
+      f2()
+    end
+
+    makeAttachment()
+  else
+    f4()
+  end
+end
+
+local inputBegan = wallhopButton.InputBegan
+local v9, position, position2
+
+inputBegan:Connect(function(p2)
+  if p2.UserInputType == Enum.UserInputType.Touch
+    or p2.UserInputType == Enum.UserInputType.MouseButton1 then
+    v9 = true
+    position = p2.Position
+    position2 = wallhopButton.Position
+
+    p2.Changed:Connect(function()
+      if p2.UserInputState == Enum.UserInputState.End then
+        if not v9 then
+          return
+        end
+
+        v9 = false
+
+        if (p2.Position - position).Magnitude < 6 then
+          f6()
+        end
+      end
+    end)
+  end
+end)
+
+local v10
+
+wallhopButton.InputChanged:Connect(function(input)
+  if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseMovement then
+    v10 = input
+  end
+end)
+
+userInputService.InputChanged:Connect(function(input2)
+  if input2 == v10 and v9 then
+    local v11 = input2.Position - position
+
+    wallhopButton.Position = UDim2.new(
+      position2.X.Scale, position2.X.Offset + v11.X, position2.Y.Scale,
+      position2.Y.Offset + v11.Y
+    )
+  end
+end)
+
+f2()
+v2.spawn(function() makeTextLabel("by GioBolqv1 on roblox", "pls go follow me", 10) end)
+
+localPlayer.CharacterAdded:Connect(function(character2)
+  v5 = character2
+  humanoid = character2:WaitForChild("Humanoid")
+  humanoidRootPart = character2:WaitForChild("HumanoidRootPart")
+
+  if flag then
+    f4()
+    makeAttachment()
+  end
+end)
+
+localPlayer.CharacterRemoving:Connect(function()
+  if flag then
+    f4()
+  end
+end)

@@ -1,0 +1,2645 @@
+--https://raw.githubusercontent.com/396abc/Script/bbc0815fbf4eaaea67e789fe6d13bf65cbc2ffcf/MobileFly.lua
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+local tweenService = game:GetService("TweenService")
+local players = game:GetService("Players")
+local httpService = game:GetService("HttpService")
+local localPlayer = players.LocalPlayer
+local showArms = true
+local flag = false
+local v1 = false
+local v2 = 0
+local flag2 = true
+local flag3 = true
+local hoverHeight = 0.8
+local hoverSpeed = 2.9
+local v3 = 70
+local v4 = 70
+local baseSpeed = 50
+local boostSpeed = 100
+local v5 = baseSpeed
+local v6 = isfile and isfolder and writefile and readfile
+local buttonTheme = "modern"
+local guiTheme = "default"
+
+local v7 = {
+  DefaultIdle = {
+    AnimationId = "rbxassetid://11394033602",
+    Start = 1,
+    End = 1.22,
+    Reverse = true,
+    PlaybackSpeed = 0.2,
+    AdjustableSpeed = true,
+  },
+  ChillLevitate = {
+    AnimationId = "rbxassetid://125815409725539",
+    Start = 1,
+    End = 2.6,
+    Reverse = true,
+    PlaybackSpeed = 0.5,
+    AdjustableSpeed = true,
+  },
+  FlashyFly = {
+    AnimationId = "rbxassetid://83375399295408",
+    Start = 0.9,
+    End = 1.8,
+    Reverse = true,
+    PlaybackSpeed = 0.6,
+    AdjustableSpeed = true,
+  },
+  MetroMan = {
+    AnimationId = "rbxassetid://74645777874912",
+    Start = 0.1,
+    End = 1.8,
+    Reverse = true,
+    PlaybackSpeed = 0.7,
+    AdjustableSpeed = true,
+  },
+  MustacheMark = {
+    AnimationId = "rbxassetid://77807262438365",
+    Start = 0.1,
+    End = 3,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  ZombieMark = {
+    AnimationId = "rbxassetid://75532269733454",
+    Start = 0.1,
+    End = 3,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  Thragg = {
+    AnimationId = "rbxassetid://101740020467030",
+    Start = 0,
+    End = 2,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  RelaxedFly = {
+    AnimationId = "rbxassetid://132783162476851",
+    Start = 0.1,
+    End = 5,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  TrackSuitMark = {
+    AnimationId = "rbxassetid://125313210961391",
+    Start = 0.1,
+    End = 4,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  LongHairMark = {
+    AnimationId = "rbxassetid://101003076314239",
+    Start = 0.1,
+    End = 4,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  FlaxanMark = {
+    AnimationId = "rbxassetid://108933593456838",
+    Start = 0.1,
+    End = 4,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  MasklessMark = {
+    AnimationId = "rbxassetid://72952994235315",
+    Start = 0.1,
+    End = 4,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  ViltrimiteMark = {
+    AnimationId = "rbxassetid://124574039035034",
+    Start = 0.1,
+    End = 5,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  PrisonerMark = {
+    AnimationId = "rbxassetid://98385196315632",
+    Start = 1,
+    End = 4,
+    Reverse = true,
+    PlaybackSpeed = 0.6,
+    AdjustableSpeed = true,
+  },
+  TargetMark = {
+    AnimationId = "rbxassetid://122741335712327",
+    Start = 1,
+    End = 5.5,
+    Reverse = true,
+    PlaybackSpeed = 0.6,
+    AdjustableSpeed = true,
+  },
+  NoGoggles = {
+    AnimationId = "rbxassetid://77715558557237",
+    Start = 1,
+    End = 5,
+    Reverse = true,
+    PlaybackSpeed = 0.7,
+    AdjustableSpeed = true,
+  },
+  SheistyMark = {
+    AnimationId = "rbxassetid://121605966423204",
+    Start = 1,
+    End = 3.9,
+    Reverse = true,
+    PlaybackSpeed = 0.6,
+    AdjustableSpeed = true,
+  },
+  AnnoyedIdle = {
+    AnimationId = "rbxassetid://93326430026112",
+    Start = 0.2,
+    End = 3,
+    Reverse = true,
+    PlaybackSpeed = 1.2,
+    AdjustableSpeed = true,
+  },
+  UpsideDown = {
+    AnimationId = "rbxassetid://100566641677826",
+    Start = 0.1,
+    End = 3,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  Conquest = {
+    AnimationId = "rbxassetid://91850736796162",
+    Start = 0.5,
+    End = 2.5,
+    Reverse = true,
+    PlaybackSpeed = 0.7,
+    AdjustableSpeed = true,
+  },
+  MohawkMark = {
+    AnimationId = "rbxassetid://116733977004098",
+    Start = 0.5,
+    End = 3.5,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  BulletProofMark = {
+    AnimationId = "rbxassetid://95218435498795",
+    Start = 0.5,
+    End = 3.5,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  Sinisterv3 = {
+    AnimationId = "rbxassetid://110525048751383",
+    Start = 0.5,
+    End = 3.5,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  BaldMark = {
+    AnimationId = "rbxassetid://76797102013719",
+    Start = 0.5,
+    End = 3.5,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  ViltrimiteIdle = {
+    AnimationId = "rbxassetid://92901321263182",
+    Start = 0.1,
+    End = 4,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  StillIdle = {
+    AnimationId = "rbxassetid://99828067051785",
+    Start = 0.1,
+    End = 3.5,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  StandardIdle = {
+    AnimationId = "rbxassetid://99828067051785",
+    Start = 0.1,
+    End = 4.5,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  CasualFloat = {
+    AnimationId = "rbxassetid://130104867308995",
+    Start = 0.1,
+    End = 2.8,
+    Reverse = true,
+    PlaybackSpeed = 0.6,
+    AdjustableSpeed = true,
+  },
+  Sinister2 = {
+    AnimationId = "rbxassetid://120442396223948",
+    Start = 0.1,
+    End = 2,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  BasicIdle = {
+    AnimationId = "rbxassetid://95101792406607",
+    Start = 0.1,
+    End = 2,
+    Reverse = true,
+    PlaybackSpeed = 0.3,
+    AdjustableSpeed = true,
+  },
+  PreparedIdle = {
+    AnimationId = "rbxassetid://74775170766222",
+    Start = 0.1,
+    End = 3,
+    Reverse = true,
+    PlaybackSpeed = 0.3,
+    AdjustableSpeed = true,
+  },
+  MainInvincible = {
+    AnimationId = "rbxassetid://85659907860049",
+    Start = 1.6,
+    End = 3,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  Move = {
+    AnimationId = "rbxassetid://718076987",
+    Start = 0.2,
+    End = 1.8,
+    Reverse = true,
+    PlaybackSpeed = 1,
+    AdjustableSpeed = true,
+  },
+  Boost = {
+    AnimationId = "rbxassetid://92365791487740",
+    Start = 2,
+    End = 2.2,
+    Reverse = true,
+    PlaybackSpeed = 1.2,
+    AdjustableSpeed = true,
+  },
+  Ultra = {
+    AnimationId = "rbxassetid://85064366773524",
+    Start = 0.5,
+    End = 3.5,
+    Reverse = true,
+    PlaybackSpeed = 1.5,
+    AdjustableSpeed = true,
+  },
+}
+
+local selectedIdle = "DefaultIdle"
+local animation = Instance.new("Animation")
+local animation2 = Instance.new("Animation")
+local animation3 = Instance.new("Animation")
+local animation4 = Instance.new("Animation")
+
+local function f1()
+  animation.AnimationId = "rbxassetid://718076987"
+  animation2.AnimationId = "rbxassetid://92365791487740"
+  animation3.AnimationId = "rbxassetid://85064366773524"
+  animation4.AnimationId = v7[selectedIdle].AnimationId
+end
+
+f1()
+
+local function f2()
+  local localPlayer2 = players.LocalPlayer
+
+  runService.RenderStepped:Connect(function()
+    if not showArms then
+      return
+    end
+
+    local character = localPlayer2.Character
+
+    if not character then
+      return
+    end
+
+    for _, value in ipairs({
+      "Left Arm", "Right Arm", "LeftHand", "RightHand", "LeftLowerArm", "RightLowerArm",
+      "LeftUpperArm", "RightUpperArm",
+    }) do
+      local findFirstChild = character:FindFirstChild(value)
+
+      if findFirstChild then
+        findFirstChild.LocalTransparencyModifier = 0
+
+        for _, value2 in ipairs(findFirstChild:GetChildren()) do
+          if value2:IsA("Decal") or value2:IsA("Texture") then
+            value2.Transparency = 0
+          elseif value2:IsA("MeshPart") then
+            value2.LocalTransparencyModifier = 0
+          end
+        end
+      end
+    end
+  end)
+end
+
+f2()
+
+local flag4 = false
+local controlsLocked = false
+local flag5 = false
+
+local v8 = {
+  mobileUIPosition = UDim2.new(0.5, -100, 0.5, -40),
+  toggleButtonPosition = UDim2.new(1, -70, 0, 20),
+  hoverHeight = 0.8,
+  hoverSpeed = 2.9,
+  selectedIdle = "DefaultIdle",
+  baseSpeed = baseSpeed,
+  boostSpeed = boostSpeed,
+  controlsLocked = false,
+  buttonTheme = "modern",
+  guiTheme = "default",
+  showArms = true,
+}
+
+local function f3()
+  if not workspace.CurrentCamera then
+    return
+  end
+
+  if v2 == 1 then
+    v4 = 95
+  elseif v2 == 2 then
+    v4 = 105
+  elseif v2 == 3 then
+    v4 = 130
+  else
+    v4 = 70
+  end
+end
+
+runService.Heartbeat:Connect(function(delta)
+  local currentCamera = workspace.CurrentCamera
+
+  if not currentCamera then
+    return
+  end
+
+  v3 = v3 + (v4 - v3) * delta * 5
+  currentCamera.FieldOfView = v3
+end)
+
+local function f4()
+  hoverHeight = v8.hoverHeight
+  hoverSpeed = v8.hoverSpeed
+  selectedIdle = v8.selectedIdle
+  controlsLocked = v8.controlsLocked
+  buttonTheme = v8.buttonTheme or "modern"
+  guiTheme = v8.guiTheme or "default"
+
+  if v8.showArms ~= nil then
+    showArms = v8.showArms
+  end
+
+  f1()
+  baseSpeed = v8.baseSpeed or baseSpeed
+  boostSpeed = v8.boostSpeed or boostSpeed
+
+  if v2 == 0 then
+    v5 = baseSpeed
+  elseif v2 == 1 then
+    v5 = boostSpeed
+  elseif v2 == 2 then
+    v5 = boostSpeed * 2.5
+  elseif v2 == 3 then
+    v5 = boostSpeed * 4
+  end
+end
+
+local function f5()
+  if not v6 then
+    return false
+  end
+
+  if not isfolder("InvincibleFly") then
+    makefolder("InvincibleFly")
+  end
+
+  return true
+end
+
+local mobileControls, animToggleButton
+
+local function f6()
+  if not v6 then
+    return
+  end
+
+  if not f5() then
+    return
+  end
+
+  if mobileControls and buttonTheme == "modern" then
+    v8.mobileUIPosition = mobileControls.Position
+  end
+
+  if animToggleButton then
+    v8.toggleButtonPosition = animToggleButton.Position
+  end
+
+  v8.hoverHeight = hoverHeight
+  v8.hoverSpeed = hoverSpeed
+  v8.baseSpeed = baseSpeed
+  v8.boostSpeed = boostSpeed
+  v8.selectedIdle = selectedIdle
+  v8.controlsLocked = controlsLocked
+  v8.buttonTheme = buttonTheme
+  v8.guiTheme = guiTheme
+
+  local ok, result = pcall(function()
+    local scale = v8.mobileUIPosition.X.Scale
+    local offset = v8.mobileUIPosition.X.Offset
+    local scale2 = v8.mobileUIPosition.Y.Scale
+    local offset2 = v8.mobileUIPosition.Y.Offset
+    local scale3 = v8.toggleButtonPosition.X.Scale
+    local offset3 = v8.toggleButtonPosition.X.Offset
+    local scale4 = v8.toggleButtonPosition.Y.Scale
+    local offset4 = v8.toggleButtonPosition.Y.Offset
+    local hoverHeight2 = v8.hoverHeight
+
+    return httpService:JSONEncode({
+      mobileUIPosition = {
+        X = { Scale = scale, Offset = offset },
+        Y = { Scale = scale2, Offset = offset2 },
+      },
+      toggleButtonPosition = {
+        X = { Scale = scale3, Offset = offset3 },
+        Y = { Scale = scale4, Offset = offset4 },
+      },
+      hoverHeight = hoverHeight2,
+      hoverSpeed = v8.hoverSpeed,
+      selectedIdle = v8.selectedIdle,
+      baseSpeed = v8.baseSpeed,
+      boostSpeed = v8.boostSpeed,
+      controlsLocked = v8.controlsLocked,
+      buttonTheme = v8.buttonTheme,
+      showArms = showArms,
+      guiTheme = v8.guiTheme,
+    })
+  end)
+
+  if ok then
+    writefile("InvincibleFly/settings.json", result)
+  else
+    warn("Failed to encode settings")
+  end
+end
+
+local function f7()
+  if not v6 then
+    return
+  elseif not f5() then
+    return
+  end
+
+  if not isfile("InvincibleFly/settings.json") then
+    return
+  end
+
+  local ok2, result2 = pcall(function() return readfile("InvincibleFly/settings.json") end)
+
+  if not ok2 or type(result2) ~= "string" then
+    return
+  end
+
+  local ok3, result3 = pcall(function() return httpService:JSONDecode(result2) end)
+
+  if not ok3 or type(result3) ~= "table" then
+    return
+  end
+
+  if result3.mobileUIPosition then
+    v8.mobileUIPosition = UDim2.new(
+      result3.mobileUIPosition.X.Scale, result3.mobileUIPosition.X.Offset,
+      result3.mobileUIPosition.Y.Scale, result3.mobileUIPosition.Y.Offset
+    )
+  end
+
+  if result3.toggleButtonPosition then
+    v8.toggleButtonPosition = UDim2.new(
+      result3.toggleButtonPosition.X.Scale, result3.toggleButtonPosition.X.Offset,
+      result3.toggleButtonPosition.Y.Scale, result3.toggleButtonPosition.Y.Offset
+    )
+  end
+
+  if result3.hoverHeight then
+    v8.hoverHeight = math.clamp(tonumber(result3.hoverHeight) or 0.8, 0.5, 2)
+  end
+
+  if result3.hoverSpeed then
+    v8.hoverSpeed = math.clamp(tonumber(result3.hoverSpeed) or 2.9, 1, 5)
+  end
+
+  local baseSpeed2 = result3.baseSpeed or result3.BaseSpeed
+
+  if baseSpeed2 ~= nil then
+    v8.baseSpeed = math.clamp(tonumber(baseSpeed2) or baseSpeed, 10, 300)
+  end
+
+  local boostSpeed2 = result3.boostSpeed or result3.BoostSpeed
+
+  if boostSpeed2 ~= nil then
+    v8.boostSpeed = math.clamp(tonumber(boostSpeed2) or boostSpeed, 10, 600)
+  end
+
+  if result3.selectedIdle and v7[result3.selectedIdle] then
+    v8.selectedIdle = result3.selectedIdle
+  end
+
+  if result3.controlsLocked ~= nil then
+    v8.controlsLocked = result3.controlsLocked
+  end
+
+  if result3.buttonTheme then
+    v8.buttonTheme = result3.buttonTheme
+  end
+
+  if result3.guiTheme then
+    v8.guiTheme = result3.guiTheme
+  end
+
+  return true
+end
+
+local v9 = 0
+
+local function f8()
+  if not v6 then
+    return
+  end
+
+  local v10 = tick()
+
+  if v10 - v9 >= 5 then
+    f6()
+    v9 = v10
+  end
+end
+
+if v6 then
+  runService.Heartbeat:Connect(f8)
+end
+
+local instance, connect, v11, loadAnimation
+
+local function f9()
+  if connect then
+    connect:Disconnect()
+    connect = nil
+  end
+
+  if instance then
+    if instance.IsPlaying then
+      instance:Stop(0.1)
+    end
+
+    instance:Destroy()
+    instance = nil
+  end
+
+  if loadAnimation then
+    if loadAnimation.IsPlaying then
+      loadAnimation:Stop(0.1)
+    end
+
+    loadAnimation:Destroy()
+    loadAnimation = nil
+  end
+
+  local character2 = localPlayer.Character
+
+  if character2 then
+    for _, value3 in pairs(character2:GetChildren()) do
+      if value3:IsA("Animation") and value3.Name == "ReplicatedIdle" then
+        value3:Destroy()
+      end
+    end
+  end
+
+  v11 = nil
+end
+
+local f10
+
+local function f11(instance2)
+  if v2 > 0 then
+    v2 = 0
+    v5 = baseSpeed
+    f3()
+
+    if flag and instance2 and instance2.Parent and instance2.Health > 0 then
+      f10(instance2, "Idle")
+    end
+  end
+end
+
+function f10(instance3, p1)
+  if not instance3 or not instance3:IsA("Humanoid") or not instance3.Parent then
+    return
+  end
+
+  f9()
+  local move
+  local v12
+
+  if p1 == "Idle" then
+    move = v7[selectedIdle]
+    v12 = animation4
+  elseif p1 == "Move" then
+    move = v7.Move
+    v12 = animation
+  elseif p1 == "Boost" then
+    move = v7.Boost
+    v12 = animation2
+  elseif p1 == "Ultra" then
+    move = v7.Ultra
+    v12 = animation3
+  else
+    return
+  end
+
+  if not move or not v12 then
+    return
+  end
+
+  v11 = p1
+  local ok4, result4 = pcall(function() return instance3:LoadAnimation(v12) end)
+
+  if not ok4 or not result4 then
+    return
+  end
+
+  instance = result4
+  instance.Looped = false
+
+  pcall(function()
+    instance:Play()
+    instance.TimePosition = move.Start
+    instance:AdjustSpeed(move.PlaybackSpeed)
+  end)
+
+  local v13 = p1 == "Idle" and selectedIdle == "Sinister2"
+  local v14 = p1 == "Idle" and selectedIdle == "Thragg"
+  local v15 = p1 == "Idle" and selectedIdle == "ViltrimiteMark"
+  local v16 = p1 == "Idle" and selectedIdle == "MustacheMark"
+  local v17 = p1 == "Idle" and selectedIdle == "ZombieMark"
+  local v18 = p1 == "Idle" and selectedIdle == "RelaxedFly"
+  local v19 = p1 == "Idle" and selectedIdle == "AnnoyedIdle"
+  local v20 = p1 == "Idle" and selectedIdle == "BulletProofMark"
+  local v21 = p1 == "Idle" and selectedIdle == "LongHairMark"
+  local v22 = p1 == "Idle" and selectedIdle == "Sinisterv3"
+  local v23 = p1 == "Idle" and selectedIdle == "MasklessMark"
+  local v24 = p1 == "Idle" and selectedIdle == "FlaxanMark"
+  local v25 = v13
+
+  if not v13 then
+    local v26 = v15
+
+    if not v15 then
+      local v27 = v16
+
+      if not v16 then
+        local v28 = v14
+
+        if not v14 then
+          local metroMan = v17 or v18 or v19 or v20 or v21 or v22 or v23 or v24 or MetroMan
+          v28 = metroMan
+        end
+
+        v27 = v28
+      end
+
+      v26 = v27
+    end
+
+    v25 = v26
+  end
+
+  local parent = instance3.Parent
+
+  if parent and v25 then
+    for _, value4 in pairs(parent:GetChildren()) do
+      if value4:IsA("Animation") and value4.Name == "ReplicatedIdle" then
+        value4:Destroy()
+      end
+    end
+
+    if loadAnimation then
+      pcall(function()
+        if loadAnimation.IsPlaying then
+          loadAnimation:Stop(0.1)
+        end
+
+        loadAnimation:Destroy()
+      end)
+
+      loadAnimation = nil
+    end
+
+    local replicatedIdle = Instance.new("Animation")
+    replicatedIdle.Name = "ReplicatedIdle"
+    replicatedIdle.AnimationId = move.AnimationId
+    replicatedIdle.Parent = parent
+
+    loadAnimation = instance3:LoadAnimation(replicatedIdle)
+    loadAnimation.Looped = true
+    loadAnimation:Play()
+    loadAnimation:AdjustSpeed(move.PlaybackSpeed)
+  end
+
+  local flag6 = true
+  local v29 = p1 == "Idle" and selectedIdle == "BasicIdle"
+  local playbackSpeed = move.PlaybackSpeed
+
+  connect = runService.Heartbeat:Connect(function()
+    if not flag or not instance or v11 ~= p1 then
+      f9()
+      return
+    end
+
+    if not instance3 or not instance3.Parent then
+      f9()
+      return
+    end
+
+    local ok5, result5 = pcall(function() return instance.TimePosition end)
+
+    if not ok5 or not result5 then
+      f9()
+      return
+    end
+
+    local start = move.Start
+    local v30 = move.End
+
+    if v29 then
+      if flag6 and result5 >= v30 then
+        pcall(function()
+          instance.TimePosition = start
+          instance:AdjustSpeed(playbackSpeed)
+
+          if not instance.IsPlaying then
+            instance:Play()
+            instance:AdjustSpeed(playbackSpeed)
+          end
+
+          flag6 = true
+        end)
+      elseif not flag6 and result5 <= start then
+        pcall(function()
+          instance.TimePosition = start
+          instance:AdjustSpeed(playbackSpeed)
+          flag6 = true
+        end)
+      end
+
+      pcall(function() instance:AdjustSpeed(playbackSpeed) end)
+    elseif flag6 and result5 >= v30 then
+      pcall(function()
+        instance.TimePosition = v30
+        instance:AdjustSpeed(-move.PlaybackSpeed)
+        flag6 = false
+      end)
+    elseif not flag6 and result5 <= start + 0.01 then
+      pcall(function()
+        instance.TimePosition = start
+        instance:AdjustSpeed(move.PlaybackSpeed)
+        flag6 = true
+      end)
+    end
+
+    if not instance.IsPlaying then
+      pcall(function()
+        instance:Play()
+
+        instance:AdjustSpeed(v29 and playbackSpeed or flag6 and move.PlaybackSpeed
+          or -move.PlaybackSpeed)
+      end)
+    end
+  end)
+end
+
+local function f12(humanoid)
+  if not flag or not humanoid or not humanoid.Parent or humanoid.Health <= 0 then
+    return
+  end
+
+  v2 = (v2 + 1) % 4
+
+  if v2 == 1 then
+    v5 = boostSpeed
+    f3()
+    f10(humanoid, "Move")
+  elseif v2 == 2 then
+    v5 = boostSpeed * 2.5
+    f3()
+    f10(humanoid, "Boost")
+  elseif v2 == 3 then
+    v5 = boostSpeed * 4
+    f3()
+    f10(humanoid, "Ultra")
+  else
+    v5 = baseSpeed
+    f3()
+    f10(humanoid, "Idle")
+  end
+end
+
+local function getControlsLocked()
+  controlsLocked = not controlsLocked
+  return controlsLocked
+end
+
+local function f13(p2, p3)
+  local position, position2
+
+  p3.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch
+      or input.UserInputType == Enum.UserInputType.MouseButton1 then
+      if controlsLocked and p2 == mobileControls then
+        return
+      end
+
+      position = input.Position
+      position2 = p2.Position
+      flag4 = true
+    end
+  end)
+
+  p3.InputChanged:Connect(function(input2)
+    if input2.UserInputType == Enum.UserInputType.Touch
+      or input2.UserInputType == Enum.UserInputType.MouseMovement then
+      if flag4 and position then
+        if controlsLocked and p2 == mobileControls then
+          return
+        end
+
+        local v31 = input2.Position - position
+
+        p2.Position = UDim2.new(
+          position2.X.Scale, position2.X.Offset + v31.X, position2.Y.Scale,
+          position2.Y.Offset + v31.Y
+        )
+      end
+    end
+  end)
+
+  p3.InputEnded:Connect(function(input3)
+    if input3.UserInputType == Enum.UserInputType.Touch
+      or input3.UserInputType == Enum.UserInputType.MouseButton1 then
+      flag4 = false
+      position = nil
+      position2 = nil
+    end
+  end)
+end
+
+local connect2
+
+local function f14(humanoidRootPart)
+  if connect2 then
+    connect2:Disconnect()
+  end
+
+  local y = humanoidRootPart.Position.Y
+  local total = 0
+
+  connect2 = runService.Heartbeat:Connect(function(delta2)
+    if not flag or not humanoidRootPart or not humanoidRootPart.Parent then
+      return
+    end
+
+    total = total + delta2 * hoverSpeed
+    local v32 = math.sin(total)
+    local v33 = hoverHeight
+    local cframe = humanoidRootPart.CFrame
+    humanoidRootPart.CFrame = CFrame.new(cframe.X, y + v32 * v33, cframe.Z) * cframe.Rotation
+  end)
+end
+
+local function f15()
+  if connect2 then
+    connect2:Disconnect()
+    connect2 = nil
+  end
+end
+
+local connect3
+
+local function f16()
+  if not flag then
+    return
+  end
+
+  local character3 = localPlayer.Character
+
+  if character3 then
+    if character3:FindFirstChild("HumanoidRootPart") then
+      if character3.HumanoidRootPart:FindFirstChild("FlightVelocity") then
+        character3.HumanoidRootPart.FlightVelocity:Destroy()
+      end
+
+      if character3.HumanoidRootPart:FindFirstChild("FlightGyro") then
+        character3.HumanoidRootPart.FlightGyro:Destroy()
+      end
+    end
+
+    if character3:FindFirstChild("Humanoid") then
+      character3.Humanoid.AutoRotate = true
+      character3.Humanoid.PlatformStand = false
+    end
+  end
+
+  if connect3 then
+    connect3:Disconnect()
+    connect3 = nil
+  end
+
+  f15()
+  f9()
+  flag = false
+  v1 = false
+  v2 = 0
+  v5 = baseSpeed
+  f3()
+  updateMobileButtons()
+end
+
+local function makeTextButton(name, udim, color, text)
+  local textButton = Instance.new("TextButton")
+  textButton.Name = name
+  textButton.Size = UDim2.new(0.15, 0, 0.15, 0)
+  textButton.Position = udim
+  textButton.AnchorPoint = Vector2.new(0.5, 0.5)
+  textButton.BackgroundTransparency = 0.2
+  textButton.BackgroundColor3 = color
+  textButton.Text = text
+  textButton.TextColor3 = Color3.new(1, 1, 1)
+  textButton.TextScaled = true
+  textButton.Font = Enum.Font.GothamBold
+  textButton.TextStrokeTransparency = 0.5
+
+  local uiCorner = Instance.new("UICorner")
+  uiCorner.CornerRadius = UDim.new(1, 0)
+  uiCorner.Parent = textButton
+
+  local shadow = Instance.new("ImageLabel")
+  shadow.Name = "Shadow"
+  shadow.Size = UDim2.new(1, 10, 1, 10)
+  shadow.Position = UDim2.new(0, -5, 0, -5)
+  shadow.BackgroundTransparency = 1
+  shadow.Image = "rbxassetid://1316045217"
+  shadow.ImageColor3 = Color3.new(0, 0, 0)
+  shadow.ImageTransparency = 0.8
+  shadow.ScaleType = Enum.ScaleType.Slice
+  shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+  shadow.Parent = textButton
+
+  local function f17(p4)
+    local tweenInfo = TweenInfo.new(
+      0.1, Enum.EasingStyle.Quad, p4 and Enum.EasingDirection.In or Enum.EasingDirection.Out
+    )
+
+    local v34 = {}
+
+    if p4 then
+      v34.Size = UDim2.new(0.13, 0, 0.13, 0)
+      v34.BackgroundTransparency = 0.4
+      v34.TextTransparency = 0.3
+    else
+      v34.Size = UDim2.new(0.15, 0, 0.15, 0)
+      v34.BackgroundTransparency = 0.2
+      v34.TextTransparency = 0
+    end
+
+    tweenService:Create(textButton, tweenInfo, v34):Play()
+  end
+
+  textButton.InputBegan:Connect(function(input4)
+    if input4.UserInputType == Enum.UserInputType.Touch then
+      f17(true)
+    end
+  end)
+
+  textButton.InputEnded:Connect(function(input5)
+    if input5.UserInputType == Enum.UserInputType.Touch then
+      f17(false)
+    end
+  end)
+
+  return textButton
+end
+
+local function makeBodyVelocity(humanoid2, humanoidRootPart2)
+  if flag or not humanoid2 or not humanoidRootPart2 then
+    return
+  end
+
+  if not flag3 then
+    return
+  end
+
+  flag = true
+  v5 = baseSpeed
+  v2 = 0
+  f3()
+
+  humanoid2.PlatformStand = true
+  humanoid2.AutoRotate = false
+
+  local flightVelocity = Instance.new("BodyVelocity")
+  flightVelocity.Name = "FlightVelocity"
+  flightVelocity.Parent = humanoidRootPart2
+  flightVelocity.MaxForce = Vector3.new(9000000000, 9000000000, 9000000000)
+  flightVelocity.Velocity = Vector3.new(0, 0, 0)
+
+  local flightGyro = Instance.new("BodyGyro")
+  flightGyro.Name = "FlightGyro"
+  flightGyro.Parent = humanoidRootPart2
+  flightGyro.MaxTorque = Vector3.new(9000000000, 9000000000, 9000000000)
+  flightGyro.P = 10000
+  flightGyro.D = 500
+
+  local connect4
+  connect4 = humanoid2.Died:Connect(function() f16() end)
+
+  f14(humanoidRootPart2)
+  f10(humanoid2, "Idle")
+
+  connect3 = runService.RenderStepped:Connect(function()
+    if not flag or not humanoidRootPart2 or not humanoidRootPart2.Parent then
+      if connect3 then
+        connect3:Disconnect()
+      end
+
+      return
+    end
+
+    local getMoveVector = require(localPlayer:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"):WaitForChild("ControlModule")):GetMoveVector()
+    v1 = getMoveVector.Magnitude > 0
+    local currentCamera2 = workspace.CurrentCamera
+
+    if not currentCamera2 then
+      return
+    end
+
+    local zero
+
+    if v1 then
+      f15()
+
+      local v35 = currentCamera2.CFrame.RightVector * getMoveVector.X
+        + -currentCamera2.CFrame.LookVector * getMoveVector.Z
+
+      if v2 == 1 then
+        flightGyro.CFrame = flightGyro.CFrame:Lerp(currentCamera2.CFrame
+          * CFrame.Angles(math.rad(-90), 0, 0), 0.15)
+      else
+        flightGyro.CFrame = flightGyro.CFrame:Lerp(currentCamera2.CFrame, 0.15)
+      end
+
+      if v35.Magnitude > 0 then
+        zero = v35.Unit * v5 * 0.85
+      else
+        zero = Vector3.zero
+      end
+
+      if userInputService:IsKeyDown(Enum.KeyCode.ButtonA)
+        or userInputService:IsKeyDown(Enum.KeyCode.Space) then
+        zero = zero + Vector3.new(0, v5, 0)
+      elseif userInputService:IsKeyDown(Enum.KeyCode.ButtonB)
+        or userInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+        zero = zero + Vector3.new(0, -v5, 0)
+      end
+
+      flightVelocity.Velocity = zero
+    else
+      if not connect2 then
+        f14(humanoidRootPart2)
+      end
+
+      flightGyro.CFrame = flightGyro.CFrame:Lerp(currentCamera2.CFrame, 0.15)
+      flightVelocity.Velocity = Vector3.new(0, 0, 0)
+      f11(humanoid2)
+    end
+  end)
+
+  return function()
+    if connect4 then
+      connect4:Disconnect()
+    end
+
+    if connect3 then
+      connect3:Disconnect()
+    end
+
+    f16()
+  end
+end
+
+local mainFrame
+
+local function makeTextLabel(text2, color2)
+  if not mainFrame then
+    return
+  end
+
+  local textLabel = Instance.new("TextLabel")
+  textLabel.Size = UDim2.new(0.8, 0, 0.1, 0)
+  textLabel.Position = UDim2.new(0.1, 0, 0.45, 0)
+  textLabel.BackgroundColor3 = color2
+  textLabel.BackgroundTransparency = 0.2
+  textLabel.Text = text2
+  textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+  textLabel.TextSize = 14
+  textLabel.Font = Enum.Font.GothamBold
+  textLabel.Parent = mainFrame
+
+  tweenService:Create(textLabel, TweenInfo.new(0.5), { BackgroundTransparency = 0.8 }):Play()
+  task.wait(2)
+  textLabel:Destroy()
+end
+
+local flyButton, boostButton
+
+local function makeTextButton2()
+  if mobileControls then
+    mobileControls:Destroy()
+    mobileControls = nil
+
+    flyButton = nil
+    boostButton = nil
+  end
+
+  local mobileFlyControls = localPlayer:WaitForChild("PlayerGui"):FindFirstChild("MobileFlyControls")
+
+  if not mobileFlyControls then
+    mobileFlyControls = Instance.new("ScreenGui")
+    mobileFlyControls.Name = "MobileFlyControls"
+    mobileFlyControls.ResetOnSpawn = false
+    mobileFlyControls.Parent = localPlayer:WaitForChild("PlayerGui")
+  end
+
+  if buttonTheme == "classic" then
+    mobileControls = Instance.new("Frame")
+    mobileControls.Name = "MobileControls"
+    mobileControls.Size = UDim2.new(1, 0, 1, 0)
+    mobileControls.BackgroundTransparency = 1
+    mobileControls.Parent = mobileFlyControls
+
+    flyButton = makeTextButton(
+      "FlyButton", UDim2.new(0.929, 0, 0.5, 0), Color3.fromRGB(255, 60, 60), "FLY"
+    )
+
+    boostButton = makeTextButton(
+      "BoostButton", UDim2.new(0.929, 0, 0.35, 0), Color3.fromRGB(0, 150, 255), "BOOST"
+    )
+
+    flyButton.Parent = mobileControls
+    boostButton.Parent = mobileControls
+  else
+    mobileControls = Instance.new("Frame")
+    mobileControls.Name = "MobileControls"
+    mobileControls.Size = UDim2.new(0, 200, 0, 80)
+    mobileControls.Position = v8.mobileUIPosition
+    mobileControls.AnchorPoint = Vector2.new(0.5, 0.5)
+    mobileControls.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    mobileControls.BackgroundTransparency = 0.2
+    mobileControls.BorderSizePixel = 0
+    mobileControls.ClipsDescendants = true
+    mobileControls.Parent = mobileFlyControls
+
+    local uiCorner2 = Instance.new("UICorner")
+    uiCorner2.CornerRadius = UDim.new(0, 12)
+    uiCorner2.Parent = mobileControls
+
+    local buttonContainer = Instance.new("Frame")
+    buttonContainer.Name = "ButtonContainer"
+    buttonContainer.Size = UDim2.new(1, -20, 1, -20)
+    buttonContainer.Position = UDim2.new(0, 10, 0, 10)
+    buttonContainer.BackgroundTransparency = 1
+    buttonContainer.Parent = mobileControls
+
+    flyButton = Instance.new("TextButton")
+    flyButton.Name = "FlyButton"
+    flyButton.Size = UDim2.new(0.4, 0, 0.7, 0)
+    flyButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+    flyButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    flyButton.BackgroundTransparency = 0.1
+    flyButton.Text = "FLY"
+    flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    flyButton.TextSize = 14
+    flyButton.Font = Enum.Font.GothamBold
+    flyButton.TextScaled = true
+    flyButton.Parent = buttonContainer
+
+    local uiCorner3 = Instance.new("UICorner")
+    uiCorner3.CornerRadius = UDim.new(0, 8)
+    uiCorner3.Parent = flyButton
+
+    boostButton = Instance.new("TextButton")
+    boostButton.Name = "BoostButton"
+    boostButton.Size = UDim2.new(0.4, 0, 0.7, 0)
+    boostButton.Position = UDim2.new(0.55, 0, 0.15, 0)
+    boostButton.BackgroundColor3 = Color3.fromRGB(50, 40, 60)
+    boostButton.BackgroundTransparency = 0.1
+    boostButton.Text = "BOOST"
+    boostButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    boostButton.TextSize = 12
+    boostButton.Font = Enum.Font.GothamBold
+    boostButton.TextScaled = true
+    boostButton.Parent = buttonContainer
+
+    local uiCorner4 = Instance.new("UICorner")
+    uiCorner4.CornerRadius = UDim.new(0, 8)
+    uiCorner4.Parent = boostButton
+
+    f13(mobileControls, mobileControls)
+  end
+
+  if flyButton then
+    flyButton.MouseButton1Click:Connect(function()
+      local character4 = localPlayer.Character
+
+      if not character4 then
+        return
+      end
+
+      local humanoid3 = character4:FindFirstChild("Humanoid")
+      local v36 = not humanoid3
+      local humanoidRootPart3 = character4:FindFirstChild("HumanoidRootPart")
+
+      if v36 or not humanoidRootPart3 then
+        return
+      end
+
+      if not flag3 then
+        return
+      end
+
+      if flag then
+        f16()
+      else
+        makeBodyVelocity(humanoid3, humanoidRootPart3)
+      end
+
+      updateMobileButtons()
+    end)
+  end
+
+  if boostButton then
+    boostButton.MouseButton1Click:Connect(function()
+      if not flag then
+        return
+      end
+
+      local character5 = localPlayer.Character
+
+      if not character5 then
+        return
+      end
+
+      local humanoid4 = character5:FindFirstChild("Humanoid")
+
+      if not humanoid4 then
+        return
+      end
+
+      f12(humanoid4)
+      updateMobileButtons()
+    end)
+  end
+
+  updateMobileButtons()
+end
+
+function updateMobileButtons()
+  if not flyButton or not boostButton then
+    return
+  end
+
+  if buttonTheme == "classic" then
+    if flag then
+      flyButton.Text = "UNFLY"
+      flyButton.BackgroundColor3 = Color3.fromRGB(120, 40, 60)
+
+      if v2 == 0 then
+        boostButton.Text = "BOOST"
+        boostButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+      elseif v2 == 1 then
+        boostButton.Text = "BOOST 1"
+        boostButton.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+      elseif v2 == 2 then
+        boostButton.Text = "BOOST 2"
+        boostButton.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+      elseif v2 == 3 then
+        boostButton.Text = "ULTRA"
+        boostButton.BackgroundColor3 = Color3.fromRGB(255, 100, 255)
+      end
+    else
+      flyButton.Text = "FLY"
+      flyButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+
+      boostButton.Text = "BOOST"
+      boostButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    end
+  elseif flag then
+    flyButton.Text = "UNFLY"
+    flyButton.BackgroundColor3 = Color3.fromRGB(120, 40, 60)
+
+    if v2 == 0 then
+      boostButton.Text = "BOOST"
+      boostButton.BackgroundColor3 = Color3.fromRGB(50, 40, 60)
+    elseif v2 == 1 then
+      boostButton.Text = "BOOST 1"
+      boostButton.BackgroundColor3 = Color3.fromRGB(80, 60, 120)
+    elseif v2 == 2 then
+      boostButton.Text = "BOOST 2"
+      boostButton.BackgroundColor3 = Color3.fromRGB(100, 80, 150)
+    elseif v2 == 3 then
+      boostButton.Text = "ULTRA"
+      boostButton.BackgroundColor3 = Color3.fromRGB(150, 60, 180)
+    end
+  else
+    flyButton.Text = "FLY"
+    flyButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+
+    boostButton.Text = "BOOST"
+    boostButton.BackgroundColor3 = Color3.fromRGB(50, 40, 60)
+  end
+end
+
+local animationScroller
+
+local function makeTextButton3()
+  local flightAnimationUI = Instance.new("ScreenGui")
+  flightAnimationUI.Name = "FlightAnimationUI"
+  flightAnimationUI.ResetOnSpawn = false
+  flightAnimationUI.Parent = localPlayer:WaitForChild("PlayerGui")
+
+  animToggleButton = Instance.new("ImageButton")
+  animToggleButton.Name = "AnimToggleButton"
+  animToggleButton.Size = UDim2.new(0, 60, 0, 60)
+  animToggleButton.Position = v8.toggleButtonPosition
+  animToggleButton.AnchorPoint = Vector2.new(1, 0)
+  animToggleButton.BackgroundColor3 = Color3.fromRGB(90, 50, 140)
+  animToggleButton.BackgroundTransparency = 0.1
+  animToggleButton.Image = "rbxassetid://135684785837881"
+  animToggleButton.ScaleType = Enum.ScaleType.Fit
+  animToggleButton.ImageColor3 = Color3.fromRGB(240, 200, 255)
+  animToggleButton.AutoButtonColor = false
+  animToggleButton.Parent = flightAnimationUI
+
+  local uiGradient = Instance.new("UIGradient")
+
+  uiGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(120, 70, 180)),
+    ColorSequenceKeypoint.new(0.3, Color3.fromRGB(160, 100, 220)),
+    ColorSequenceKeypoint.new(0.7, Color3.fromRGB(180, 120, 240)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 70, 180)),
+  })
+
+  uiGradient.Rotation = 45
+  uiGradient.Parent = animToggleButton
+
+  tweenService:Create(uiGradient, TweenInfo.new(
+    4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true
+  ), { Rotation = 405 }):Play()
+
+  local glow = Instance.new("ImageLabel")
+  glow.Name = "Glow"
+  glow.Size = UDim2.new(1, 20, 1, 20)
+  glow.Position = UDim2.new(0, -10, 0, -10)
+  glow.BackgroundTransparency = 1
+  glow.Image = "rbxassetid://5028857084"
+  glow.ImageColor3 = Color3.fromRGB(160, 100, 220)
+  glow.ImageTransparency = 0.6
+  glow.ScaleType = Enum.ScaleType.Slice
+  glow.SliceCenter = Rect.new(24, 24, 276, 276)
+  glow.ZIndex = -1
+  glow.Parent = animToggleButton
+
+  tweenService:Create(glow, TweenInfo.new(
+    2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true
+  ), { ImageTransparency = 0.4 }):Play()
+
+  local uiCorner5 = Instance.new("UICorner")
+  uiCorner5.CornerRadius = UDim.new(0.5, 0)
+  uiCorner5.Parent = animToggleButton
+
+  tweenService:Create(animToggleButton, TweenInfo.new(
+    2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true
+  ), { Size = UDim2.new(0, 62, 0, 62) }):Play()
+
+  mainFrame = Instance.new("Frame")
+  mainFrame.Name = "MainFrame"
+  mainFrame.Size = UDim2.new(0.8, 0, 0.7, 0)
+  mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+  mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+  mainFrame.BackgroundColor3 = Color3.fromRGB(10, 5, 20)
+  mainFrame.BackgroundTransparency = 0.1
+  mainFrame.BorderSizePixel = 0
+  mainFrame.ClipsDescendants = true
+  mainFrame.Visible = false
+  mainFrame.Parent = flightAnimationUI
+
+  local uiGradient2 = Instance.new("UIGradient")
+
+  uiGradient2.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 10, 35)),
+    ColorSequenceKeypoint.new(0.2, Color3.fromRGB(30, 15, 50)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(40, 20, 65)),
+    ColorSequenceKeypoint.new(0.8, Color3.fromRGB(30, 15, 50)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 10, 35)),
+  })
+
+  uiGradient2.Rotation = 90
+  uiGradient2.Parent = mainFrame
+
+  tweenService:Create(uiGradient2, TweenInfo.new(
+    8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true
+  ), { Rotation = 450 }):Play()
+
+  local uiCorner6 = Instance.new("UICorner")
+  uiCorner6.CornerRadius = UDim.new(0, 15)
+  uiCorner6.Parent = mainFrame
+
+  local border = Instance.new("Frame")
+  border.Name = "Border"
+  border.Size = UDim2.new(1, 6, 1, 6)
+  border.Position = UDim2.new(0, -3, 0, -3)
+  border.BackgroundTransparency = 1
+  border.ZIndex = -1
+  border.Parent = mainFrame
+
+  local uiGradient3 = Instance.new("UIGradient")
+
+  uiGradient3.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 80, 220)),
+    ColorSequenceKeypoint.new(0.3, Color3.fromRGB(220, 120, 255)),
+    ColorSequenceKeypoint.new(0.7, Color3.fromRGB(160, 60, 200)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 80, 220)),
+  })
+
+  uiGradient3.Rotation = 0
+  uiGradient3.Parent = border
+
+  tweenService:Create(uiGradient3, TweenInfo.new(
+    4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true
+  ), { Rotation = 360 }):Play()
+
+  local titleBar = Instance.new("Frame")
+  titleBar.Name = "TitleBar"
+  titleBar.Size = UDim2.new(1, 0, 0.1, 0)
+  titleBar.Position = UDim2.new(0, 0, 0, 0)
+  titleBar.BackgroundColor3 = Color3.fromRGB(25, 15, 40)
+  titleBar.BackgroundTransparency = 0.2
+  titleBar.BorderSizePixel = 0
+  titleBar.Parent = mainFrame
+
+  local uiCorner7 = Instance.new("UICorner")
+  uiCorner7.CornerRadius = UDim.new(0, 15)
+  uiCorner7.Parent = titleBar
+
+  local title = Instance.new("TextLabel")
+  title.Name = "Title"
+  title.Size = UDim2.new(0.7, 0, 0.8, 0)
+  title.Position = UDim2.new(0.05, 0, 0.1, 0)
+  title.BackgroundTransparency = 1
+  title.Text = "ANIMATIONS & SETTINGS"
+  title.TextColor3 = Color3.fromRGB(255, 255, 255)
+  title.TextScaled = true
+  title.Font = Enum.Font.GothamBlack
+  title.TextXAlignment = Enum.TextXAlignment.Left
+  title.Parent = titleBar
+
+  local lockButton = Instance.new("ImageButton")
+  lockButton.Name = "LockButton"
+  lockButton.Size = UDim2.new(0.1, 0, 0.7, 0)
+  lockButton.Position = UDim2.new(0.88, 0, 0.15, 0)
+
+  lockButton.BackgroundColor3 = controlsLocked and Color3.fromRGB(120, 60, 180)
+    or Color3.fromRGB(80, 40, 120)
+
+  lockButton.BackgroundTransparency = 0.1
+  lockButton.Image = "rbxassetid://4772171909"
+  lockButton.ScaleType = Enum.ScaleType.Fit
+
+  lockButton.ImageColor3 = controlsLocked and Color3.fromRGB(255, 100, 100)
+    or Color3.fromRGB(200, 150, 255)
+
+  lockButton.Parent = titleBar
+
+  local redOverlay = Instance.new("Frame")
+  redOverlay.Name = "RedOverlay"
+  redOverlay.Size = UDim2.new(1, 0, 1, 0)
+  redOverlay.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+  redOverlay.BackgroundTransparency = controlsLocked and 0.5 or 1
+  redOverlay.BorderSizePixel = 0
+  redOverlay.Parent = lockButton
+
+  local uiCorner8 = Instance.new("UICorner")
+  uiCorner8.CornerRadius = UDim.new(0.3, 0)
+  uiCorner8.Parent = lockButton
+
+  local closeButton = Instance.new("TextButton")
+  closeButton.Name = "CloseButton"
+  closeButton.Size = UDim2.new(0.1, 0, 0.7, 0)
+  closeButton.Position = UDim2.new(0.77, 0, 0.15, 0)
+  closeButton.BackgroundColor3 = Color3.fromRGB(130, 80, 180)
+  closeButton.BackgroundTransparency = 0.1
+  closeButton.Text = "X"
+  closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+  closeButton.TextSize = 16
+  closeButton.Font = Enum.Font.GothamBold
+  closeButton.Parent = titleBar
+
+  local uiCorner9 = Instance.new("UICorner")
+  uiCorner9.CornerRadius = UDim.new(0.5, 0)
+  uiCorner9.Parent = closeButton
+
+  local uiCorner10 = Instance.new("UICorner")
+  uiCorner10.CornerRadius = UDim.new(0, 8)
+  uiCorner10.Parent = animationsTab
+
+  local buttonThemesTab = Instance.new("TextButton")
+  buttonThemesTab.Name = "ButtonThemesTab"
+  buttonThemesTab.Size = UDim2.new(0.3, 0, 1, 0)
+  buttonThemesTab.Position = UDim2.new(0.35, 0, 0, 0)
+  buttonThemesTab.BackgroundColor3 = Color3.fromRGB(60, 30, 90)
+  buttonThemesTab.BackgroundTransparency = 0.3
+  buttonThemesTab.Text = "BUTTON THEMES"
+  buttonThemesTab.TextColor3 = Color3.fromRGB(200, 200, 200)
+  buttonThemesTab.TextSize = 12
+  buttonThemesTab.Font = Enum.Font.GothamBold
+  buttonThemesTab.Parent = tabContainer
+
+  local uiCorner11 = Instance.new("UICorner")
+  uiCorner11.CornerRadius = UDim.new(0, 8)
+  uiCorner11.Parent = buttonThemesTab
+
+  local guiThemesTab = Instance.new("TextButton")
+  guiThemesTab.Name = "GUIThemesTab"
+  guiThemesTab.Size = UDim2.new(0.3, 0, 1, 0)
+  guiThemesTab.Position = UDim2.new(0.7, 0, 0, 0)
+  guiThemesTab.BackgroundColor3 = Color3.fromRGB(60, 30, 90)
+  guiThemesTab.BackgroundTransparency = 0.3
+  guiThemesTab.Text = "GUI THEMES"
+  guiThemesTab.TextColor3 = Color3.fromRGB(200, 200, 200)
+  guiThemesTab.TextSize = 12
+  guiThemesTab.Font = Enum.Font.GothamBold
+  guiThemesTab.Parent = tabContainer
+
+  local uiCorner12 = Instance.new("UICorner")
+  uiCorner12.CornerRadius = UDim.new(0, 8)
+  uiCorner12.Parent = guiThemesTab
+
+  local v37 = Instance.new("Frame")
+  v37.Name = "TabContainer"
+  v37.Size = UDim2.new(1, -20, 0.08, 0)
+  v37.Position = UDim2.new(0, 10, 0.9, 0)
+  v37.BackgroundTransparency = 1
+  v37.Parent = mainFrame
+
+  local v38 = Instance.new("TextButton")
+  v38.Name = "AnimationsTab"
+  v38.Size = UDim2.new(0.235, 0, 1, 0)
+  v38.Position = UDim2.new(0, 0, 0, 0)
+  v38.BackgroundColor3 = Color3.fromRGB(80, 40, 120)
+  v38.BackgroundTransparency = 0.1
+  v38.Text = "ANIMATIONS"
+  v38.TextColor3 = Color3.fromRGB(255, 255, 255)
+  v38.TextSize = 12
+  v38.Font = Enum.Font.GothamBold
+  v38.Parent = v37
+
+  Instance.new("UICorner", v38).CornerRadius = UDim.new(0, 8)
+
+  local buttonThemesTab2 = Instance.new("TextButton")
+  buttonThemesTab2.Name = "ButtonThemesTab"
+  buttonThemesTab2.Size = UDim2.new(0.235, 0, 1, 0)
+  buttonThemesTab2.Position = UDim2.new(0.255, 0, 0, 0)
+  buttonThemesTab2.BackgroundColor3 = Color3.fromRGB(60, 30, 90)
+  buttonThemesTab2.BackgroundTransparency = 0.3
+  buttonThemesTab2.Text = "BUTTON THEMES"
+  buttonThemesTab2.TextColor3 = Color3.fromRGB(200, 200, 200)
+  buttonThemesTab2.TextSize = 12
+  buttonThemesTab2.Font = Enum.Font.GothamBold
+  buttonThemesTab2.Parent = v37
+
+  Instance.new("UICorner", buttonThemesTab2).CornerRadius = UDim.new(0, 8)
+
+  local guiThemesTab2 = Instance.new("TextButton")
+  guiThemesTab2.Name = "GUIThemesTab"
+  guiThemesTab2.Size = UDim2.new(0.235, 0, 1, 0)
+  guiThemesTab2.Position = UDim2.new(0.51, 0, 0, 0)
+  guiThemesTab2.BackgroundColor3 = Color3.fromRGB(60, 30, 90)
+  guiThemesTab2.BackgroundTransparency = 0.3
+  guiThemesTab2.Text = "GUI THEMES"
+  guiThemesTab2.TextColor3 = Color3.fromRGB(200, 200, 200)
+  guiThemesTab2.TextSize = 12
+  guiThemesTab2.Font = Enum.Font.GothamBold
+  guiThemesTab2.Parent = v37
+
+  Instance.new("UICorner", guiThemesTab2).CornerRadius = UDim.new(0, 8)
+
+  local settingsTab = Instance.new("TextButton")
+  settingsTab.Name = "SettingsTab"
+  settingsTab.Size = UDim2.new(0.235, 0, 1, 0)
+  settingsTab.Position = UDim2.new(0.765, 0, 0, 0)
+  settingsTab.BackgroundColor3 = Color3.fromRGB(60, 30, 90)
+  settingsTab.BackgroundTransparency = 0.3
+  settingsTab.Text = "SETTINGS"
+  settingsTab.TextColor3 = Color3.fromRGB(200, 200, 200)
+  settingsTab.TextSize = 12
+  settingsTab.Font = Enum.Font.GothamBold
+  settingsTab.Parent = v37
+
+  Instance.new("UICorner", settingsTab).CornerRadius = UDim.new(0, 8)
+
+  animationScroller = Instance.new("ScrollingFrame")
+  animationScroller.Name = "AnimationScroller"
+  animationScroller.Size = UDim2.new(0.45, -10, 0.75, -50)
+  animationScroller.Position = UDim2.new(0.02, 0, 0.12, 0)
+  animationScroller.BackgroundTransparency = 1
+  animationScroller.ScrollBarThickness = 8
+  animationScroller.ScrollBarImageColor3 = Color3.fromRGB(150, 100, 200)
+  animationScroller.ScrollBarImageTransparency = 0.3
+  animationScroller.Visible = true
+  animationScroller.Parent = mainFrame
+
+  local listLayout = Instance.new("UIListLayout")
+  listLayout.Name = "ListLayout"
+  listLayout.Padding = UDim.new(0, 8)
+  listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+  listLayout.Parent = animationScroller
+
+  local buttonThemesFrame = Instance.new("ScrollingFrame")
+  buttonThemesFrame.Name = "ButtonThemesFrame"
+  buttonThemesFrame.Size = UDim2.new(0.9, 0, 0.75, -50)
+  buttonThemesFrame.Position = UDim2.new(0.05, 0, 0.12, 0)
+  buttonThemesFrame.BackgroundTransparency = 1
+  buttonThemesFrame.ScrollBarThickness = 8
+  buttonThemesFrame.ScrollBarImageColor3 = Color3.fromRGB(150, 100, 200)
+  buttonThemesFrame.ScrollBarImageTransparency = 0.3
+  buttonThemesFrame.Visible = false
+  buttonThemesFrame.Parent = mainFrame
+
+  local buttonThemesListLayout = Instance.new("UIListLayout")
+  buttonThemesListLayout.Name = "ButtonThemesListLayout"
+  buttonThemesListLayout.Padding = UDim.new(0, 8)
+  buttonThemesListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+  buttonThemesListLayout.Parent = buttonThemesFrame
+
+  local guiThemesFrame = Instance.new("ScrollingFrame")
+  guiThemesFrame.Name = "GUIThemesFrame"
+  guiThemesFrame.Size = UDim2.new(0.9, 0, 0.75, -50)
+  guiThemesFrame.Position = UDim2.new(0.05, 0, 0.12, 0)
+  guiThemesFrame.BackgroundTransparency = 1
+  guiThemesFrame.ScrollBarThickness = 8
+  guiThemesFrame.ScrollBarImageColor3 = Color3.fromRGB(150, 100, 200)
+  guiThemesFrame.ScrollBarImageTransparency = 0.3
+  guiThemesFrame.Visible = false
+  guiThemesFrame.Parent = mainFrame
+
+  local guiThemesListLayout = Instance.new("UIListLayout")
+  guiThemesListLayout.Name = "GUIThemesListLayout"
+  guiThemesListLayout.Padding = UDim.new(0, 8)
+  guiThemesListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+  guiThemesListLayout.Parent = guiThemesFrame
+
+  local settingsPageFrame = Instance.new("ScrollingFrame")
+  settingsPageFrame.Name = "SettingsPageFrame"
+  settingsPageFrame.Size = UDim2.new(0.9, 0, 0.75, -50)
+  settingsPageFrame.Position = UDim2.new(0.05, 0, 0.12, 0)
+  settingsPageFrame.BackgroundTransparency = 1
+  settingsPageFrame.ScrollBarThickness = 8
+  settingsPageFrame.ScrollBarImageColor3 = Color3.fromRGB(150, 100, 200)
+  settingsPageFrame.ScrollBarImageTransparency = 0.3
+  settingsPageFrame.Visible = false
+  settingsPageFrame.Parent = mainFrame
+
+  local settingsListLayout = Instance.new("UIListLayout")
+  settingsListLayout.Name = "SettingsListLayout"
+  settingsListLayout.Padding = UDim.new(0, 10)
+  settingsListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+  settingsListLayout.Parent = settingsPageFrame
+
+  settingsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    settingsPageFrame.CanvasSize = UDim2.new(
+      0, 0, 0, settingsListLayout.AbsoluteContentSize.Y + 20
+    )
+  end)
+
+  local settingsFrame = Instance.new("Frame")
+  settingsFrame.Name = "SettingsFrame"
+  settingsFrame.Size = UDim2.new(0.5, -15, 0.75, -50)
+  settingsFrame.Position = UDim2.new(0.5, 5, 0.12, 0)
+  settingsFrame.BackgroundColor3 = Color3.fromRGB(25, 15, 40)
+  settingsFrame.BackgroundTransparency = 0.2
+  settingsFrame.Visible = true
+  settingsFrame.Parent = mainFrame
+
+  local uiCorner13 = Instance.new("UICorner")
+  uiCorner13.CornerRadius = UDim.new(0, 10)
+  uiCorner13.Parent = settingsFrame
+
+  local statsContainer = Instance.new("Frame")
+  statsContainer.Name = "StatsContainer"
+  statsContainer.Size = UDim2.new(1, -20, 0.45, 0)
+  statsContainer.Position = UDim2.new(0, 10, 0.02, 0)
+  statsContainer.BackgroundColor3 = Color3.fromRGB(35, 20, 50)
+  statsContainer.BackgroundTransparency = 0.2
+  statsContainer.Parent = settingsFrame
+
+  local uiCorner14 = Instance.new("UICorner")
+  uiCorner14.CornerRadius = UDim.new(0, 8)
+  uiCorner14.Parent = statsContainer
+
+  local statsTitle = Instance.new("TextLabel")
+  statsTitle.Name = "StatsTitle"
+  statsTitle.Size = UDim2.new(1, -10, 0.2, 0)
+  statsTitle.Position = UDim2.new(0, 5, 0, 5)
+  statsTitle.BackgroundTransparency = 1
+  statsTitle.Text = "FLIGHT STATUS"
+  statsTitle.TextColor3 = Color3.fromRGB(230, 200, 255)
+  statsTitle.TextSize = 16
+  statsTitle.TextXAlignment = Enum.TextXAlignment.Center
+  statsTitle.Font = Enum.Font.GothamBold
+  statsTitle.Parent = statsContainer
+
+  local statusContainer = Instance.new("Frame")
+  statusContainer.Name = "StatusContainer"
+  statusContainer.Size = UDim2.new(1, -20, 0.15, 0)
+  statusContainer.Position = UDim2.new(0, 10, 0.25, 0)
+  statusContainer.BackgroundTransparency = 1
+  statusContainer.Parent = statsContainer
+
+  local statusStat = Instance.new("TextLabel")
+  statusStat.Name = "StatusStat"
+  statusStat.Size = UDim2.new(0.8, 0, 1, 0)
+  statusStat.Position = UDim2.new(0.2, 0, 0, 0)
+  statusStat.BackgroundTransparency = 1
+  statusStat.Text = flag and "IN FLIGHT" or "GROUNDED"
+
+  statusStat.TextColor3 = flag and Color3.fromRGB(120, 255, 120)
+    or Color3.fromRGB(255, 120, 120)
+
+  statusStat.TextSize = 14
+  statusStat.TextXAlignment = Enum.TextXAlignment.Left
+  statusStat.Font = Enum.Font.GothamMedium
+  statusStat.Parent = statusContainer
+
+  local speedContainer = Instance.new("Frame")
+  speedContainer.Name = "SpeedContainer"
+  speedContainer.Size = UDim2.new(1, -20, 0.15, 0)
+  speedContainer.Position = UDim2.new(0, 10, 0.45, 0)
+  speedContainer.BackgroundTransparency = 1
+  speedContainer.Parent = statsContainer
+
+  local speedStat = Instance.new("TextLabel")
+  speedStat.Name = "SpeedStat"
+  speedStat.Size = UDim2.new(0.8, 0, 1, 0)
+  speedStat.Position = UDim2.new(0.2, 0, 0, 0)
+  speedStat.BackgroundTransparency = 1
+  speedStat.Text = "SPEED: " .. v5
+  speedStat.TextColor3 = Color3.fromRGB(210, 180, 240)
+  speedStat.TextSize = 14
+  speedStat.TextXAlignment = Enum.TextXAlignment.Left
+  speedStat.Font = Enum.Font.GothamMedium
+  speedStat.Parent = speedContainer
+
+  local boostContainer = Instance.new("Frame")
+  boostContainer.Name = "BoostContainer"
+  boostContainer.Size = UDim2.new(1, -20, 0.15, 0)
+  boostContainer.Position = UDim2.new(0, 10, 0.65, 0)
+  boostContainer.BackgroundTransparency = 1
+  boostContainer.Parent = statsContainer
+
+  local boostStat = Instance.new("TextLabel")
+  boostStat.Name = "BoostStat"
+  boostStat.Size = UDim2.new(0.8, 0, 1, 0)
+  boostStat.Position = UDim2.new(0.2, 0, 0, 0)
+  boostStat.BackgroundTransparency = 1
+  boostStat.Text = "BOOST: " .. (v2 == 0 and "OFF" or "LEVEL " .. v2)
+  boostStat.TextColor3 = Color3.fromRGB(210, 180, 240)
+  boostStat.TextSize = 14
+  boostStat.TextXAlignment = Enum.TextXAlignment.Left
+  boostStat.Font = Enum.Font.GothamMedium
+  boostStat.Parent = boostContainer
+
+  local animContainer = Instance.new("Frame")
+  animContainer.Name = "AnimContainer"
+  animContainer.Size = UDim2.new(1, -20, 0.15, 0)
+  animContainer.Position = UDim2.new(0, 10, 0.85, 0)
+  animContainer.BackgroundTransparency = 1
+  animContainer.Parent = statsContainer
+
+  local animationStat = Instance.new("TextLabel")
+  animationStat.Name = "AnimationStat"
+  animationStat.Size = UDim2.new(0.8, 0, 1, 0)
+  animationStat.Position = UDim2.new(0.2, 0, 0, 0)
+  animationStat.BackgroundTransparency = 1
+  animationStat.Text = selectedIdle
+  animationStat.TextColor3 = Color3.fromRGB(210, 180, 240)
+  animationStat.TextSize = 12
+  animationStat.TextXAlignment = Enum.TextXAlignment.Left
+  animationStat.Font = Enum.Font.GothamMedium
+  animationStat.Parent = animContainer
+
+  for index, value5 in ipairs({
+    "DefaultIdle", "MustacheMark", "Thragg", "RelaxedFly", "ZombieMark", "ChillLevitate",
+    "StillIdle", "MetroMan", "ViltrimiteMark", "FlashyFly", "NoGoggles", "TargetMark",
+    "Sinisterv3", "TrackSuitMark", "BaldMark", "LongHairMark", "FlaxanMark", "MasklessMark",
+    "BulletProofMark", "PrisonerMark", "UpsideDown", "CasualFloat", "SheistyMark",
+    "PreparedIdle", "AnnoyedIdle", "ViltrimiteIdle", "Sinister2", "Conquest", "MohawkMark",
+    "MainInvincible", "BasicIdle",
+  }) do
+    local textButton2 = Instance.new("TextButton")
+    textButton2.Name = value5
+    textButton2.Size = UDim2.new(1, -8, 0, 40)
+    textButton2.BackgroundColor3 = Color3.fromRGB(35, 20, 50)
+    textButton2.BackgroundTransparency = 0.1
+    textButton2.Text = value5
+    textButton2.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textButton2.TextSize = 14
+    textButton2.Font = Enum.Font.GothamMedium
+    textButton2.LayoutOrder = index
+    textButton2.Parent = animationScroller
+
+    local uiCorner15 = Instance.new("UICorner")
+    uiCorner15.CornerRadius = UDim.new(0, 8)
+    uiCorner15.Parent = textButton2
+
+    local selectionIndicator = Instance.new("Frame")
+    selectionIndicator.Name = "SelectionIndicator"
+    selectionIndicator.Size = UDim2.new(0.02, 0, 0.6, 0)
+    selectionIndicator.Position = UDim2.new(0.02, 0, 0.2, 0)
+
+    selectionIndicator.BackgroundColor3 = value5 == selectedIdle
+        and Color3.fromRGB(180, 130, 230)
+      or Color3.fromRGB(80, 50, 100)
+
+    selectionIndicator.Parent = textButton2
+
+    local uiCorner16 = Instance.new("UICorner")
+    uiCorner16.CornerRadius = UDim.new(0.5, 0)
+    uiCorner16.Parent = selectionIndicator
+
+    textButton2.MouseEnter:Connect(function()
+      if selectedIdle ~= value5 and flag2 then
+        tweenService:Create(textButton2, TweenInfo.new(0.2), {
+          BackgroundTransparency = 0.05,
+          Size = UDim2.new(1, -4, 0, 42),
+        }):Play()
+      end
+    end)
+
+    textButton2.MouseLeave:Connect(function()
+      if selectedIdle ~= value5 then
+        tweenService:Create(textButton2, TweenInfo.new(0.2), {
+          BackgroundTransparency = 0.1,
+          Size = UDim2.new(1, -8, 0, 40),
+        }):Play()
+      end
+    end)
+
+    textButton2.MouseButton1Click:Connect(function()
+      if not flag2 then
+        return
+      end
+
+      if flag then
+        makeTextLabel("Cannot switch while flying!", Color3.fromRGB(200, 60, 80))
+        return
+      end
+
+      flag2 = false
+      flag3 = false
+      selectedIdle = value5
+      f1()
+
+      for _, value6 in pairs(animationScroller:GetChildren()) do
+        if value6:IsA("TextButton") then
+          local selectionIndicator2 = value6:FindFirstChild("SelectionIndicator")
+
+          if selectionIndicator2 then
+            selectionIndicator2.BackgroundColor3 = value6.Name == selectedIdle
+                and Color3.fromRGB(180, 130, 230)
+              or Color3.fromRGB(80, 50, 100)
+          end
+        end
+      end
+
+      task.delay(2, function()
+        flag2 = true
+        flag3 = true
+      end)
+    end)
+  end
+
+  local modernTheme = Instance.new("TextButton")
+  modernTheme.Name = "ModernTheme"
+  modernTheme.Size = UDim2.new(1, -8, 0, 50)
+
+  modernTheme.BackgroundColor3 = buttonTheme == "modern" and Color3.fromRGB(80, 50, 120)
+    or Color3.fromRGB(35, 20, 50)
+
+  modernTheme.BackgroundTransparency = 0.1
+
+  modernTheme.Text = [[
+MODERN THEME
+(Centered, Draggable)]]
+
+  modernTheme.TextColor3 = Color3.fromRGB(255, 255, 255)
+  modernTheme.TextSize = 12
+  modernTheme.Font = Enum.Font.GothamMedium
+  modernTheme.TextWrapped = true
+  modernTheme.LayoutOrder = 1
+  modernTheme.Parent = buttonThemesFrame
+
+  local uiCorner17 = Instance.new("UICorner")
+  uiCorner17.CornerRadius = UDim.new(0, 8)
+  uiCorner17.Parent = modernTheme
+
+  local classicTheme = Instance.new("TextButton")
+  classicTheme.Name = "ClassicTheme"
+  classicTheme.Size = UDim2.new(1, -8, 0, 50)
+
+  classicTheme.BackgroundColor3 = buttonTheme == "classic" and Color3.fromRGB(80, 50, 120)
+    or Color3.fromRGB(35, 20, 50)
+
+  classicTheme.BackgroundTransparency = 0.1
+
+  classicTheme.Text = [[
+CLASSIC THEME
+(Right Side, Static)]]
+
+  classicTheme.TextColor3 = Color3.fromRGB(255, 255, 255)
+  classicTheme.TextSize = 12
+  classicTheme.Font = Enum.Font.GothamMedium
+  classicTheme.TextWrapped = true
+  classicTheme.LayoutOrder = 2
+  classicTheme.Parent = buttonThemesFrame
+
+  local uiCorner18 = Instance.new("UICorner")
+  uiCorner18.CornerRadius = UDim.new(0, 8)
+  uiCorner18.Parent = classicTheme
+
+  local comingSoon = Instance.new("TextLabel")
+  comingSoon.Name = "ComingSoon"
+  comingSoon.Size = UDim2.new(1, -8, 0, 100)
+  comingSoon.BackgroundTransparency = 1
+
+  comingSoon.Text = [[
+COMING SOON
+
+More GUI themes will be available in future updates!]]
+
+  comingSoon.TextColor3 = Color3.fromRGB(200, 200, 200)
+  comingSoon.TextSize = 14
+  comingSoon.Font = Enum.Font.GothamMedium
+  comingSoon.TextWrapped = true
+  comingSoon.TextTransparency = 0.5
+  comingSoon.LayoutOrder = 1
+  comingSoon.Parent = guiThemesFrame
+
+  listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    animationScroller.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 10)
+  end)
+
+  buttonThemesListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    buttonThemesFrame.CanvasSize = UDim2.new(
+      0, 0, 0, buttonThemesListLayout.AbsoluteContentSize.Y + 10
+    )
+  end)
+
+  guiThemesListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    guiThemesFrame.CanvasSize = UDim2.new(
+      0, 0, 0, guiThemesListLayout.AbsoluteContentSize.Y + 10
+    )
+  end)
+
+  local function f18()
+    if speedStat then
+      speedStat.Text = "SPEED: " .. v5
+    end
+
+    if boostStat then
+      boostStat.Text = "BOOST: " .. (v2 == 0 and "OFF" or "LEVEL " .. v2)
+    end
+
+    if statusStat then
+      statusStat.Text = flag and "IN FLIGHT" or "GROUNDED"
+
+      statusStat.TextColor3 = flag and Color3.fromRGB(120, 255, 120)
+        or Color3.fromRGB(255, 120, 120)
+
+      if statusIcon then
+        statusIcon.ImageColor3 = flag and Color3.fromRGB(120, 255, 120)
+          or Color3.fromRGB(255, 120, 120)
+      end
+    end
+
+    if animationStat then
+      animationStat.Text = selectedIdle
+    end
+  end
+
+  local function f19(p5)
+    v38.BackgroundColor3 = Color3.fromRGB(60, 30, 90)
+    v38.BackgroundTransparency = 0.3
+    v38.TextColor3 = Color3.fromRGB(200, 200, 200)
+
+    buttonThemesTab2.BackgroundColor3 = Color3.fromRGB(60, 30, 90)
+    buttonThemesTab2.BackgroundTransparency = 0.3
+    buttonThemesTab2.TextColor3 = Color3.fromRGB(200, 200, 200)
+
+    guiThemesTab2.BackgroundColor3 = Color3.fromRGB(60, 30, 90)
+    guiThemesTab2.BackgroundTransparency = 0.3
+    guiThemesTab2.TextColor3 = Color3.fromRGB(200, 200, 200)
+
+    settingsTab.BackgroundColor3 = Color3.fromRGB(60, 30, 90)
+    settingsTab.BackgroundTransparency = 0.3
+    settingsTab.TextColor3 = Color3.fromRGB(200, 200, 200)
+
+    animationScroller.Visible = false
+    settingsFrame.Visible = false
+    buttonThemesFrame.Visible = false
+    guiThemesFrame.Visible = false
+    settingsPageFrame.Visible = false
+
+    if p5 == "animations" then
+      v38.BackgroundColor3 = Color3.fromRGB(80, 40, 120)
+      v38.BackgroundTransparency = 0.1
+      v38.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+      animationScroller.Visible = true
+      settingsFrame.Visible = true
+    elseif p5 == "buttonThemes" then
+      buttonThemesTab2.BackgroundColor3 = Color3.fromRGB(80, 40, 120)
+      buttonThemesTab2.BackgroundTransparency = 0.1
+      buttonThemesTab2.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+      buttonThemesFrame.Visible = true
+    elseif p5 == "guiThemes" then
+      guiThemesTab2.BackgroundColor3 = Color3.fromRGB(80, 40, 120)
+      guiThemesTab2.BackgroundTransparency = 0.1
+      guiThemesTab2.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+      guiThemesFrame.Visible = true
+    elseif p5 == "settings" then
+      settingsTab.BackgroundColor3 = Color3.fromRGB(80, 40, 120)
+      settingsTab.BackgroundTransparency = 0.1
+      settingsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+      settingsPageFrame.Visible = true
+    end
+  end
+
+  modernTheme.MouseButton1Click:Connect(function()
+    if buttonTheme ~= "modern" then
+      buttonTheme = "modern"
+      modernTheme.BackgroundColor3 = Color3.fromRGB(80, 50, 120)
+      classicTheme.BackgroundColor3 = Color3.fromRGB(35, 20, 50)
+      v8.mobileUIPosition = UDim2.new(0.5, -100, 0.5, -40)
+      makeTextButton2()
+      f6()
+      makeTextLabel("Modern theme applied!", Color3.fromRGB(80, 120, 80))
+    end
+  end)
+
+  classicTheme.MouseButton1Click:Connect(function()
+    if buttonTheme ~= "classic" then
+      buttonTheme = "classic"
+      classicTheme.BackgroundColor3 = Color3.fromRGB(80, 50, 120)
+      modernTheme.BackgroundColor3 = Color3.fromRGB(35, 20, 50)
+      makeTextButton2()
+      f6()
+      makeTextLabel("Classic theme applied!", Color3.fromRGB(80, 120, 80))
+    end
+  end)
+
+  lockButton.MouseButton1Click:Connect(function()
+    if buttonTheme == "classic" then
+      makeTextLabel("Lock feature not available in Classic theme!", Color3.fromRGB(200, 60, 80))
+      return
+    end
+
+    if getControlsLocked() then
+      tweenService:Create(lockButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(120, 60, 180),
+      }):Play()
+
+      tweenService:Create(redOverlay, TweenInfo.new(0.2), {
+        BackgroundTransparency = 0.5,
+      }):Play()
+
+      makeTextLabel("Controls Locked", Color3.fromRGB(80, 60, 120))
+    else
+      tweenService:Create(lockButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(80, 40, 120),
+      }):Play()
+
+      tweenService:Create(redOverlay, TweenInfo.new(0.2), { BackgroundTransparency = 1 }):Play()
+      makeTextLabel("Controls Unlocked", Color3.fromRGB(60, 120, 80))
+    end
+  end)
+
+  if v38 then
+    v38.MouseButton1Click:Connect(function() f19("animations") end)
+  end
+
+  if buttonThemesTab2 then
+    buttonThemesTab2.MouseButton1Click:Connect(function() f19("buttonThemes") end)
+  end
+
+  if guiThemesTab2 then
+    guiThemesTab2.MouseButton1Click:Connect(function() f19("guiThemes") end)
+  end
+
+  if settingsTab then
+    settingsTab.MouseButton1Click:Connect(function() f19("settings") end)
+  end
+
+  runService.Heartbeat:Connect(function()
+    if mainFrame and mainFrame.Visible then
+      f18()
+    end
+  end)
+
+  local function makeTextLabel2(text3, text4)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, -8, 0, 62)
+    frame.BackgroundTransparency = 1
+
+    local textLabel2 = Instance.new("TextLabel")
+    textLabel2.Size = UDim2.new(0.7, 0, 0, 18)
+    textLabel2.Position = UDim2.new(0, 0, 0, 0)
+    textLabel2.BackgroundTransparency = 1
+    textLabel2.Text = text3
+    textLabel2.TextColor3 = Color3.fromRGB(210, 180, 240)
+    textLabel2.TextSize = 13
+    textLabel2.Font = Enum.Font.GothamMedium
+    textLabel2.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel2.Parent = frame
+
+    local textLabel3 = Instance.new("TextLabel")
+    textLabel3.Size = UDim2.new(0.3, 0, 0, 18)
+    textLabel3.Position = UDim2.new(0.7, 0, 0, 0)
+    textLabel3.BackgroundTransparency = 1
+    textLabel3.Text = text4
+    textLabel3.TextColor3 = Color3.fromRGB(250, 230, 255)
+    textLabel3.TextSize = 13
+    textLabel3.Font = Enum.Font.GothamBold
+    textLabel3.TextXAlignment = Enum.TextXAlignment.Right
+    textLabel3.Parent = frame
+
+    local frame2 = Instance.new("Frame")
+    frame2.Size = UDim2.new(1, 0, 0, 14)
+    frame2.Position = UDim2.new(0, 0, 0, 34)
+    frame2.BackgroundColor3 = Color3.fromRGB(50, 30, 70)
+    frame2.Parent = frame
+
+    Instance.new("UICorner", frame2).CornerRadius = UDim.new(0.5, 0)
+
+    local frame3 = Instance.new("Frame")
+    frame3.Size = UDim2.new(0, 1, 1, 0)
+    frame3.BackgroundColor3 = Color3.fromRGB(180, 130, 230)
+    frame3.Parent = frame2
+
+    Instance.new("UICorner", frame3).CornerRadius = UDim.new(0.5, 0)
+    return frame, frame2, frame3, textLabel3
+  end
+
+  local function makeTextLabel3(text5)
+    local textLabel4 = Instance.new("TextLabel")
+    textLabel4.Size = UDim2.new(1, -8, 0, 28)
+    textLabel4.BackgroundTransparency = 1
+    textLabel4.Text = text5
+    textLabel4.TextColor3 = Color3.fromRGB(230, 200, 255)
+    textLabel4.TextSize = 16
+    textLabel4.Font = Enum.Font.GothamBold
+    textLabel4.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel4.LayoutOrder = 1
+
+    return textLabel4
+  end
+
+  local hoverSETTINGS = makeTextLabel3("HOVER SETTINGS")
+  hoverSETTINGS.LayoutOrder = 1
+  hoverSETTINGS.Parent = settingsPageFrame
+
+  local frame4, frame5, frame6, textLabel5 = makeTextLabel2(
+    "HOVER HEIGHT", string.format("%.1f", hoverHeight)
+  )
+
+  frame4.LayoutOrder = 2
+  frame4.Parent = settingsPageFrame
+
+  local frame7, frame8, frame9, textLabel6 = makeTextLabel2(
+    "HOVER SPEED", string.format("%.1f", hoverSpeed)
+  )
+
+  frame7.LayoutOrder = 3
+  frame7.Parent = settingsPageFrame
+
+  local resetHoverButton = Instance.new("TextButton")
+  resetHoverButton.Name = "ResetHoverButton"
+  resetHoverButton.Size = UDim2.new(1, -8, 0, 36)
+  resetHoverButton.BackgroundColor3 = Color3.fromRGB(70, 30, 100)
+  resetHoverButton.BackgroundTransparency = 0.1
+  resetHoverButton.Text = "RESET HOVER SETTINGS"
+  resetHoverButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+  resetHoverButton.TextSize = 12
+  resetHoverButton.Font = Enum.Font.GothamBold
+  resetHoverButton.LayoutOrder = 4
+  resetHoverButton.Parent = settingsPageFrame
+
+  Instance.new("UICorner", resetHoverButton).CornerRadius = UDim.new(0, 6)
+
+  local speedSETTINGS = makeTextLabel3("SPEED SETTINGS")
+  speedSETTINGS.LayoutOrder = 5
+  speedSETTINGS.Parent = settingsPageFrame
+
+  local frame10, frame11, frame12, textLabel7 = makeTextLabel2(
+    "BASE SPEED", tostring(baseSpeed)
+  )
+
+  frame10.LayoutOrder = 6
+  frame10.Parent = settingsPageFrame
+
+  local frame13, frame14, frame15, textLabel8 = makeTextLabel2(
+    "BOOST SPEED", tostring(boostSpeed)
+  )
+
+  frame13.LayoutOrder = 7
+  frame13.Parent = settingsPageFrame
+
+  local resetSpeedButton = Instance.new("TextButton")
+  resetSpeedButton.Name = "ResetSpeedButton"
+  resetSpeedButton.Size = UDim2.new(1, -8, 0, 36)
+  resetSpeedButton.BackgroundColor3 = Color3.fromRGB(70, 30, 100)
+  resetSpeedButton.BackgroundTransparency = 0.1
+  resetSpeedButton.Text = "RESET SPEED SETTINGS"
+  resetSpeedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+  resetSpeedButton.TextSize = 12
+  resetSpeedButton.Font = Enum.Font.GothamBold
+  resetSpeedButton.LayoutOrder = 8
+  resetSpeedButton.Parent = settingsPageFrame
+
+  Instance.new("UICorner", resetSpeedButton).CornerRadius = UDim.new(0, 6)
+
+  local visibilitySETTINGS = makeTextLabel3("VISIBILITY SETTINGS")
+  visibilitySETTINGS.LayoutOrder = 9
+  visibilitySETTINGS.Parent = settingsPageFrame
+
+  local armsContainer = Instance.new("Frame")
+  armsContainer.Name = "ArmsContainer"
+  armsContainer.Size = UDim2.new(1, -8, 0, 50)
+  armsContainer.BackgroundTransparency = 1
+  armsContainer.LayoutOrder = 10
+  armsContainer.Parent = settingsPageFrame
+
+  local textLabel9 = Instance.new("TextLabel")
+  textLabel9.Size = UDim2.new(0.7, 0, 1, 0)
+  textLabel9.Position = UDim2.new(0, 0, 0, 0)
+  textLabel9.BackgroundTransparency = 1
+  textLabel9.Text = "SHOW ARMS IN FIRST PERSON"
+  textLabel9.TextColor3 = Color3.fromRGB(210, 180, 240)
+  textLabel9.TextSize = 13
+  textLabel9.Font = Enum.Font.GothamMedium
+  textLabel9.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel9.TextWrapped = true
+  textLabel9.Parent = armsContainer
+
+  local armsToggle = Instance.new("Frame")
+  armsToggle.Name = "ArmsToggle"
+  armsToggle.Size = UDim2.new(0, 50, 0, 25)
+  armsToggle.Position = UDim2.new(0.7, 0, 0.25, 0)
+
+  armsToggle.BackgroundColor3 = showArms and Color3.fromRGB(160, 100, 220)
+    or Color3.fromRGB(100, 100, 100)
+
+  armsToggle.ClipsDescendants = true
+  armsToggle.ZIndex = 16
+  armsToggle.Parent = armsContainer
+
+  local uiCorner19 = Instance.new("UICorner")
+  uiCorner19.CornerRadius = UDim.new(1, 0)
+  uiCorner19.Parent = armsToggle
+
+  local armsKnob = Instance.new("Frame")
+  armsKnob.Name = "ArmsKnob"
+  armsKnob.Size = UDim2.new(0.5, -2, 1, -4)
+  armsKnob.Position = showArms and UDim2.new(0.5, 1, 0, 2) or UDim2.new(0, 2, 0, 2)
+  armsKnob.BackgroundColor3 = Color3.new(1, 1, 1)
+  armsKnob.ZIndex = 17
+  armsKnob.Parent = armsToggle
+
+  local uiCorner20 = Instance.new("UICorner")
+  uiCorner20.CornerRadius = UDim.new(1, 0)
+  uiCorner20.Parent = armsKnob
+
+  armsToggle.InputBegan:Connect(function(input6)
+    if input6.UserInputType == Enum.UserInputType.Touch
+      or input6.UserInputType == Enum.UserInputType.MouseButton1 then
+      showArms = not showArms
+      local v39 = showArms
+
+      local color3 = v39
+      color3 = v39 and Color3.fromRGB(160, 100, 220)
+
+      local color4 = color3
+      color4 = color3 or Color3.fromRGB(100, 100, 100)
+
+      local v40 = showArms
+      local backgroundColor3 = color4
+      local udim2 = v40 and UDim2.new(0.5, 1, 0, 2) or UDim2.new(0, 2, 0, 2)
+
+      tweenService:Create(armsToggle, TweenInfo.new(0.3), {
+        BackgroundColor3 = backgroundColor3,
+      }):Play()
+
+      tweenService:Create(armsKnob, TweenInfo.new(0.3), { Position = udim2 }):Play()
+
+      f6()
+    end
+  end)
+
+  local function f20(p6, p7, text6, p8, p9, p10, fn)
+    local flag7 = false
+
+    local function f21(x)
+      local x2 = p6.AbsoluteSize.X
+      local x3 = p6.AbsolutePosition.X
+      local v41 = math.clamp(x - x3, 0, x2) / x2
+      local v42 = p8 + (p9 - p8) * v41
+      tweenService:Create(p7, TweenInfo.new(0.1), { Size = UDim2.new(v41, 0, 1, 0) }):Play()
+      text6.Text = string.format("%.1f", v42)
+      fn(v42)
+    end
+
+    p6.InputBegan:Connect(function(input7)
+      if input7.UserInputType == Enum.UserInputType.Touch
+        or input7.UserInputType == Enum.UserInputType.MouseButton1 then
+        flag7 = true
+        f21(input7.Position.X)
+      end
+    end)
+
+    p6.InputChanged:Connect(function(input8)
+      if (input8.UserInputType == Enum.UserInputType.Touch
+          or input8.UserInputType == Enum.UserInputType.MouseMovement)
+        and flag7 then
+        f21(input8.Position.X)
+      end
+    end)
+
+    p6.InputEnded:Connect(function(input9)
+      if input9.UserInputType == Enum.UserInputType.Touch
+        or input9.UserInputType == Enum.UserInputType.MouseButton1 then
+        flag7 = false
+      end
+    end)
+
+    p7.Size = UDim2.new((p10 - p8) / (p9 - p8), 0, 1, 0)
+  end
+
+  f20(frame5, frame6, textLabel5, 0.5, 2, hoverHeight, function(hoverHeight3)
+    hoverHeight = hoverHeight3
+
+    if flag and connect2 then
+      f15()
+      local character6 = localPlayer.Character
+
+      if character6 then
+        local humanoidRootPart4 = character6:FindFirstChild("HumanoidRootPart")
+
+        if humanoidRootPart4 then
+          f14(humanoidRootPart4)
+        end
+      end
+    end
+
+    f6()
+  end)
+
+  f20(frame8, frame9, textLabel6, 1, 5, hoverSpeed, function(hoverSpeed2)
+    hoverSpeed = hoverSpeed2
+
+    if flag and connect2 then
+      f15()
+      local character7 = localPlayer.Character
+
+      if character7 then
+        local humanoidRootPart5 = character7:FindFirstChild("HumanoidRootPart")
+
+        if humanoidRootPart5 then
+          f14(humanoidRootPart5)
+        end
+      end
+    end
+
+    f6()
+  end)
+
+  f20(frame11, frame12, textLabel7, 10, 300, baseSpeed, function(p11)
+    baseSpeed = math.floor(p11 + 0.5)
+    textLabel7.Text = tostring(baseSpeed)
+
+    if v2 == 0 then
+      v5 = baseSpeed
+    end
+
+    f6()
+  end)
+
+  f20(frame14, frame15, textLabel8, 10, 600, boostSpeed, function(p12)
+    boostSpeed = math.floor(p12 + 0.5)
+    textLabel8.Text = tostring(boostSpeed)
+
+    if v2 == 0 then
+      v5 = baseSpeed
+    elseif v2 == 1 then
+      v5 = boostSpeed
+    elseif v2 == 2 then
+      v5 = boostSpeed * 2.5
+    elseif v2 == 3 then
+      v5 = boostSpeed * 4
+    end
+
+    f6()
+    f18()
+  end)
+
+  local function f22()
+    hoverHeight = 0.8
+    hoverSpeed = 2.9
+    textLabel5.Text = string.format("%.1f", hoverHeight)
+    textLabel6.Text = string.format("%.1f", hoverSpeed)
+
+    tweenService:Create(frame6, TweenInfo.new(0.3), {
+      Size = UDim2.new((hoverHeight - 0.5) / 1.5, 0, 1, 0),
+    }):Play()
+
+    tweenService:Create(frame9, TweenInfo.new(0.3), {
+      Size = UDim2.new((hoverSpeed - 1) / 4, 0, 1, 0),
+    }):Play()
+
+    if flag and connect2 then
+      f15()
+      local character8 = localPlayer.Character
+
+      if character8 then
+        local humanoidRootPart6 = character8:FindFirstChild("HumanoidRootPart")
+
+        if humanoidRootPart6 then
+          f14(humanoidRootPart6)
+        end
+      end
+    end
+
+    f6()
+    f18()
+    makeTextLabel("Hover settings reset!", Color3.fromRGB(80, 120, 80))
+  end
+
+  local function f23()
+    baseSpeed = 50
+    boostSpeed = 100
+    textLabel7.Text = tostring(baseSpeed)
+    textLabel8.Text = tostring(boostSpeed)
+
+    tweenService:Create(frame12, TweenInfo.new(0.3), {
+      Size = UDim2.new((baseSpeed - 10) / 290, 0, 1, 0),
+    }):Play()
+
+    tweenService:Create(frame15, TweenInfo.new(0.3), {
+      Size = UDim2.new((boostSpeed - 10) / 590, 0, 1, 0),
+    }):Play()
+
+    if v2 == 0 then
+      v5 = baseSpeed
+    elseif v2 == 1 then
+      v5 = boostSpeed
+    elseif v2 == 2 then
+      v5 = boostSpeed * 2.5
+    elseif v2 == 3 then
+      v5 = boostSpeed * 4
+    end
+
+    f6()
+    f18()
+    makeTextLabel("Speed settings reset!", Color3.fromRGB(80, 120, 80))
+  end
+
+  if resetHoverButton then
+    resetHoverButton.MouseButton1Click:Connect(f22)
+  end
+
+  if resetSpeedButton then
+    resetSpeedButton.MouseButton1Click:Connect(f23)
+  end
+
+  f13(mainFrame, titleBar)
+
+  local function f24()
+    flag5 = not flag5
+
+    if flag5 then
+      f19("animations")
+      mainFrame.Visible = true
+
+      tweenService:Create(mainFrame, TweenInfo.new(
+        0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out
+      ), { Size = UDim2.new(0.8, 0, 0.7, 0) }):Play()
+
+      tweenService:Create(animToggleButton, TweenInfo.new(0.3), {
+        ImageColor3 = Color3.fromRGB(200, 150, 255),
+      }):Play()
+
+      f18()
+    else
+      tweenService:Create(mainFrame, TweenInfo.new(
+        0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In
+      ), { Size = UDim2.new(0, 0, 0, 0) }):Play()
+
+      tweenService:Create(animToggleButton, TweenInfo.new(0.3), {
+        ImageColor3 = Color3.fromRGB(240, 200, 255),
+      }):Play()
+
+      task.wait(0.4)
+
+      if not flag5 then
+        mainFrame.Visible = false
+      end
+    end
+  end
+
+  f13(animToggleButton, animToggleButton)
+
+  if animToggleButton then
+    animToggleButton.MouseButton1Click:Connect(f24)
+  end
+
+  if closeButton then
+    closeButton.MouseButton1Click:Connect(f24)
+  end
+
+  return flightAnimationUI
+end
+
+local function f25()
+  if v6 then
+    f7()
+    f4()
+  end
+
+  makeTextButton3()
+  makeTextButton2()
+  local character9 = localPlayer.Character
+
+  if character9 then
+    local humanoid5 = character9:FindFirstChild("Humanoid")
+
+    if humanoid5 then
+      humanoid5.Died:Connect(function() f16() end)
+    end
+  end
+
+  localPlayer.CharacterAdded:Connect(function(character10)
+    local humanoid6 = character10:WaitForChild("Humanoid")
+    humanoid6.Died:Connect(function() f16() end)
+
+    if flag then
+      task.wait(0.5)
+      makeBodyVelocity(humanoid6, character10:WaitForChild("HumanoidRootPart"))
+    end
+  end)
+end
+
+f25()
